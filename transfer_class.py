@@ -67,7 +67,7 @@ class Tool_Knowledge_transfer_class():
                 pred_label = torch.argmax(pred_flat, dim = -1)
                 correct_num = torch.sum(pred_label == truth_flat)
                 accuracy_train = correct_num/ len(truth_flat)
-                print(i+1, loss, accuracy_train)
+                print(f"epoch {i + 1}/{configs.epoch_classifier}, loss: {loss.item():.4f}, train accuracy: {accuracy_train.item() * 100 :.2f}%")
         return Classifier
 
     def eval(self, Encoder, Classifier, behavior_list, target_tool_list,new_object_list, modality_list, trail_list):
@@ -82,13 +82,12 @@ class Tool_Knowledge_transfer_class():
             pred = Classifier(encoded_source)
         pred_flat = pred.view(-1, len(new_object_list))
         pred_label = torch.argmax(pred_flat, dim=-1)
-        print(pred_label)
+        # torch.mps.synchronize()
+        print(f"{len(truth_flat)} true labels     : {truth_flat}")
+        print(f"{len(pred_label)} predicted labels: {pred_label.tolist()}")
         correct_num = torch.sum(pred_label == truth_flat)
         accuracy_test = correct_num / len(truth_flat)
-        print(accuracy_test)
-
-
-
+        print(f"test accuracy: {accuracy_test.item() * 100:.2f}%")
 
 
 
@@ -114,8 +113,6 @@ class Tool_Knowledge_transfer_class():
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, old_object_list + new_object_list , trail_list)
         target_data = self.get_data(behavior_list, target_tool_list, modality_list, old_object_list , trail_list)
 
-
-
         '''
         If we have more than one modality, we may need preprocessing and the input dim may not the 
         sum of data dim across all considered modalities. But I just put it here because we have 
@@ -134,10 +131,9 @@ class Tool_Knowledge_transfer_class():
             loss.backward()
             optimizer.step()
             if (i+1)%100 == 0:
-                print(i+1, loss)
+                print(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
 
         return Encoder
-
 
     def TL_loss_fn(self, source_data, target_data, Encoder):
         encoded_source = Encoder(source_data)
