@@ -72,9 +72,10 @@ class Tool_Knowledge_transfer_class():
 
     def eval(self, Encoder, Classifier, behavior_list, target_tool_list,new_object_list, modality_list, trail_list):
         source_data = self.get_data(behavior_list, target_tool_list, modality_list, new_object_list, trail_list)
-        truth_flat = torch.zeros(len(trail_list)*len(new_object_list), dtype=torch.int64, device=configs.device)
+        truth_flat = np.zeros(len(trail_list)*len(new_object_list))
         for i in range(len(new_object_list)):
             truth_flat[i*len(trail_list):(i+1)*len(trail_list)] = i
+        truth_flat = torch.tensor(truth_flat, dtype=torch.int64, device=configs.device)
 
         with torch.no_grad():
             encoded_source = Encoder(source_data)
