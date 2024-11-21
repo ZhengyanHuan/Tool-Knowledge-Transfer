@@ -1,7 +1,13 @@
 import numpy as np
+import torch
 #########################encoder/classifier parameters
+if torch.cuda.is_available():
+    device = 'cuda'
+elif torch.backends.mps.is_available():
+    device = 'mps'  # apple M1 chip
+else:
+    device = 'cpu'
 
-device = 'cuda:0'
 encoder_hidden_dim = 16
 encoder_output_dim = 4
 

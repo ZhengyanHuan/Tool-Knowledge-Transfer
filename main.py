@@ -28,7 +28,7 @@ torch.save(myencoder.state_dict(), './saved_model/encoder/'+ pt)
 
 #%%
 Encoder = model.encoder(input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(configs.device)
-Encoder.load_state_dict(torch.load('./saved_model/encoder/myencoder.pt'))
+Encoder.load_state_dict(torch.load('./saved_model/encoder/' + encoder_pt_name, map_location=torch.device(configs.device)))
 myclassifier = myclass.train_classifier(behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder)
 pt = "myclassifier.pt"
 torch.save(myclassifier.state_dict(), './saved_model/encoder/'+ pt)
@@ -36,9 +36,9 @@ torch.save(myclassifier.state_dict(), './saved_model/encoder/'+ pt)
 
 #%%
 Encoder = model.encoder(input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(configs.device)
-Encoder.load_state_dict(torch.load('./saved_model/encoder/myencoder.pt'))
+Encoder.load_state_dict(torch.load('./saved_model/encoder/' + encoder_pt_name, map_location=torch.device(configs.device)))
 
 Classifier = model.classifier(configs.encoder_output_dim, len(new_object_list)).to(configs.device)
-Classifier.load_state_dict(torch.load('./saved_model/encoder/myclassifier.pt'))
+Classifier.load_state_dict(torch.load('./saved_model/encoder/' + clf_pt_name, map_location=torch.device(configs.device)))
 
 myclass.eval(Encoder, Classifier, behavior_list, target_tool_list,new_object_list, modality_list, trail_list)
