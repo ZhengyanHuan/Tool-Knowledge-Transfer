@@ -11,9 +11,9 @@ test_category_num = 3
 
 new_object_num = 3
 
-epoch_encoder = 10000
-lr_encoder = 1e-4
-epoch_classifier = 10000
+epoch_encoder = 5000
+lr_encoder = 1e-3
+epoch_classifier = 1000
 lr_classifier = 1e-1
 #################################################
 
