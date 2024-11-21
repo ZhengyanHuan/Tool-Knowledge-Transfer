@@ -83,7 +83,7 @@ class Tool_Knowledge_transfer_class():
         pred_flat = pred.view(-1, len(new_object_list))
         pred_label = torch.argmax(pred_flat, dim=-1)
         # torch.mps.synchronize()
-        print(f"{len(truth_flat)} true labels     : {truth_flat}")
+        print(f"{len(truth_flat)} true labels     : {truth_flat.tolist()}")
         print(f"{len(pred_label)} predicted labels: {pred_label.tolist()}")
         correct_num = torch.sum(pred_label == truth_flat)
         accuracy_test = correct_num / len(truth_flat)
