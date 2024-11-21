@@ -4,10 +4,10 @@ import model
 import configs
 from transfer_class import Tool_Knowledge_transfer_class
 
-behavior_list = ['1-look']
+behavior_list = ['3-stirring-fast']
 source_tool_list = ['plastic-spoon']
 target_tool_list = ['metal-scissor']
-modality_list = ['effort']
+modality_list = ['audio']
 trail_list = [0,1,2,3,4,5,6,7,8,9]
 
 old_object_list = ['chickpea', 'split-green-pea', 'glass-bead', 'chia-seed', 'wheat', 'wooden-button', 'styrofoam-bead', 'metal-nut-bolt', 'salt']
