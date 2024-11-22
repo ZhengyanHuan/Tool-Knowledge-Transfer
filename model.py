@@ -14,7 +14,7 @@ class encoder(nn.Module):
         )
 
     def forward(self, x):
-        return self.network(x)
+        return torch.nn.functional.normalize(self.network(x), p=2, dim=1)  # L2 norm
 
 
 class classifier(nn.Module):
