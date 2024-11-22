@@ -202,8 +202,9 @@ class Tool_Knowledge_transfer_class():
         encoded_target = Encoder(target_data)
         sincere_loss = SINCERELoss(temperature)
         embeds = torch.cat([encoded_source, encoded_target], dim=0)
+        embeds_norm = torch.nn.functional.normalize(embeds, p=2, dim=1)  # L2 norm
         labels = None  # TODO labels for these embeddings, regardless of the context (tool, behavior, etc.)
-        return sincere_loss(embeds, labels)
+        return sincere_loss(embeds_norm, labels)
 
     def TL_loss_fn(self, source_data, target_data, Encoder):
         encoded_source = Encoder(source_data)
