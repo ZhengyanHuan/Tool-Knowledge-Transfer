@@ -57,7 +57,8 @@ class Tool_Knowledge_transfer_class():
         elif type == 'classifier':
             xaxis = np.arange(1, record.shape[1] + 1)
             plt.plot(xaxis[::plot_every], record[0,::plot_every], color_group[0], label = 'tr loss')
-            plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label = 'val loss')
+            if record[1,-1] != 0:
+                plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label = 'val loss')
             plt.xlabel('epochs')
             plt.ylabel('loss')
             plt.grid()
