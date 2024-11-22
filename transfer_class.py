@@ -6,6 +6,7 @@ import torch
 import torch.optim as optim
 import configs
 import model
+from sincere_loss_class import SINCERELoss
 
 #%%
 class Tool_Knowledge_transfer_class():
@@ -134,6 +135,14 @@ class Tool_Knowledge_transfer_class():
                 print(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
 
         return Encoder
+
+    def sincere_ls_fn(self, source_data, target_data, Encoder, temperature=0.07):
+        encoded_source = Encoder(source_data)
+        encoded_target = Encoder(target_data)
+        sincere_loss = SINCERELoss(temperature)
+        embeds = torch.cat([encoded_source, encoded_target], dim=0)
+        labels = None  # TODO labels for these embeddings, regardless of the context (tool, behavior, etc.)
+        return sincere_loss(embeds, labels)
 
     def TL_loss_fn(self, source_data, target_data, Encoder):
         encoded_source = Encoder(source_data)
