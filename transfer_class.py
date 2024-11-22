@@ -1,12 +1,14 @@
 #%%
 import os
 import pickle
+
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.optim as optim
 import configs
 import model
-
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 #%%
 class Tool_Knowledge_transfer_class():
     def __init__(self):
@@ -39,35 +41,91 @@ class Tool_Knowledge_transfer_class():
         self.CEloss = torch.nn.CrossEntropyLoss()
         # self.Classifier = model.classifier(configs.encoder_output_dim, configs.new_object_num)
 
+    def plot_func(self, record, type,save_name = 'test', plot_every = 10): #type-> 'encoder', 'classifier'
+        plt.figure(figsize=(8, 6))
+        plt.rcParams['font.size'] = 24
 
-    def train_classifier(self,behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder):
+        color_group = ['red','blue']
+        if type == 'encoder':
+            xaxis = np.arange(1, len(record) +1)
+            plt.plot(xaxis[::plot_every], record[::plot_every], color_group[0])
+            plt.xlabel('epochs')
+            plt.ylabel('loss')
+            plt.grid()
+            plt.savefig(r'./figs/'+save_name+'.png',  bbox_inches = 'tight')
+            plt.show()
+        elif type == 'classifier':
+            xaxis = np.arange(1, record.shape[1] + 1)
+            plt.plot(xaxis[::plot_every], record[0,::plot_every], color_group[0], label = 'tr loss')
+            plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label = 'val loss')
+            plt.xlabel('epochs')
+            plt.ylabel('loss')
+            plt.grid()
+            plt.legend()
+            plt.savefig(r'./figs/' + save_name + '.png', bbox_inches='tight')
+            plt.show()
+        else:
+            print('invalid type')
+
+    def prepare_data_classifier(self, behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder):
+        train_test_index = int(len(trail_list) * (1 - configs.val_portion))
+
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, new_object_list, trail_list)
         with torch.no_grad():
             encoded_source = Encoder(source_data)
 
+        train_encoded_source = encoded_source[:, :, :, :train_test_index, :]
+        val_encoded_source = encoded_source[:, :, :, train_test_index:, :]
+
+        truth = torch.zeros([len(new_object_list), len(trail_list)], dtype=torch.int64, device=configs.device)
+        for i in range(len(new_object_list)):
+            truth[i, :] = i
+
+        train_truth = truth[:, :train_test_index]
+        val_truth = truth[:, train_test_index:]
+
+        return train_encoded_source, val_encoded_source, train_truth.reshape(-1), val_truth.reshape(-1)
+
+    def train_classifier(self,behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder):
+        loss_record = np.zeros([2, configs.epoch_classifier])
+
+
+        train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self.prepare_data_classifier(behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder)
         Classifier = model.classifier(configs.encoder_output_dim, len(new_object_list)).to(configs.device)
 
-        truth_flat = torch.zeros(len(trail_list)*len(new_object_list), dtype=torch.int64, device=configs.device)
-        for i in range(len(new_object_list)):
-            truth_flat[i*len(trail_list):(i+1)*len(trail_list)] = i
-        # truth_flat = truth.view(-1)
         optimizer = optim.AdamW(Classifier.parameters(), lr=configs.lr_classifier)
 
         for i in range(configs.epoch_classifier):
-            pred = Classifier(encoded_source)
+            pred_tr = Classifier(train_encoded_source)
+            pred_flat_tr = pred_tr.view(-1, len(new_object_list))
+            loss_tr = self.CEloss(pred_flat_tr, train_truth_flat)
+            loss_record[0,i] = loss_tr.detach().cpu().numpy()
 
-            pred_flat = pred.view(-1, len(new_object_list))
-            loss = self.CEloss(pred_flat, truth_flat)
+            if len(val_truth_flat>0):
+                with torch.no_grad():
+                    pred_val = Classifier(val_encoded_source)
+                    pred_flat_val = pred_val.view(-1, len(new_object_list))
+                    loss_val = self.CEloss(pred_flat_val, val_truth_flat)
+                    loss_record[1, i] = loss_val.detach().cpu().numpy()
+
             optimizer.zero_grad()
-            loss.backward()
+            loss_tr.backward()
             optimizer.step()
 
-            # print(loss)
             if (i+1)%1000 == 0:
-                pred_label = torch.argmax(pred_flat, dim = -1)
-                correct_num = torch.sum(pred_label == truth_flat)
-                accuracy_train = correct_num/ len(truth_flat)
-                print(f"epoch {i + 1}/{configs.epoch_classifier}, loss: {loss.item():.4f}, train accuracy: {accuracy_train.item() * 100 :.2f}%")
+                pred_label = torch.argmax(pred_flat_tr, dim=-1)
+                correct_num = torch.sum(pred_label == train_truth_flat)
+                accuracy_train = correct_num / len(train_truth_flat)
+
+                print(f"epoch {i + 1}/{configs.epoch_classifier}, train loss: {loss_tr.item():.4f}, train accuracy: {accuracy_train.item() * 100 :.2f}%")
+                if len(val_truth_flat>0):
+                    pred_label = torch.argmax(pred_flat_val, dim=-1)
+                    correct_num = torch.sum(pred_label == val_truth_flat)
+                    accuracy_val= correct_num / len(val_truth_flat)
+
+                    print(f"epoch {i + 1}/{configs.epoch_classifier}, val loss: {loss_val.item():.4f}, val accuracy: {accuracy_val.item() * 100 :.2f}%")
+
+        self.plot_func(loss_record, 'classifier', 'classifier')
         return Classifier
 
     def eval(self, Encoder, Classifier, behavior_list, target_tool_list,new_object_list, modality_list, trail_list):
@@ -104,7 +162,7 @@ class Tool_Knowledge_transfer_class():
         :param trail_list: the index of training trails, e.g. [0,1,2,3,4,5,6,7]
         :return:
         '''
-
+        loss_record = np.zeros(configs.epoch_encoder)
         new_object_list = []
         for object in self.objects:
             if object not in old_object_list:
@@ -127,12 +185,14 @@ class Tool_Knowledge_transfer_class():
 
         for i in range(configs.epoch_encoder):
             loss = self.TL_loss_fn(source_data, target_data, Encoder)
+            loss_record[i] = loss.detach().cpu().numpy()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             if (i+1)%100 == 0:
                 print(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
 
+        self.plot_func(loss_record, 'encoder', 'encoder')
         return Encoder
 
     def TL_loss_fn(self, source_data, target_data, Encoder):
