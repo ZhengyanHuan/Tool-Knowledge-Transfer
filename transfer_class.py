@@ -12,7 +12,10 @@ from sincere_loss_class import SINCERELoss
 
 #%%
 class Tool_Knowledge_transfer_class():
-    def __init__(self):
+    def __init__(self, encoder_loss_fuc="TL"):
+        """
+        :param encoder_loss_fuc: "TL" for triplet loss or "sincere"
+        """
 
         ####load dataset
         robots_data_filepath = r'data' + os.sep + 'dataset_discretized.bin'
@@ -21,6 +24,7 @@ class Tool_Knowledge_transfer_class():
         bin_file.close()
 
         self.data_dict = robot
+        self.encoder_loss_fuc = encoder_loss_fuc
 
         #### load names
         data_file_path = os.sep.join([r'data', 'dataset_metadata.bin'])
@@ -127,7 +131,7 @@ class Tool_Knowledge_transfer_class():
 
                     print(f"epoch {i + 1}/{configs.epoch_classifier}, val loss: {loss_val.item():.4f}, val accuracy: {accuracy_val.item() * 100 :.2f}%")
 
-        self.plot_func(loss_record, 'classifier', 'classifier')
+        self.plot_func(loss_record, 'classifier', f'classifier_{self.encoder_loss_fuc}')
         return Classifier
 
     def eval(self, Encoder, Classifier, behavior_list, target_tool_list,new_object_list, modality_list, trail_list):
@@ -186,7 +190,12 @@ class Tool_Knowledge_transfer_class():
         optimizer = optim.AdamW(Encoder.parameters(), lr=configs.lr_encoder)
 
         for i in range(configs.epoch_encoder):
-            loss = self.TL_loss_fn(source_data, target_data, Encoder)
+            if self.encoder_loss_fuc == "TL":
+                loss = self.TL_loss_fn(source_data, target_data, Encoder)
+            elif self.encoder_loss_fuc == "sincere":
+                loss = self.sincere_ls_fn(source_data, truth_source, target_data, truth_target, Encoder)
+            else:
+                raise Exception(f"{self.encoder_loss_fuc} not available.")
             loss_record[i] = loss.detach().cpu().numpy()
             optimizer.zero_grad()
             loss.backward()
@@ -194,7 +203,7 @@ class Tool_Knowledge_transfer_class():
             if (i+1)%100 == 0:
                 print(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
 
-        self.plot_func(loss_record, 'encoder', 'encoder')
+        self.plot_func(loss_record, 'encoder', f'encoder_{self.encoder_loss_fuc}')
         return Encoder
 
     def sincere_ls_fn(self, source_data, target_data, Encoder, temperature=0.07):

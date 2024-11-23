@@ -26,14 +26,15 @@ trail_list = [0,1,2,3,4,5,6,7,8,9]
 
 old_object_list = ['chickpea', 'split-green-pea', 'glass-bead', 'chia-seed', 'wheat', 'wooden-button', 'styrofoam-bead', 'metal-nut-bolt', 'salt']
 new_object_list = ['detergent', 'empty', 'plastic-bead']
-myclass = Tool_Knowledge_transfer_class()
+loss_func = "TL"   # "TL" for triplet loss or "sincere"
+myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=loss_func)
 
 input_dim = 0
 for modality in modality_list:
     input_dim+=myclass.data_dict['1-look']['metal-scissor'][modality]['metal-nut-bolt']['X'][0].__len__()
 
-encoder_pt_name = "myencoder.pt"
-clf_pt_name = "myclassifier.pt"
+encoder_pt_name = f"myencoder_{loss_func}.pt"
+clf_pt_name = f"myclassifier_{loss_func}.pt"
 retrain = True
 
 #%%
