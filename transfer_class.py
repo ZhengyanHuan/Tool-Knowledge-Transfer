@@ -83,9 +83,10 @@ class Tool_Knowledge_transfer_class():
         train_encoded_source = encoded_source[:, :, :, :train_test_index, :]
         val_encoded_source = encoded_source[:, :, :, train_test_index:, :]
 
-        truth = torch.zeros([len(new_object_list), len(trail_list)], dtype=torch.int64, device=configs.device)
+        truth = np.zeros([len(new_object_list), len(trail_list)])
         for i in range(len(new_object_list)):
             truth[i, :] = i
+        truth = torch.tensor(truth, dtype=torch.int64, device=configs.device)
 
         train_truth = truth[:, :train_test_index]
         val_truth = truth[:, train_test_index:]
