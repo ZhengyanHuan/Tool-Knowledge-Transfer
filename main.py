@@ -6,6 +6,14 @@ from transfer_class import Tool_Knowledge_transfer_class
 import time
 
 
+# for reproducibility
+seed = 41
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
+
 # start_time = time.time()
 
 behavior_list = ['3-stirring-fast']
