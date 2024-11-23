@@ -56,6 +56,8 @@ class Tool_Knowledge_transfer_class():
             plt.plot(xaxis[::plot_every], record[::plot_every], color_group[0])
             plt.xlabel('epochs')
             plt.ylabel('loss')
+            plt.title(f'Encoder Training Loss Progression \n '
+                      f'Epochs: {configs.epoch_encoder}, lr: {configs.lr_encoder}')
             plt.grid()
             plt.savefig(r'./figs/'+save_name+'.png',  bbox_inches = 'tight')
             plt.show()
@@ -65,6 +67,8 @@ class Tool_Knowledge_transfer_class():
             if record[1,-1] != 0:
                 plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label = 'val loss')
             plt.xlabel('epochs')
+            plt.title(f'Classifier Training Loss Progression \n '
+                      f'Epochs: {configs.epoch_classifier}, lr: {configs.lr_classifier}')
             plt.ylabel('loss')
             plt.grid()
             plt.legend()
