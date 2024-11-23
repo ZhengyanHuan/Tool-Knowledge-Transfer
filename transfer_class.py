@@ -177,6 +177,16 @@ class Tool_Knowledge_transfer_class():
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, old_object_list + new_object_list , trail_list)
         target_data = self.get_data(behavior_list, target_tool_list, modality_list, old_object_list , trail_list)
 
+        total_num_obj = len(old_object_list + new_object_list)
+        truth_target = np.zeros(len(trail_list) * total_num_obj)
+        for i in range(total_num_obj):
+            truth_target[i * len(trail_list):(i + 1) * len(trail_list)] = i
+        truth_target = torch.tensor(truth_target, dtype=torch.int64, device=configs.device)
+
+        truth_source = np.zeros(len(trail_list) * len(old_object_list))
+        for i in range(len(old_object_list)):
+            truth_source[i * len(trail_list):(i + 1) * len(trail_list)] = i
+        truth_source = torch.tensor(truth_source, dtype=torch.int64, device=configs.device)
         '''
         If we have more than one modality, we may need preprocessing and the input dim may not the 
         sum of data dim across all considered modalities. But I just put it here because we have 
@@ -206,14 +216,21 @@ class Tool_Knowledge_transfer_class():
         self.plot_func(loss_record, 'encoder', f'encoder_{self.encoder_loss_fuc}')
         return Encoder
 
-    def sincere_ls_fn(self, source_data, target_data, Encoder, temperature=0.07):
+    def sincere_ls_fn(self, source_data, truth_source, target_data, truth_target, Encoder, temperature=0.07):
         encoded_source = Encoder(source_data)
         encoded_target = Encoder(target_data)
+        tot_object_num = encoded_source.shape[2]
+        old_object_num = encoded_target.shape[2]
+        trail_num_per_object = encoded_source.shape[3]
+        encoded_source = encoded_source.reshape(tot_object_num*trail_num_per_object, -1)
+        encoded_target = encoded_target.reshape(old_object_num * trail_num_per_object, -1)
+
+        all_embeds = torch.cat([encoded_source, encoded_target], dim=0)
+        all_embeds_norm = torch.nn.functional.normalize(all_embeds, p=2, dim=1)  # L2 norm
+        all_labels = torch.cat([truth_source, truth_target], dim=0)
+
         sincere_loss = SINCERELoss(temperature)
-        embeds = torch.cat([encoded_source, encoded_target], dim=0)
-        embeds_norm = torch.nn.functional.normalize(embeds, p=2, dim=1)  # L2 norm
-        labels = None  # TODO labels for these embeddings, regardless of the context (tool, behavior, etc.)
-        return sincere_loss(embeds_norm, labels)
+        return sincere_loss(all_embeds_norm, all_labels)
 
     def TL_loss_fn(self, source_data, target_data, Encoder):
         encoded_source = Encoder(source_data)
