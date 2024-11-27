@@ -21,9 +21,9 @@ TL_margin = 1
 pairs_per_batch_per_object = 10
 
 #############classifier parameters #######
-epoch_classifier = 1000
+epoch_classifier = 2000
 lr_classifier = 1e-1
-val_portion = 0.2
+val_portion = 0
 
 
 #################################################
