@@ -87,9 +87,10 @@ class Tool_Knowledge_transfer_class():
         train_encoded_source = encoded_source[:, :, :, :train_test_index, :]
         val_encoded_source = encoded_source[:, :, :, train_test_index:, :]
 
-        truth = np.zeros([len(new_object_list), len(trail_list)])
+        truth = np.zeros_like(encoded_source[:,:,:,:,-1].cpu())
+        # truth = np.zeros([len(new_object_list), len(trail_list)])
         for i in range(len(new_object_list)):
-            truth[i, :] = i
+            truth[:,:, i, :] = i
         truth = torch.tensor(truth, dtype=torch.int64, device=configs.device)
 
         train_truth = truth[:, :train_test_index]
@@ -97,14 +98,14 @@ class Tool_Knowledge_transfer_class():
 
         return train_encoded_source, val_encoded_source, train_truth.reshape(-1), val_truth.reshape(-1)
 
-    def train_classifier(self,behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder):
+    def train_classifier(self,behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder,lr_clf = configs.lr_classifier):
         loss_record = np.zeros([2, configs.epoch_classifier])
 
 
         train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self.prepare_data_classifier(behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder)
         Classifier = model.classifier(configs.encoder_output_dim, len(new_object_list)).to(configs.device)
 
-        optimizer = optim.AdamW(Classifier.parameters(), lr=configs.lr_classifier)
+        optimizer = optim.AdamW(Classifier.parameters(), lr=lr_clf)
 
         for i in range(configs.epoch_classifier):
             pred_tr = Classifier(train_encoded_source)
@@ -157,12 +158,13 @@ class Tool_Knowledge_transfer_class():
         correct_num = torch.sum(pred_label == truth_flat)
         accuracy_test = correct_num / len(truth_flat)
         print(f"test accuracy: {accuracy_test.item() * 100:.2f}%")
+        return accuracy_test
 
 
 
 
 
-    def train_encoder(self,behavior_list, source_tool_list, target_tool_list,old_object_list, modality_list, trail_list):
+    def train_encoder(self,behavior_list, source_tool_list, target_tool_list,old_object_list, modality_list, trail_list, lr_en = configs.lr_encoder):
         '''
 
         :param behavior_list:
@@ -202,7 +204,7 @@ class Tool_Knowledge_transfer_class():
             self.input_dim+=self.data_dict['1-look']['metal-scissor'][modality]['metal-nut-bolt']['X'][0].__len__()
 
         Encoder = model.encoder(self.input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(configs.device)
-        optimizer = optim.AdamW(Encoder.parameters(), lr=configs.lr_encoder)
+        optimizer = optim.AdamW(Encoder.parameters(), lr=lr_en)
 
         for i in range(configs.epoch_encoder):
             if self.encoder_loss_fuc == "TL":
@@ -215,7 +217,7 @@ class Tool_Knowledge_transfer_class():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if (i+1)%100 == 0:
+            if (i+1)%1000 == 0:
                 print(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
 
         self.plot_func(loss_record, 'encoder', f'encoder_{self.encoder_loss_fuc}')
@@ -237,19 +239,29 @@ class Tool_Knowledge_transfer_class():
         sincere_loss = SINCERELoss(temperature)
         return sincere_loss(all_embeds_norm, all_labels)
 
-    def TL_loss_fn(self, source_data, target_data, Encoder):
+    def  get_same_object_list(self, encoded_source, encoded_target):
+        same_object_list = []
+        tot_len = encoded_source.shape[2]
+        target_len = encoded_target.shape[2]
+        for i in range(tot_len):
+            if i < target_len:
+                object_list1 = encoded_source[:,:,i,:,:].reshape([-1,configs.encoder_output_dim])
+                object_list2 = encoded_target[:,:,i,:,:].reshape([-1,configs.encoder_output_dim])
+                object_list = torch.concat([object_list1, object_list2], dim=0)
+            else:
+                object_list = encoded_source[:,:,i,:,:].reshape([-1,configs.encoder_output_dim])
+            same_object_list.append(object_list)
+
+
+        return same_object_list
+
+    def TL_loss_fn(self, source_data, target_data, Encoder, alpha = configs.TL_margin):
         encoded_source = Encoder(source_data)
         encoded_target = Encoder(target_data)
+        same_object_list = self.get_same_object_list(encoded_source, encoded_target)
 
+        trail_tot_num_list = np.array([same_object_list[i].shape[0] for i in range(same_object_list.__len__())])
         tot_object_num = encoded_source.shape[2]
-        old_object_num = encoded_target.shape[2]
-        trail_num_per_object = encoded_source.shape[3]
-        encoded_tot = torch.concat([encoded_source, encoded_target], dim = 2)
-        '''
-        concat at the dim of object, e.g. there is 9 old objs
-        0-14 denote the 15 objects of the source, 15-23 denote the 9 objs from the target 
-        Let n denote the obj index in encoded_tot, if n%15 is the same, the corresponded objs are the same
-        '''
 
         A_mat = torch.zeros(configs.pairs_per_batch_per_object * tot_object_num, configs.encoder_output_dim,
                             device=configs.device)
@@ -259,34 +271,27 @@ class Tool_Knowledge_transfer_class():
                             device=configs.device)
 
         for object_index in range(tot_object_num):
+            object_list = same_object_list[object_index]
 
+            # Sample anchor and positive
+            A_index = np.random.choice(trail_tot_num_list[object_index], size=configs.pairs_per_batch_per_object)
+            P_index = np.random.choice(trail_tot_num_list[object_index], size=configs.pairs_per_batch_per_object)
+            A_mat[object_index * configs.pairs_per_batch_per_object: (object_index + 1) * configs.pairs_per_batch_per_object] = object_list[A_index,:]
+            P_mat[object_index * configs.pairs_per_batch_per_object: (object_index + 1) * configs.pairs_per_batch_per_object] = object_list[P_index,:]
 
-            if object_index<old_object_num:
-                PA_valid_index = np.array([object_index, object_index + tot_object_num])
-            else:
-                PA_valid_index = np.array([object_index])
-
-            st_index = np.random.choice(PA_valid_index, size = configs.pairs_per_batch_per_object * 2)
-            trial_index = np.random.randint(0, trail_num_per_object, size=configs.pairs_per_batch_per_object * 2)
-
-            '''
-            behavior index and tool index are set to default 0 for now
-            I understand it is possible to have duplicated A and P, but with a not big probability. 
-            '''
-            A_mat[object_index * configs.pairs_per_batch_per_object: (object_index+1) * configs.pairs_per_batch_per_object] = encoded_tot[0,0,st_index[:configs.pairs_per_batch_per_object], trial_index[:configs.pairs_per_batch_per_object],:]
-            P_mat[object_index * configs.pairs_per_batch_per_object: (object_index+1) * configs.pairs_per_batch_per_object] = encoded_tot[0,0,st_index[configs.pairs_per_batch_per_object:], trial_index[configs.pairs_per_batch_per_object:],:]
-
-            all_index = np.arange(0, tot_object_num + old_object_num)
-            N_valid_index = np.setdiff1d(all_index, PA_valid_index)
-
-            st_index_N = np.random.choice(N_valid_index, size = configs.pairs_per_batch_per_object)
-            trial_index_N = np.random.randint(0, trail_num_per_object, size=configs.pairs_per_batch_per_object)
-            N_mat[object_index * configs.pairs_per_batch_per_object: (object_index + 1) * configs.pairs_per_batch_per_object] = encoded_tot[0,0,st_index_N,trial_index_N,:]
+            # Sample negative
+            N_object_list = np.random.choice(trail_tot_num_list.__len__(), size=configs.pairs_per_batch_per_object)
+            N_list = torch.zeros(configs.pairs_per_batch_per_object, configs.encoder_output_dim, dtype=torch.float32).to(configs.device)
+            for i in range(len(N_object_list)):
+                N_object_index = N_object_list[i]
+                N_trail_index = np.random.choice(trail_tot_num_list[N_object_index])
+                N_list[i] = same_object_list[N_object_index][N_trail_index]
+                N_mat[object_index * configs.pairs_per_batch_per_object: (object_index + 1) * configs.pairs_per_batch_per_object] = N_list
 
         dPA = torch.norm(A_mat- P_mat, dim=1)
         dNA = torch.norm(A_mat- N_mat, dim=1)
 
-        d = dPA - dNA + configs.TL_margin
+        d = dPA - dNA + alpha
         d[d<0] = 0
 
         loss = torch.mean(d)
