@@ -1,3 +1,9 @@
 .idea/vcs.xml
 .idea/misc.xml
 .idea/Tool-Knowledge-Transfer-proj.iml
+
+# Ignore all __pycache__ directories
+__pycache__/
+
+# Optionally ignore .pyc files outside __pycache__ directories
+*.pyc
