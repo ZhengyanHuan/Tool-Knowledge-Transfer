@@ -20,6 +20,9 @@ lr_encoder = 1e-3
 TL_margin = 1
 pairs_per_batch_per_object = 10
 
+############## SINCERE loss parameters ##########
+sincere_temp = 0.1
+
 #############classifier parameters #######
 epoch_classifier = 2000
 lr_classifier = 1e-1
