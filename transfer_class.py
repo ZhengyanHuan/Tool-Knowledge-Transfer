@@ -305,7 +305,7 @@ class Tool_Knowledge_transfer_class():
 
         if len(modality_list) == 1:
             data_dim = self.data_dict[behavior_list[0]][tool_list[0]][modality_list[0]][object_list[0]]['X'][0].__len__()
-            data = torch.zeros(len(behavior_list), len(tool_list), len(object_list), len(trail_list), data_dim, device=configs.device)
+            data = np.zeros((len(behavior_list), len(tool_list), len(object_list), len(trail_list), data_dim))
             '''
             Now we have 1 behavior, 1 tool. The data dim is 1x1xtrail_num x data_dim
             But this can work for multiple behaviors, tools
@@ -318,8 +318,9 @@ class Tool_Knowledge_transfer_class():
                         object = object_list[object_index]
                         for trail_index in range(len(trail_list)):
                             trail = trail_list[trail_index]
-                            data[behavior_index][tool_index][object_index][trail_index] = torch.tensor(self.data_dict[behavior][tool][modality_list[0]][object]['X'][trail], dtype=torch.float32, device=configs.device)
+                            data[behavior_index][tool_index][object_index][trail_index] = self.data_dict[behavior][tool][modality_list[0]][object]['X'][trail]
 
+            data = torch.tensor(data, dtype=torch.float32, device=configs.device)
 
         else:
             data = None
