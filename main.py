@@ -28,7 +28,8 @@ trail_list = [0,1,2,3,4,5,6,7,8,9]
 old_object_list = ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'kidney-bean', 'salt', 'split-green-pea', 'styrofoam-bead', 'water', 'wooden-button']
 new_object_list = ['chickpea', 'detergent', 'metal-nut-bolt', 'plastic-bead', 'wheat']
 loss_func = "TL"   # "TL" for triplet loss or "sincere"
-myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=loss_func)
+data_name = 'audio_16kHz_token_down16_beh3.bin'
+myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=loss_func, data_name=data_name)
 
 input_dim = 0
 for modality in modality_list:

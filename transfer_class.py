@@ -12,13 +12,16 @@ from sincere_loss_class import SINCERELoss
 
 #%%
 class Tool_Knowledge_transfer_class():
-    def __init__(self, encoder_loss_fuc="TL"):
+    def __init__(self, encoder_loss_fuc="TL", data_name="dataset_discretized.bin"):
         """
         :param encoder_loss_fuc: "TL" for triplet loss or "sincere"
+        :param: data_name: "audio_16kHz_token_down16_beh3.bin" for behavior3 only, tokenized audio by BEATS model,
+                            downsized by 16 and flattened to 1D.
+                           "dataset_discretized.bin" for discretized data, flattened to 1D
         """
 
         ####load dataset
-        robots_data_filepath = r'data' + os.sep + 'dataset_discretized.bin'
+        robots_data_filepath = r'data' + os.sep + data_name
         bin_file = open(robots_data_filepath, 'rb')
         robot = pickle.load(bin_file)
         bin_file.close()
