@@ -11,10 +11,10 @@ else:
 #########################encoder parameters
 
 
-encoder_hidden_dim = 16
-encoder_output_dim = 4
+encoder_hidden_dim = 1024
+encoder_output_dim = 256
 
-epoch_encoder = 3000
+epoch_encoder = 1000
 lr_encoder = 1e-3
 ############## TL loss parameters ##########
 TL_margin = 1
@@ -24,7 +24,7 @@ pairs_per_batch_per_object = 10
 sincere_temp = 0.1
 
 #############classifier parameters #######
-epoch_classifier = 2000
+epoch_classifier = 1000
 lr_classifier = 1e-1
 val_portion = 0
 
