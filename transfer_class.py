@@ -204,7 +204,7 @@ class Tool_Knowledge_transfer_class():
         '''
         self.input_dim = 0
         for modality in modality_list:
-            self.input_dim+=self.data_dict['1-look']['metal-scissor'][modality]['metal-nut-bolt']['X'][0].__len__()
+            self.input_dim+=self.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0].__len__()
 
         Encoder = model.encoder(self.input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(configs.device)
         optimizer = optim.AdamW(Encoder.parameters(), lr=lr_en)
@@ -304,7 +304,7 @@ class Tool_Knowledge_transfer_class():
 
 
         if len(modality_list) == 1:
-            data_dim = self.data_dict['1-look']['metal-scissor'][modality_list[0]]['metal-nut-bolt']['X'][0].__len__()
+            data_dim = self.data_dict[behavior_list[0]][tool_list[0]][modality_list[0]][object_list[0]]['X'][0].__len__()
             data = torch.zeros(len(behavior_list), len(tool_list), len(object_list), len(trail_list), data_dim, device=configs.device)
             '''
             Now we have 1 behavior, 1 tool. The data dim is 1x1xtrail_num x data_dim
