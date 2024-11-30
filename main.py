@@ -9,7 +9,7 @@ import torch
 
 import configs
 import model
-from data.helpers import viz_input_data, viz_embeddings
+from data.helpers import viz_input_data, viz_embeddings, viz_classifier_learned_boundary, viz_shared_latent_space
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %%  0. setup
@@ -25,7 +25,7 @@ main_logger.addHandler(console_handler)  # main_logger's message will be printed
 log_file_path = './logs'
 if not os.path.exists(log_file_path):
     os.makedirs(log_file_path)
-logging.basicConfig(level=logging.DEBUG, filename=log_file_path+"/log_file_main.log",
+logging.basicConfig(level=logging.DEBUG, filename=log_file_path + "/log_file_main.log",
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 main_logger.debug(f"========================= New Run =========================")  # new log starts here
@@ -66,6 +66,7 @@ encoder_pt_name = f"myencoder_{loss_func}.pt"
 clf_pt_name = f"myclassifier_{loss_func}.pt"
 retrain_encoder = False
 retrain_clr = True
+viz_process = False
 
 main_logger.info(f"input data name: {data_name}")
 main_logger.info(f"behavior_list: {behavior_list}, modality_list: {target_tool_list}, trail_list: {trail_list}")
@@ -75,12 +76,13 @@ main_logger.info(f"old_object_list: {old_object_list}")
 main_logger.info(f"new_object_list: {new_object_list}")
 main_logger.info(f"loss_func: {loss_func}")
 
-main_logger.info("👀visualize initial data ...")
-for options in [[False, False], [True, False], [False, True]]:
-    shared_only, test_only = options
-    viz_input_data(shared_only=shared_only, test_only=test_only, data=myclass.data_dict, loss_func_name=loss_func,
-                   behavior_list=behavior_list, source_tool_list=source_tool_list, target_tool_list=target_tool_list,
-                   old_object_list=old_object_list, new_object_list=new_object_list)
+if viz_process:
+    main_logger.info("👀visualize initial data ...")
+    for options in [[False, False], [True, False], [False, True]]:
+        shared_only, test_only = options
+        viz_input_data(shared_only=shared_only, test_only=test_only, data=myclass.data_dict, loss_func_name=loss_func,
+                       behavior_list=behavior_list, source_tool_list=source_tool_list, target_tool_list=target_tool_list,
+                       old_object_list=old_object_list, new_object_list=new_object_list)
 
 start_time = time.time()
 # %% 2. encoder
@@ -95,11 +97,12 @@ if retrain_encoder:
     main_logger.info(f"⏱️Time used for encoder training: {round((time.time() - encoder_time) // 60)} "
                  f"min {(time.time() - encoder_time) % 60:.1f} sec.")
 
-main_logger.info("👀visualize embeddings in shared latent space...")
-viz_embeddings(viz_objects=["all", "shared", "test"], loss_func=loss_func, input_dim=input_dim,
-               source_tool_list=source_tool_list, target_tool_list=target_tool_list,
-               modality_list=modality_list, trail_list=trail_list, behavior_list=behavior_list,
-               old_object_list=old_object_list, new_object_list=new_object_list, transfer_class=myclass)
+if viz_process:
+    main_logger.info("👀visualize embeddings in shared latent space...")
+    viz_embeddings(viz_objects=["all", "shared", "test"], loss_func=loss_func, input_dim=input_dim,
+                   source_tool_list=source_tool_list, target_tool_list=target_tool_list,
+                   modality_list=modality_list, trail_list=trail_list, behavior_list=behavior_list,
+                   old_object_list=old_object_list, new_object_list=new_object_list, transfer_class=myclass)
 
 # %% 3. classifier
 if retrain_clr:
@@ -130,9 +133,23 @@ Classifier.load_state_dict(
     torch.load('./saved_model/classifier/' + clf_pt_name, map_location=torch.device(configs.device)))
 
 accuracy = myclass.eval(Encoder, Classifier, behavior_list, target_tool_list, new_object_list, modality_list, trail_list)
-main_logger.info(f"test accuracy: {accuracy*100:.2f}%")
+main_logger.info(f"test accuracy: {accuracy * 100:.2f}%")
 main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 60)} "
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
+
+*_, pred_label_source = myclass.eval(
+    Encoder, Classifier, behavior_list, source_tool_list, new_object_list, modality_list, trail_list, return_pred=True)
+*_, pred_label_target = myclass.eval(
+    Encoder, Classifier, behavior_list, target_tool_list, new_object_list, modality_list, trail_list, return_pred=True)
+all_embeds, all_labels, source_len, target_len, target_test_len = myclass.encode_all_data(
+            Encoder, new_obj_only=True, train_obj_only=False, behavior_list=behavior_list,
+            source_tool_list=source_tool_list, target_tool_list=target_tool_list,
+            modality_list=modality_list, old_object_list=[], new_object_list=new_object_list,
+            trail_list=trail_list)
+labels = np.concatenate([pred_label_source.cpu().detach().numpy(), pred_label_target.cpu().detach().numpy()], axis=0)
+viz_shared_latent_space(loss_func=loss_func, obj_list=new_object_list, embeds=all_embeds,
+                        labels=labels, len_list=[source_len, target_len, target_test_len],
+                        subtitle=f"Test Predictions. Target tool{target_tool_list} \n Source tool(s): {source_tool_list}", show_orig_label=True)
 
 #%% Parameters tuning
 # import random
