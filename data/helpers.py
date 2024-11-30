@@ -140,7 +140,8 @@ def viz_embeddings(transfer_class, loss_func, viz_objects: list, input_dim,
 
 
 def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
-                            labels: np.ndarray, len_list: list, save_fig: bool = True, title='', subtitle='') -> None:
+                            labels: np.ndarray, len_list: list,
+                            save_fig: bool = True, title='', subtitle='', show_orig_label=False) -> None:
     """
     !!!make sure that labels were created following the index of obj_list!!!
 
@@ -185,8 +186,6 @@ def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
     norm = BoundaryNorm(bounds, len(obj_list))  # Normalize to discrete boundaries
 
     # map current label (ordered by obj_list) to align with color (ordered by SIM_OBJECTS_LIST)
-    sorted_indices = sorted(enumerate(subset_obj_idx), key=lambda x: x[1])
-    sorted_unique_orig_labels = sorted(np.unique(labels))
     # Step 1: Remove duplicates from subset_obj_idx while preserving the order
     unique_subset_idx = list(dict.fromkeys(subset_obj_idx))  # [9, 2, 14, 13, 8]
 
@@ -199,14 +198,13 @@ def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
     # Step 3: Map original labels to new positions
     mapped_labels = np.array([index_mapping[label_to_subset_idx[label]] for label in labels])
 
-    # here, for the color bar object reference only,
-    # in case the last batch of objects for plt are a subset of obj_list
+    # for the color bar reference only, in case the last batch of objects for plt are a subset of obj_list
     scatter = plt.scatter(
         embeds_2d[:, 0], embeds_2d[:, 1],
         c=mapped_labels,
         cmap=cmap,
         norm=norm,
-        s=0 # Use invisible points
+        s=0  # Use invisible points
     )
 
     for tool_label, marker in enumerate(markers):
@@ -223,12 +221,19 @@ def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
             marker=marker,
             edgecolor=edge_color,
             s=80,
-            alpha=0.7,
+            alpha=0.9,
             label=f"{['Source Tool(All)', 'Target Tool(Train)', 'Target Tool(Test)'][tool_label]}"
         )
 
     cbar = plt.colorbar(scatter, ticks=np.arange(len(obj_list)))
-    cbar.ax.set_yticklabels(np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)])  # colors are sorted by sim object, so should the object names
+    if show_orig_label:
+        cbar_labels = np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)]
+        reversed_mp = {sim_idx: label for label, sim_idx in label_to_subset_idx.items()}
+        original_labels = [reversed_mp[sim_idx] for sim_idx in sorted(subset_obj_idx)]
+        tick_labels = [f"{cbar_label}\n(orig {orig_label})" for cbar_label, orig_label in zip(cbar_labels, original_labels) ]
+        cbar.ax.set_yticklabels(tick_labels)
+    else:
+        cbar.ax.set_yticklabels(np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)])  # colors are sorted by sim object, so should the object names
     cbar.set_label("Objects", rotation=270, labelpad=20)
 
     plt.legend(title="Tool Type")
