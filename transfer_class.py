@@ -154,27 +154,34 @@ class Tool_Knowledge_transfer_class:
         self.plot_func(loss_record, 'classifier', f'classifier_{self.encoder_loss_fuc}')
         return Classifier
 
-    def eval(self, Encoder, Classifier, behavior_list, target_tool_list,new_object_list, modality_list, trail_list):
+    def eval(self, Encoder, Classifier, behavior_list, tool_list,new_object_list, modality_list, trail_list,
+             return_pred=False):
         logging.debug(f"➡️ eval..")
-        logging.debug(f"{target_tool_list}: {new_object_list}")
-        source_data = self.get_data(behavior_list, target_tool_list, modality_list, new_object_list, trail_list)
-        truth_flat = np.zeros(len(trail_list)*len(new_object_list))
-        for i in range(len(new_object_list)):
-            truth_flat[i*len(trail_list):(i+1)*len(trail_list)] = i
+        logging.debug(f"{tool_list}: {new_object_list}")
+        source_data = self.get_data(behavior_list, tool_list, modality_list, new_object_list, trail_list)
+        truth_flat = np.zeros(len(tool_list)*len(trail_list)*len(new_object_list))
+        for t in range(len(tool_list)):
+            for o in range(len(new_object_list)):
+                start = t * (len(new_object_list) * len(trail_list)) + o * len(trail_list)
+                truth_flat[start: start + len(trail_list)] = o
         truth_flat = torch.tensor(truth_flat, dtype=torch.int64, device=configs.device)
 
         with torch.no_grad():
             encoded_source = Encoder(source_data)
             pred = Classifier(encoded_source)
+            logging.debug(f"source_data: {source_data.shape}, encoded_source: {encoded_source.shape}, pred: {pred.shape}")
         pred_flat = pred.view(-1, len(new_object_list))
         pred_label = torch.argmax(pred_flat, dim=-1)
-        # torch.mps.synchronize()
+
         logging.info(f"{len(truth_flat)} true labels: {truth_flat.tolist()}")
         logging.info(f"{len(pred_label)} pred labels: {pred_label.tolist()}")
         correct_num = torch.sum(pred_label == truth_flat)
         accuracy_test = correct_num / len(truth_flat)
         logging.info(f"test accuracy: {accuracy_test.item() * 100:.2f}%")
-        return accuracy_test
+        if return_pred:
+            return accuracy_test, pred_flat, pred_label
+        else:
+            return accuracy_test
 
     def train_encoder(self, behavior_list, source_tool_list, target_tool_list, old_object_list, new_object_list,
                       modality_list, trail_list, lr_en=configs.lr_encoder):

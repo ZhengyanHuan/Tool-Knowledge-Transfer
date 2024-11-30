@@ -65,7 +65,7 @@ for modality in modality_list:
 encoder_pt_name = f"myencoder_{loss_func}.pt"
 clf_pt_name = f"myclassifier_{loss_func}.pt"
 retrain_encoder = False
-retrain_clr = True
+retrain_clr = False
 viz_process = False
 
 main_logger.info(f"input data name: {data_name}")
@@ -150,6 +150,9 @@ labels = np.concatenate([pred_label_source.cpu().detach().numpy(), pred_label_ta
 viz_shared_latent_space(loss_func=loss_func, obj_list=new_object_list, embeds=all_embeds,
                         labels=labels, len_list=[source_len, target_len, target_test_len],
                         subtitle=f"Test Predictions. Target tool{target_tool_list} \n Source tool(s): {source_tool_list}", show_orig_label=True)
+
+viz_classifier_learned_boundary(myclass, Encoder, Classifier, source_tool_list, target_tool_list, old_object_list,
+                                new_object_list, behavior_list, modality_list, trail_list)
 
 #%% Parameters tuning
 # import random
