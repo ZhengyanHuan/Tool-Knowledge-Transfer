@@ -1,6 +1,8 @@
 # %%
 import os
 import pickle
+import logging
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +10,7 @@ import torch
 import torch.optim as optim
 import configs
 import model
+from data.helpers import sanity_check_data_labels
 from sincere_loss_class import SINCERELoss
 
 #%%
@@ -27,6 +30,7 @@ class Tool_Knowledge_transfer_class:
         bin_file.close()
 
         self.data_dict = robot
+        sanity_check_data_labels(self.data_dict)
         self.encoder_loss_fuc = encoder_loss_fuc
 
         #### load names
@@ -39,18 +43,17 @@ class Tool_Knowledge_transfer_class:
         self.objects = metadata[self.behaviors[0]]['objects']
         self.tools = metadata[self.behaviors[0]]['tools']
         self.trials = metadata[self.behaviors[0]]['trials']
-
-        print('behaviors: ', len(self.behaviors), self.behaviors)
-        print('objects: ', len(self.objects), self.objects)
-        print('tools: ', len(self.tools), self.tools)
-        print('trials: ', len(self.trials), self.trials)
+        logging.debug(f"behaviors:, {len(self.behaviors)}, {self.behaviors}")
+        logging.debug(f"objects: , {len(self.objects)}, {self.objects}")
+        logging.debug(f"tools: , {len(self.tools)}, {self.tools}")
+        logging.debug(f'trials: , {len(self.trials)}, {self.trials}')
 
         ####
         self.CEloss = torch.nn.CrossEntropyLoss()
         # self.Classifier = model.classifier(configs.encoder_output_dim, configs.new_object_num)
 
     def plot_func(self, record, type, save_name='test', plot_every=10):  # type-> 'encoder', 'classifier'
-        print(f"➡️ plot_func for {type}: {save_name}...")
+        logging.debug(f"➡️ plot_func for {type}: {save_name}...")
         plt.figure(figsize=(8, 6))
         plt.rcParams['font.size'] = 24
 
@@ -81,14 +84,14 @@ class Tool_Knowledge_transfer_class:
             plt.show()
             plt.close()
         else:
-            print('invalid type')
+            logging.warning(f'invalid model type: {type}, plot not available.')
 
 
     def prepare_data_classifier(self, behavior_list, source_tool_list, new_object_list, modality_list, trail_list,
                                 Encoder):
-        print(f"➡️ prepare_data_classifier..")
+        logging.debug(f"➡️ prepare_data_classifier..")
         train_test_index = int(len(trail_list) * (1 - configs.val_portion))
-        print(f"get source data for classifier... {new_object_list}")
+        logging.debug(f"get source data for classifier... {new_object_list}")
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, new_object_list, trail_list)
         with torch.no_grad():
             encoded_source = Encoder(source_data)
@@ -104,14 +107,14 @@ class Tool_Knowledge_transfer_class:
 
         train_truth = truth[:, :train_test_index]
         val_truth = truth[:, train_test_index:]
-        print(f"train_truth: {train_truth}")
-        print(f"val_truth: {val_truth}")
+        logging.debug(f"train_truth: \n      {train_truth}")
+        logging.debug(f"val_truth: \n      {val_truth}")
 
         return train_encoded_source, val_encoded_source, train_truth.reshape(-1), val_truth.reshape(-1)
 
     def train_classifier(self,behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder,lr_clf = configs.lr_classifier):
         loss_record = np.zeros([2, configs.epoch_classifier])
-        print(f"➡️ train_classifier..")
+        logging.debug(f"➡️ train_classifier..")
 
         train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self.prepare_data_classifier(behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder)
         Classifier = model.classifier(configs.encoder_output_dim, len(new_object_list)).to(configs.device)
@@ -135,25 +138,25 @@ class Tool_Knowledge_transfer_class:
             loss_tr.backward()
             optimizer.step()
 
-            if (i+1)%1000 == 0:
+            if (i+1)%500 == 0:
                 pred_label = torch.argmax(pred_flat_tr, dim=-1)
                 correct_num = torch.sum(pred_label == train_truth_flat)
                 accuracy_train = correct_num / len(train_truth_flat)
 
-                print(f"epoch {i + 1}/{configs.epoch_classifier}, train loss: {loss_tr.item():.4f}, train accuracy: {accuracy_train.item() * 100 :.2f}%")
+                logging.info(f"epoch {i + 1}/{configs.epoch_classifier}, train loss: {loss_tr.item():.4f}, train accuracy: {accuracy_train.item() * 100 :.2f}%")
                 if len(val_truth_flat>0):
                     pred_label = torch.argmax(pred_flat_val, dim=-1)
                     correct_num = torch.sum(pred_label == val_truth_flat)
                     accuracy_val= correct_num / len(val_truth_flat)
 
-                    print(f"epoch {i + 1}/{configs.epoch_classifier}, val loss: {loss_val.item():.4f}, val accuracy: {accuracy_val.item() * 100 :.2f}%")
+                    logging.info(f"epoch {i + 1}/{configs.epoch_classifier}, val loss: {loss_val.item():.4f}, val accuracy: {accuracy_val.item() * 100 :.2f}%")
 
         self.plot_func(loss_record, 'classifier', f'classifier_{self.encoder_loss_fuc}')
         return Classifier
 
     def eval(self, Encoder, Classifier, behavior_list, target_tool_list,new_object_list, modality_list, trail_list):
-        print(f"➡️ eval..")
-        print(f"{target_tool_list}: {new_object_list}")
+        logging.debug(f"➡️ eval..")
+        logging.debug(f"{target_tool_list}: {new_object_list}")
         source_data = self.get_data(behavior_list, target_tool_list, modality_list, new_object_list, trail_list)
         truth_flat = np.zeros(len(trail_list)*len(new_object_list))
         for i in range(len(new_object_list)):
@@ -166,11 +169,11 @@ class Tool_Knowledge_transfer_class:
         pred_flat = pred.view(-1, len(new_object_list))
         pred_label = torch.argmax(pred_flat, dim=-1)
         # torch.mps.synchronize()
-        print(f"{len(truth_flat)} true labels     : {truth_flat.tolist()}")
-        print(f"{len(pred_label)} predicted labels: {pred_label.tolist()}")
+        logging.info(f"{len(truth_flat)} true labels: {truth_flat.tolist()}")
+        logging.info(f"{len(pred_label)} pred labels: {pred_label.tolist()}")
         correct_num = torch.sum(pred_label == truth_flat)
         accuracy_test = correct_num / len(truth_flat)
-        print(f"test accuracy: {accuracy_test.item() * 100:.2f}%")
+        logging.info(f"test accuracy: {accuracy_test.item() * 100:.2f}%")
         return accuracy_test
 
     def train_encoder(self, behavior_list, source_tool_list, target_tool_list, old_object_list, new_object_list,
@@ -185,7 +188,7 @@ class Tool_Knowledge_transfer_class:
         :param trail_list: the index of training trails, e.g. [0,1,2,3,4,5,6,7]
         :return:
         '''
-        print(f"➡️ train_encoder..")
+        logging.debug(f"➡️ train_encoder..")
         loss_record = np.zeros(configs.epoch_encoder)
 
         source_data, target_data, truth_source, truth_target = self.get_data_and_labels(
@@ -201,10 +204,9 @@ class Tool_Knowledge_transfer_class:
         sum of data dim across all considered modalities. But I just put it here because we have 
         not figured out what to do.
         '''
-        print(f"➡️ train_encoder..")
         self.input_dim = 0
         for modality in modality_list:
-            self.input_dim+=self.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0].__len__()
+            self.input_dim+=len(self.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0])
 
         Encoder = model.encoder(self.input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(configs.device)
         optimizer = optim.AdamW(Encoder.parameters(), lr=lr_en)
@@ -220,8 +222,8 @@ class Tool_Knowledge_transfer_class:
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if (i+1)%1000 == 0:
-                print(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
+            if (i+1)%500 == 0:
+                logging.info(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
 
         self.plot_func(loss_record, 'encoder', f'encoder_{self.encoder_loss_fuc}')
         return Encoder
@@ -230,10 +232,12 @@ class Tool_Knowledge_transfer_class:
         all_embeds_norm, all_labels = self.get_embeddings_and_labels(
             Encoder, source_data, target_data, truth_source, truth_target, l2_norm=True)
         sincere_loss = SINCERELoss(temperature)
+        if len(all_labels.shape) > 1:
+            all_labels = torch.squeeze(all_labels)  # labels (torch.tensor): (B,)
         return sincere_loss(all_embeds_norm, all_labels)
 
     def  get_same_object_list(self, encoded_source, encoded_target):
-        print(f"➡️get_same_object_list...")
+        logging.debug(f"➡️get_same_object_list...")
         same_object_list = []
         tot_len = encoded_source.shape[2]
         target_len = encoded_target.shape[2]
@@ -254,7 +258,7 @@ class Tool_Knowledge_transfer_class:
         encoded_target = Encoder(target_data)
         same_object_list = self.get_same_object_list(encoded_source, encoded_target)
 
-        trail_tot_num_list = np.array([same_object_list[i].shape[0] for i in range(same_object_list.__len__())])
+        trail_tot_num_list = np.array([same_object_list[i].shape[0] for i in range(len(same_object_list))])
         tot_object_num = encoded_source.shape[2]
 
         A_mat = torch.zeros(configs.pairs_per_batch_per_object * tot_object_num, configs.encoder_output_dim,
@@ -274,7 +278,7 @@ class Tool_Knowledge_transfer_class:
             P_mat[object_index * configs.pairs_per_batch_per_object: (object_index + 1) * configs.pairs_per_batch_per_object] = object_list[P_index,:]
 
             # Sample negative
-            N_object_list = np.random.choice(trail_tot_num_list.__len__(), size=configs.pairs_per_batch_per_object)
+            N_object_list = np.random.choice(len(trail_tot_num_list), size=configs.pairs_per_batch_per_object)
             N_list = torch.zeros(configs.pairs_per_batch_per_object, configs.encoder_output_dim, dtype=torch.float32).to(configs.device)
             for i in range(len(N_object_list)):
                 N_object_index = N_object_list[i]
@@ -291,19 +295,20 @@ class Tool_Knowledge_transfer_class:
         loss = torch.mean(d)
         return loss
 
-    def get_data(self, behavior_list, tool_list, modality_list, object_list, trail_list):
+    def get_data(self, behavior_list, tool_list, modality_list, object_list, trail_list, get_labels=False):
         """
-        :return: data shape: [n_behaviors, n_tools, n_objects, n_trials, data_dim];
+        :return: torch tensor(s). data shape: [n_behaviors, n_tools, n_objects, n_trials, data_dim];
                 there's no integer label information, but for each modality, data is ordered by object_list.
                 Note that the label index does NOT necessarily start from 0
                     e.g., object_list does NOT start from the old(shared) object_list
         """
-        print(f"➡️get_data...")
+        logging.debug(f"➡️get_data...")
 
         meta_data = {b: {t: {} for t in tool_list} for b in behavior_list}
         if len(modality_list) == 1 and behavior_list and tool_list and object_list and trail_list:
-            data_dim = self.data_dict[behavior_list[0]][tool_list[0]][modality_list[0]][object_list[0]]['X'][0].__len__()
+            data_dim = len(self.data_dict[behavior_list[0]][tool_list[0]][modality_list[0]][object_list[0]]['X'][0])
             data = np.zeros((len(behavior_list), len(tool_list), len(object_list), len(trail_list), data_dim))
+            label = np.zeros((len(behavior_list), len(tool_list), len(object_list), len(trail_list), 1))
             '''
             Now we have 1 behavior, 1 tool. The data dim is 1x1xtrail_num x data_dim
             But this can work for multiple behaviors, tools
@@ -315,105 +320,90 @@ class Tool_Knowledge_transfer_class:
                         for trail_index in range(len(trail_list)):
                             trail = trail_list[trail_index]
                             data[behavior_index][tool_index][object_index][trail_index] = self.data_dict[behavior][tool][modality_list[0]][object]['X'][trail]
+                            label[behavior_index][tool_index][object_index][trail_index] = self.data_dict[behavior][tool][modality_list[0]][object]['Y'][trail]
 
             data = torch.tensor(data, dtype=torch.float32, device=configs.device)
-
+            label = torch.tensor(label, dtype=torch.int64, device=configs.device)
 
         else:
             data = None
+            label = None
             '''
             if we have more than one modality, the data dim are different and a tensor cannot hold this.
             So I leave this for future extension.
             '''
-        print(f"get data mata: {meta_data}")
-        return data
+        logging.debug(f"get data mata: {meta_data}")
+        if get_labels:
+            return data, label
+        else:
+            return data
 
     def get_data_and_labels(self, behavior_list, source_tool_list, target_tool_list, modality_list,
                             old_object_list, new_object_list, trail_list, test_target=False):
         """
-        :return: source_data: data from old_object_list + new_object_list
-                 truth_source: labels for old_object_list + new_object_list,
-                                index starts from 0 to len(old_object_list + new_object_list) - 1
-                 target_data: if test_target==True, data from new_object_list, else from old_object_list
-                 truth_target: if test_target==True, labels for new_object_list,
-                                index starts from len(old_object_list) to len(old_object_list + new_object_list)-1;
-                               else for old_object_list, index starts from 0 to len(old_object_list) - 1
+        :return: data[behavior_index][tool_index][object_index][trail_index]
+         source_data: data from old_object_list + new_object_list
+         truth_source: labels for old_object_list + new_object_list,
+                        index starts from 0 to len(old_object_list + new_object_list) - 1
+         target_data: if test_target==True, data from new_object_list, else from old_object_list
+         truth_target: if test_target==True, labels for new_object_list,
+                        index starts from len(old_object_list) to len(old_object_list + new_object_list)-1;
+                       else for old_object_list, index starts from 0 to len(old_object_list) - 1
         """
-        print(f"➡️get_data_and_labels...")
-        print(f"get source data: {source_tool_list}: {old_object_list + new_object_list}")
-        source_data = self.get_data(behavior_list, source_tool_list, modality_list,
-                                    old_object_list + new_object_list, trail_list)
-        if source_data is not None:
-            print(f"source_data.shape: {source_data.shape}")
-        if test_target:  # assign new_object_list to the target tool
-            print(f"get target data: {target_tool_list}: {new_object_list}")
-            target_data = self.get_data(behavior_list, target_tool_list, modality_list, new_object_list, trail_list)
-        else:  # assign old_object_list to the target tool
-            print(f"get target data: {target_tool_list}: {old_object_list}")
-            target_data = self.get_data(behavior_list, target_tool_list, modality_list, old_object_list, trail_list)
-
+        logging.debug(f"➡️get_data_and_labels...")
         assert behavior_list and trail_list and modality_list
-        # source tool has all objects
-        if source_tool_list and (old_object_list or new_object_list):
-            total_num_obj = len(old_object_list + new_object_list)
-            truth_source = np.zeros(len(trail_list) * total_num_obj)
-            for i in range(total_num_obj):
-                truth_source[i * len(trail_list):(i + 1) * len(trail_list)] = i
-            truth_source = torch.tensor(truth_source, dtype=torch.int64, device=configs.device)
-        else:
-            truth_source = torch.empty((0,)).to(configs.device)
+        assert len(behavior_list) == 1  # for now, one behavior only
+        assert len(target_tool_list) in [0, 1]  # at most one target tool at a time
+        if test_target:
+            assert len(new_object_list) != 0
 
-        if target_tool_list:
-            if test_target:  # target tool has new objects
-                assert len(new_object_list) != 0
-                truth_target = np.zeros(len(trail_list) * len(new_object_list))
-                for i, label in enumerate(range(len(old_object_list), len(old_object_list + new_object_list))):  # start idx from new obj list
-                    truth_target[i * len(trail_list):(i + 1) * len(trail_list)] = label
-                truth_target = torch.tensor(truth_target, dtype=torch.int64, device=configs.device)
-            else:  # target tool has old objects
-                truth_target = np.zeros(len(trail_list) * len(old_object_list))
-                for i in range(len(old_object_list)):  # old_object_list always starts idx from 0
-                    truth_target[i * len(trail_list):(i + 1) * len(trail_list)] = i
-                truth_target = torch.tensor(truth_target, dtype=torch.int64, device=configs.device)
+        logging.debug(f"get source data: {source_tool_list}: {old_object_list + new_object_list}")
+        source_data, truth_source = self.get_data(
+            behavior_list, source_tool_list, modality_list,
+            old_object_list + new_object_list, trail_list, get_labels=True)
+        if source_data is not None:
+            logging.debug(f"structured source tool data shape: {source_data.shape}")
+            logging.debug(f"structured source tool label shape: {truth_source.shape}")
         else:
-            truth_target = torch.empty((0,)).to(configs.device)
-        print(f"truth_source: {truth_source}")
-        print(f"truth_target: {truth_target}")
+            logging.debug("no source data.")
+
+        target_obj_list = new_object_list if test_target else old_object_list
+        logging.debug(f"get target data: {target_tool_list}: {target_obj_list}")
+        target_data, truth_target = self.get_data(
+            behavior_list, target_tool_list, modality_list, target_obj_list, trail_list, get_labels=True)
+        if target_data is not None:
+            logging.debug(f"structured target tool data shape: {target_data.shape}")
+            logging.debug(f"structured target tool label shape: {truth_target.shape}")
+        else:
+            logging.debug("no target data.")
         return source_data, target_data, truth_source, truth_target
 
     def get_embeddings_and_labels(self, Encoder, source_data, target_data, truth_source, truth_target, l2_norm=False):
+        # flatten structured data by trial(sample): (num_trials, emb_dim)
         if source_data is not None:
-            encoded_source = Encoder(source_data)
-            tot_object_num = encoded_source.shape[2]
-            trail_num_per_object = encoded_source.shape[3]
-            encoded_source = encoded_source.reshape(tot_object_num * trail_num_per_object, -1)
+            encoded_source = Encoder(source_data).reshape(-1, configs.encoder_output_dim)
+            truth_source = truth_source.reshape(-1, 1)
         else:
             encoded_source = torch.empty((0, configs.encoder_output_dim)).to(configs.device)
+            truth_source = torch.empty((0, 1)).to(configs.device)
 
         if target_data is not None:
-            encoded_target = Encoder(target_data)
-            old_object_num = encoded_target.shape[2]
-            trail_num_per_object = encoded_target.shape[3]
-            encoded_target = encoded_target.reshape(old_object_num * trail_num_per_object, -1)
+            encoded_target = Encoder(target_data).reshape(-1, configs.encoder_output_dim)
+            truth_target = truth_target.reshape(-1, 1)
         else:
             encoded_target = torch.empty((0, configs.encoder_output_dim)).to(configs.device)
-
-        if encoded_source.numel() != 0 or encoded_target.numel() != 0:
-            all_embeds = torch.cat([encoded_source, encoded_target], dim=0)
-            if l2_norm:
-                all_embeds = torch.nn.functional.normalize(all_embeds, p=2, dim=1)  # L2 norm
-        else:
-            all_embeds = torch.empty((0, 0)).to(configs.device)
-        if truth_source is not None or truth_target is not None:
-            all_labels = torch.cat([truth_source, truth_target], dim=0)
-        else:
-            all_labels = torch.empty((0, 0)).to(configs.device)
+            truth_target = torch.empty((0, 1)).to(configs.device)
+        # concat source and target
+        all_labels = torch.cat([truth_source, truth_target], dim=0)
+        all_embeds = torch.cat([encoded_source, encoded_target], dim=0)
+        if l2_norm:
+            all_embeds = torch.nn.functional.normalize(all_embeds, p=2, dim=1)  # L2 norm
 
         return all_embeds, all_labels
 
     def encode_all_data(self, Encoder, behavior_list, source_tool_list, target_tool_list, modality_list, old_object_list,
                         new_object_list, trail_list, new_obj_only=False, train_obj_only=False):
-        print(f"➡️encode all data...")
+        logging.debug(f"➡️encode all data...")
         if new_obj_only:
             target_tool_train = []
         else:
@@ -430,7 +420,7 @@ class Tool_Knowledge_transfer_class:
         all_embeds, all_labels = self.get_embeddings_and_labels(Encoder, source_data, target_data,
                                                                 truth_source, truth_target, l2_norm=False)
         all_embeds, all_labels = all_embeds.cpu().detach().numpy(), all_labels.cpu().detach().numpy()
-        print(f"all_embeds_1D.shape: {all_embeds.shape}")
+        logging.debug(f"all_embeds vectors' shape: {all_embeds.shape}")
         if target_tool_list and not train_obj_only:
             source_data_test, target_data_test, truth_source_test, truth_target_test = self.get_data_and_labels(
                 behavior_list=behavior_list, source_tool_list=[], target_tool_list=target_tool_list,
@@ -441,13 +431,18 @@ class Tool_Knowledge_transfer_class:
                                                                       target_data=target_data_test,
                                                                       truth_target=truth_target_test, l2_norm=False)
             test_embeds, test_labels = test_embeds.cpu().detach().numpy(), test_labels.cpu().detach().numpy()
-            print(f"test_embeds.shape: {test_embeds.shape}")
+            logging.debug(f"test_embeds.shape: {test_embeds.shape}")
             # Combine embeddings and labels
             all_embeds = np.concatenate([all_embeds, test_embeds], axis=0)
             all_labels = np.concatenate([all_labels, test_labels], axis=0)
         else:
-            truth_target_test = []
-        print(f"all_labels in encode_all_data: {all_labels}")
-        return all_embeds, all_labels, len(truth_source), len(truth_target), len(truth_target_test)
+            truth_target_test = None
+
+        logging.debug(f"all_labels in encode_all_data: \n      {np.squeeze(all_labels)}")
+        source_len = 0 if truth_source is None else truth_source.numel()
+        target_train_len = 0 if truth_target is None else truth_target.numel()
+        target_test_len = 0 if truth_target_test is None else truth_target_test.numel()
+
+        return all_embeds, all_labels, source_len, target_train_len, target_test_len
 
     # %%
