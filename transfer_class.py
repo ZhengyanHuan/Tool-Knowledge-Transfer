@@ -10,7 +10,7 @@ import torch
 import torch.optim as optim
 import configs
 import model
-from data.helpers import sanity_check_data_labels
+from data.helpers import sanity_check_data_labels, SORTED_DATA_OBJ_LIST
 from sincere_loss_class import SINCERELoss
 
 #%%
@@ -191,7 +191,7 @@ class Tool_Knowledge_transfer_class:
         logging.debug(f"➡️ train_encoder..")
         loss_record = np.zeros(configs.epoch_encoder)
 
-        source_data, target_data, truth_source, truth_target = self.get_data_and_labels(
+        source_data, target_data, truth_source, truth_target = self.get_data_and_convert_labels(
             behavior_list=behavior_list,
             source_tool_list=source_tool_list,
             target_tool_list=target_tool_list,
@@ -237,7 +237,6 @@ class Tool_Knowledge_transfer_class:
         return sincere_loss(all_embeds_norm, all_labels)
 
     def  get_same_object_list(self, encoded_source, encoded_target):
-        logging.debug(f"➡️get_same_object_list...")
         same_object_list = []
         tot_len = encoded_source.shape[2]
         target_len = encoded_target.shape[2]
@@ -338,8 +337,18 @@ class Tool_Knowledge_transfer_class:
         else:
             return data
 
-    def get_data_and_labels(self, behavior_list, source_tool_list, target_tool_list, modality_list,
-                            old_object_list, new_object_list, trail_list, test_target=False):
+    def make_new_labels_to_curr_obj(self, original_labels: torch.Tensor, all_object_list: list):
+        """take original label from the data set, assign new labels by all objects in old+new order"""
+        if original_labels is None:
+            return original_labels
+        obj_flattened = [SORTED_DATA_OBJ_LIST[item] for item in original_labels.flatten()]
+        relative_labels = np.array([all_object_list.index(obj) for obj in obj_flattened])
+        relative_labels = torch.tensor(relative_labels, dtype=original_labels.dtype, device=original_labels.device)
+        logging.debug(f"relative_labels: \n    {relative_labels}")
+        return relative_labels.reshape(original_labels.shape)
+
+    def get_data_and_convert_labels(self, behavior_list, source_tool_list, target_tool_list, modality_list,
+                                    old_object_list, new_object_list, trail_list, test_target=False):
         """
         :return: data[behavior_index][tool_index][object_index][trail_index]
          source_data: data from old_object_list + new_object_list
@@ -350,7 +359,7 @@ class Tool_Knowledge_transfer_class:
                         index starts from len(old_object_list) to len(old_object_list + new_object_list)-1;
                        else for old_object_list, index starts from 0 to len(old_object_list) - 1
         """
-        logging.debug(f"➡️get_data_and_labels...")
+        logging.debug(f"➡get_data_and_convert_labels...")
         assert behavior_list and trail_list and modality_list
         assert len(behavior_list) == 1  # for now, one behavior only
         assert len(target_tool_list) in [0, 1]  # at most one target tool at a time
@@ -376,6 +385,12 @@ class Tool_Knowledge_transfer_class:
             logging.debug(f"structured target tool label shape: {truth_target.shape}")
         else:
             logging.debug("no target data.")
+
+        # convert label from original to the order of object list, always in the order of old+new
+        all_obj_list = old_object_list + new_object_list
+        truth_source = self.make_new_labels_to_curr_obj(original_labels=truth_source, all_object_list=all_obj_list)
+        truth_target = self.make_new_labels_to_curr_obj(original_labels=truth_target, all_object_list=all_obj_list)
+
         return source_data, target_data, truth_source, truth_target
 
     def get_embeddings_and_labels(self, Encoder, source_data, target_data, truth_source, truth_target, l2_norm=False):
@@ -385,14 +400,14 @@ class Tool_Knowledge_transfer_class:
             truth_source = truth_source.reshape(-1, 1)
         else:
             encoded_source = torch.empty((0, configs.encoder_output_dim)).to(configs.device)
-            truth_source = torch.empty((0, 1)).to(configs.device)
+            truth_source = torch.empty((0, 1), dtype=torch.int64).to(configs.device)
 
         if target_data is not None:
             encoded_target = Encoder(target_data).reshape(-1, configs.encoder_output_dim)
             truth_target = truth_target.reshape(-1, 1)
         else:
             encoded_target = torch.empty((0, configs.encoder_output_dim)).to(configs.device)
-            truth_target = torch.empty((0, 1)).to(configs.device)
+            truth_target = torch.empty((0, 1), dtype=torch.int64).to(configs.device)
         # concat source and target
         all_labels = torch.cat([truth_source, truth_target], dim=0)
         all_embeds = torch.cat([encoded_source, encoded_target], dim=0)
@@ -408,7 +423,7 @@ class Tool_Knowledge_transfer_class:
             target_tool_train = []
         else:
             target_tool_train = target_tool_list
-        source_data, target_data, truth_source, truth_target = self.get_data_and_labels(
+        source_data, target_data, truth_source, truth_target = self.get_data_and_convert_labels(
             behavior_list=behavior_list,
             source_tool_list=source_tool_list,
             target_tool_list=target_tool_train,
@@ -422,7 +437,7 @@ class Tool_Knowledge_transfer_class:
         all_embeds, all_labels = all_embeds.cpu().detach().numpy(), all_labels.cpu().detach().numpy()
         logging.debug(f"all_embeds vectors' shape: {all_embeds.shape}")
         if target_tool_list and not train_obj_only:
-            source_data_test, target_data_test, truth_source_test, truth_target_test = self.get_data_and_labels(
+            source_data_test, target_data_test, truth_source_test, truth_target_test = self.get_data_and_convert_labels(
                 behavior_list=behavior_list, source_tool_list=[], target_tool_list=target_tool_list,
                 modality_list=modality_list, old_object_list=old_object_list,
                 new_object_list=new_object_list, trail_list=trail_list, test_target=True)
