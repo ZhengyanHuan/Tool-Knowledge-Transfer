@@ -82,17 +82,21 @@ def viz_input_data(data, loss_func_name: str, behavior_list, source_tool_list, t
                                             data=data)
         if shared_only:
             len_target_test = 0
+            plot_title += "(Shared Object Only)"
     if not shared_only:
         X_array, Y_array = stack_input_data(X_array, Y_array, behavior_list, target_tool_list, new_object_list,
                                             data=data)
         if test_only:
             len_target_shared = 0
+            plot_title += "(Test Object Only)"
     # map original labels to new labels (based on SIM_OBJECTS_LIST) to match the color bar build on SIM_OBJECTS_LIST
     Y_objects = [SORTED_DATA_OBJ_LIST[label] for label in np.squeeze(Y_array)]
     Y_curr_labels = np.array([all_obj_list.index(obj) for obj in Y_objects])  # reassign labels based on all_obj_list
+
+    subtitle = f"target tool: {target_tool_list}, source tool: {source_tool_list}"
     viz_shared_latent_space(loss_func=loss_func_name, obj_list=all_obj_list,
-                            embeds=X_array, labels=Y_curr_labels, save_fig=False,
-                            len_list=[len_source, len_target_shared, len_target_test], title=plot_title)
+                            embeds=X_array, labels=Y_curr_labels, save_fig=True,
+                            len_list=[len_source, len_target_shared, len_target_test], title=plot_title, subtitle=subtitle)
 
 
 def viz_embeddings(transfer_class, loss_func, viz_objects: list, input_dim,
@@ -104,35 +108,39 @@ def viz_embeddings(transfer_class, loss_func, viz_objects: list, input_dim,
     Encoder.load_state_dict(
         torch.load(encoder_state_dict_loc + encoder_pt_name, map_location=torch.device(configs.device)))
 
-    def vis_by_condition(curr_old_object_list, curr_new_object_list, curr_new_obj_only, curr_train_obj_only):
+    def vis_by_condition(curr_old_object_list, curr_new_object_list, curr_new_obj_only, curr_train_obj_only, title):
         all_obj_list = curr_old_object_list + curr_new_object_list
         all_embeds, all_labels, source_len, target_len, target_test_len = transfer_class.encode_all_data(
             Encoder, new_obj_only=curr_new_obj_only, train_obj_only=curr_train_obj_only, behavior_list=behavior_list,
             source_tool_list=source_tool_list, target_tool_list=target_tool_list,
             modality_list=modality_list, old_object_list=curr_old_object_list, new_object_list=curr_new_object_list,
             trail_list=trail_list)
+        subtitle = f"target tool: {target_tool_list}, source tool: {source_tool_list}"
         viz_shared_latent_space(
             loss_func=loss_func, obj_list=all_obj_list, embeds=all_embeds, labels=all_labels,
-            len_list=[source_len, target_len, target_test_len])
+            len_list=[source_len, target_len, target_test_len], save_fig=True, title=title, subtitle=subtitle)
 
     if "shared" in viz_objects:
         logging.info("visualize the SHARE object set in shared latent space...")
         curr_new_object_list = []
         curr_new_obj_only, curr_train_obj_only = False, True
-        vis_by_condition(old_object_list, curr_new_object_list, curr_new_obj_only, curr_train_obj_only)
+        vis_by_condition(old_object_list, curr_new_object_list, curr_new_obj_only, curr_train_obj_only,
+                         title=f"shared_space-{loss_func}(Shared Object Only)")
     if "test" in viz_objects:
         logging.info("visualize the TEST object set in shared latent space...")
         curr_old_object_list = []
         curr_new_obj_only, curr_train_obj_only = True, False
-        vis_by_condition(curr_old_object_list, new_object_list, curr_new_obj_only, curr_train_obj_only)
+        vis_by_condition(curr_old_object_list, new_object_list, curr_new_obj_only, curr_train_obj_only,
+                         title=f"shared_space-{loss_func}(Test Object Only)")
     if "all" in viz_objects:
         logging.info("visualize the ALL objects in shared latent space...")
         curr_new_obj_only, curr_train_obj_only = False, False
-        vis_by_condition(old_object_list, new_object_list, curr_new_obj_only, curr_train_obj_only)
+        vis_by_condition(old_object_list, new_object_list, curr_new_obj_only, curr_train_obj_only,
+                         title=f"shared_space-{loss_func}")
 
 
 def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
-                            labels: np.ndarray, len_list: list, save_fig: bool = True, title='') -> None:
+                            labels: np.ndarray, len_list: list, save_fig: bool = True, title='', subtitle='') -> None:
     """
     !!!make sure that labels were created following the index of obj_list!!!
 
@@ -165,7 +173,7 @@ def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
 
     plt.figure(figsize=(8, 6))
     plt.rcParams['font.size'] = 12
-    markers = ['o', '^', 'x']  # Markers for tools. Circle for source, triangle for target, x for target test
+    markers = ['o', '^', 's']  # Markers for tools. Circle for source, triangle for target, x for target test
 
     # take the subset of all colors (from SIM_OBJECTS_LIST) for obj_list
     subset_obj_idx = [SIM_OBJECTS_LIST.index(obj) for obj in obj_list]
@@ -206,14 +214,16 @@ def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
         masked_labels = labels[mask]
         if len(masked_labels) == 0:
             continue
+        edge_color = 'black' if tool_label == 2 else None  # add edge to test tool marker
         plt.scatter(
             embeds_2d[mask, 0], embeds_2d[mask, 1],
             c=mapped_labels[mask],
             cmap=cmap,  # Use discrete colormap
             norm=norm,
             marker=marker,
+            edgecolor=edge_color,
             s=80,
-            alpha=0.9,
+            alpha=0.7,
             label=f"{['Source Tool(All)', 'Target Tool(Train)', 'Target Tool(Test)'][tool_label]}"
         )
 
@@ -223,7 +233,7 @@ def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
 
     plt.legend(title="Tool Type")
     save_name = title if title else f"shared_space-{loss_func} loss"
-    plt.title(f"T-SNE Visualization of Embeddings in {save_name}")
+    plt.title(f"T-SNE Visualization of Embeddings in {save_name} \n {subtitle}")
     plt.xlabel("t-SNE Component 1")
     plt.ylabel("t-SNE Component 2")
     plt.grid(True)
