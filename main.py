@@ -71,10 +71,7 @@ if configs.viz_process:
     main_logger.info("👀visualize initial data ...")
     for options in [[False, False], [True, False], [False, True]]:
         shared_only, test_only = options
-        viz_input_data(shared_only=shared_only, test_only=test_only, data=myclass.data_dict, loss_func_name=loss_func,
-                       behavior_list=behavior_list, source_tool_list=source_tool_list,
-                       target_tool_list=target_tool_list,
-                       old_object_list=old_object_list, new_object_list=new_object_list)
+        viz_input_data(shared_only=shared_only, test_only=test_only, data=myclass.data_dict)
 
 start_time = time.time()
 # %% 2. encoder
@@ -91,10 +88,7 @@ if configs.retrain_encoder:
 
 if configs.viz_process:
     main_logger.info("👀visualize embeddings in shared latent space...")
-    viz_embeddings(viz_objects=["all", "shared", "test"], loss_func=loss_func, input_dim=input_dim,
-                   source_tool_list=source_tool_list, target_tool_list=target_tool_list,
-                   modality_list=modality_list, trail_list=trail_list, behavior_list=behavior_list,
-                   old_object_list=old_object_list, new_object_list=new_object_list, transfer_class=myclass)
+    viz_embeddings(viz_objects=["all", "shared", "test"], input_dim=input_dim, transfer_class=myclass)
 
 # %% 3. classifier
 if configs.retrain_clr:
@@ -140,10 +134,9 @@ all_embeds, all_labels, source_len, target_len, target_test_len = myclass.encode
     modality_list=modality_list, old_object_list=[], new_object_list=new_object_list,
     trail_list=trail_list)
 labels = np.concatenate([pred_label_source.cpu().detach().numpy(), pred_label_target.cpu().detach().numpy()], axis=0)
-viz_shared_latent_space(loss_func=loss_func, obj_list=new_object_list, embeds=all_embeds,
-                        labels=labels, len_list=[source_len, target_len, target_test_len],
-                        subtitle=f"Test Predictions. Target tool{target_tool_list} \n Source tool(s): {source_tool_list}",
-                        show_orig_label=True)
+viz_shared_latent_space(obj_list=new_object_list, embeds=all_embeds, labels=labels,
+                        len_list=[source_len, target_len, target_test_len], show_orig_label=True,
+                        subtitle=f"Test Predictions. Target {target_tool_list} \n Source: {source_tool_list}")
 
 viz_classifier_learned_boundary(myclass, Encoder, Classifier, source_tool_list, target_tool_list, old_object_list,
                                 new_object_list, behavior_list, modality_list, trail_list)

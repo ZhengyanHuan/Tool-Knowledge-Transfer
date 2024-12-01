@@ -57,8 +57,10 @@ def stack_input_data(X_array, Y_array, behavior_list, tool_list, obj_list, data)
     return np.vstack(X_array), np.vstack(Y_array)
 
 
-def viz_input_data(data, loss_func_name: str, behavior_list, source_tool_list, target_tool_list, old_object_list,
-                   new_object_list, shared_only: bool, test_only: bool, plot_title="Original Data Space"):
+def viz_input_data(data, shared_only: bool, test_only: bool, loss_func_name: str = configs.loss_func,
+                   behavior_list=configs.behavior_list, source_tool_list=configs.source_tool_list,
+                   target_tool_list=configs.target_tool_list, old_object_list=configs.old_object_list,
+                   new_object_list=configs.new_object_list, plot_title="Original Data Space"):
     assert ~(shared_only and test_only)  # can't both be True
     assert len(target_tool_list) == 1  # one target tool only
     if shared_only:
@@ -99,9 +101,12 @@ def viz_input_data(data, loss_func_name: str, behavior_list, source_tool_list, t
                             len_list=[len_source, len_target_shared, len_target_test], title=plot_title, subtitle=subtitle)
 
 
-def viz_embeddings(transfer_class, loss_func, viz_objects: list, input_dim,
-                   source_tool_list, target_tool_list, modality_list, trail_list, behavior_list,
-                   old_object_list, new_object_list, encoder_state_dict_loc: str = './saved_model/encoder/'):
+def viz_embeddings(viz_objects: list, transfer_class, input_dim: int, loss_func=configs.loss_func,
+                   source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
+                   modality_list=configs.modality_list, trail_list=configs.trail_list,
+                   behavior_list=configs.behavior_list,
+                   old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
+                   encoder_state_dict_loc: str = './saved_model/encoder/'):
     encoder_pt_name = f"myencoder_{loss_func}.pt"
     Encoder = model.encoder(input_size=input_dim, output_size=configs.encoder_output_dim,
                             hidden_size=configs.encoder_hidden_dim).to(configs.device)
@@ -139,8 +144,9 @@ def viz_embeddings(transfer_class, loss_func, viz_objects: list, input_dim,
                          title=f"shared_space-{loss_func}")
 
 
-def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
-                            labels: np.ndarray, len_list: list,
+def viz_shared_latent_space(embeds: np.ndarray, labels: np.ndarray, len_list: list,
+                            loss_func: str = configs.loss_func,
+                            obj_list: list = configs.old_object_list+configs.new_object_list,
                             save_fig: bool = True, title='', subtitle='', show_orig_label=False) -> None:
     """
     !!!make sure that labels were created following the index of obj_list!!!
