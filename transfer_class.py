@@ -306,7 +306,9 @@ class Tool_Knowledge_transfer_class:
         loss = torch.mean(d)
         return loss
 
-    def get_data(self, behavior_list, tool_list, modality_list, object_list, trail_list, get_labels=False):
+    def get_data(self, behavior_list=configs.behavior_list, tool_list=configs.all_tool_list,
+                 modality_list=configs.modality_list, object_list=configs.all_object_list,
+                 trail_list=configs.trail_list, get_labels=False):
         """
         :return: torch tensor(s). data shape: [n_behaviors, n_tools, n_objects, n_trials, data_dim];
                 there's no integer label information, but for each modality, data is ordered by object_list.
@@ -359,8 +361,10 @@ class Tool_Knowledge_transfer_class:
         logging.debug(f"relative_labels: \n    {relative_labels}")
         return relative_labels.reshape(original_labels.shape)
 
-    def get_data_and_convert_labels(self, behavior_list, source_tool_list, target_tool_list, modality_list,
-                                    old_object_list, new_object_list, trail_list, test_target=False):
+    def get_data_and_convert_labels(self, behavior_list=configs.behavior_list, source_tool_list=configs.source_tool_list,
+                                    target_tool_list=configs.target_tool_list, modality_list=configs.modality_list,
+                                    old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
+                                    trail_list=configs.trail_list, test_target=False):
         """
         :return: data[behavior_index][tool_index][object_index][trail_index]
          source_data: data from old_object_list + new_object_list

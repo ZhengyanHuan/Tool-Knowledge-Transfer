@@ -37,6 +37,14 @@ main_logger.info(f"old_object_list: {configs.old_object_list}")
 main_logger.info(f"new_object_list: {configs.new_object_list}")
 main_logger.info(f"loss_func: {configs.loss_func}")
 
+# for reproducibility
+seed = 43
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
+
 # %% 1. task setup
 main_logger.debug(f"========================= New Run =========================")  # new log starts here
 # for reproducibility
