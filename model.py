@@ -1,10 +1,13 @@
-import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+import configs
 
 
 class encoder(nn.Module):
-    def __init__(self, input_size, output_size, hidden_size = 16):
+    def __init__(self, input_size, output_size, hidden_size=16, l2_norm=configs.l2_norm):
         super(encoder, self).__init__()
+        self.l2_norm = l2_norm
         self.network = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
@@ -14,7 +17,10 @@ class encoder(nn.Module):
         )
 
     def forward(self, x):
-        return self.network(x)
+        output = self.network(x)
+        if self.l2_norm:
+            output = F.normalize(output, p=2, dim=-1)
+        return output
 
 
 class classifier(nn.Module):
