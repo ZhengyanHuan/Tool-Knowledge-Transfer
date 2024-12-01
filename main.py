@@ -9,7 +9,7 @@ import torch
 
 import configs
 import model
-from data.helpers import viz_input_data, viz_embeddings, viz_classifier_learned_boundary, viz_shared_latent_space
+from data.helpers import viz_input_data, viz_embeddings_by_object_set, viz_test_objects_embedding
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %%  0. setup
@@ -111,15 +111,7 @@ main_logger.info(f"test accuracy: {accuracy * 100:.2f}%")
 main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 60)} "
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
 
-*_, pred_label_source = myclass.eval(Encoder=Encoder, Classifier=Classifier,  # evaluate source tool
-                                     tool_list=configs.source_tool_list, return_pred=True)
-all_embeds, all_labels, source_len, target_len, target_test_len = myclass.encode_all_data(
-    Encoder=Encoder, new_obj_only=True, train_obj_only=False, old_object_list=[])
-labels = np.concatenate([pred_label_source.cpu().detach().numpy(), pred_label_target.cpu().detach().numpy()], axis=0)
-viz_shared_latent_space(obj_list=configs.new_object_list, embeds=all_embeds, labels=labels,
-                        len_list=[source_len, target_len, target_test_len], show_orig_label=True,
-                        subtitle=f"Test Predictions. Target {configs.target_tool_list} "
-                                 f"\n Source: {configs.source_tool_list}")
+viz_test_objects_embedding(transfer_class=myclass, Encoder=Encoder, Classifier=Classifier, pred_label_target=pred_label_target)
 
 #%% Parameters tuning
 # import random

@@ -3,6 +3,7 @@ import logging
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm, to_hex, LinearSegmentedColormap
+from sklearn.linear_model import LogisticRegression
 from sklearn.manifold import TSNE
 import torch
 
@@ -96,17 +97,17 @@ def viz_input_data(data, shared_only: bool, test_only: bool, loss_func_name: str
     Y_curr_labels = np.array([all_obj_list.index(obj) for obj in Y_objects])  # reassign labels based on all_obj_list
 
     subtitle = f"target tool: {target_tool_list}, source tool: {source_tool_list}"
-    viz_shared_latent_space(loss_func=loss_func_name, obj_list=all_obj_list,
-                            embeds=X_array, labels=Y_curr_labels, save_fig=True,
-                            len_list=[len_source, len_target_shared, len_target_test], title=plot_title, subtitle=subtitle)
+    viz_embeddings(loss_func=loss_func_name, obj_list=all_obj_list,
+                   embeds=X_array, labels=Y_curr_labels, save_fig=True,
+                   len_list=[len_source, len_target_shared, len_target_test], title=plot_title, subtitle=subtitle)
 
 
-def viz_embeddings(viz_objects: list, transfer_class, input_dim: int, loss_func=configs.loss_func,
-                   source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
-                   modality_list=configs.modality_list, trail_list=configs.trail_list,
-                   behavior_list=configs.behavior_list,
-                   old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
-                   encoder_state_dict_loc: str = './saved_model/encoder/'):
+def viz_embeddings_by_object_set(viz_objects: list, transfer_class, input_dim: int, loss_func=configs.loss_func,
+                                 source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
+                                 modality_list=configs.modality_list, trail_list=configs.trail_list,
+                                 behavior_list=configs.behavior_list,
+                                 old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
+                                 encoder_state_dict_loc: str = './saved_model/encoder/'):
     encoder_pt_name = f"myencoder_{loss_func}.pt"
     Encoder = model.encoder(input_size=input_dim, output_size=configs.encoder_output_dim,
                             hidden_size=configs.encoder_hidden_dim).to(configs.device)
@@ -121,7 +122,7 @@ def viz_embeddings(viz_objects: list, transfer_class, input_dim: int, loss_func=
             modality_list=modality_list, old_object_list=curr_old_object_list, new_object_list=curr_new_object_list,
             trail_list=trail_list)
         subtitle = f"target tool: {target_tool_list}, source tool: {source_tool_list}"
-        viz_shared_latent_space(
+        viz_embeddings(
             loss_func=loss_func, obj_list=all_obj_list, embeds=all_embeds, labels=all_labels,
             len_list=[source_len, target_len, target_test_len], save_fig=True, title=title, subtitle=subtitle)
 
@@ -144,10 +145,64 @@ def viz_embeddings(viz_objects: list, transfer_class, input_dim: int, loss_func=
                          title=f"shared_space-{loss_func}")
 
 
-def viz_shared_latent_space(embeds: np.ndarray, labels: np.ndarray, len_list: list,
-                            loss_func: str = configs.loss_func,
-                            obj_list: list = configs.old_object_list+configs.new_object_list,
-                            save_fig: bool = True, title='', subtitle='', show_orig_label=False) -> None:
+def map_objects_to_colors(obj_list, labels):
+    # take the subset of all colors (from SIM_OBJECTS_LIST) for obj_list
+    subset_obj_idx = [SIM_OBJECTS_LIST.index(obj) for obj in obj_list]
+    logging.debug(f"subset_obj_idx: {subset_obj_idx}, unique labels: {np.unique(labels)}")
+    sim_colors = plt.colormaps['tab20b'](np.linspace(0, 1, len(SIM_OBJECTS_LIST)))  # fix colors for all 15 objects
+    subset_colors = sim_colors[sorted(subset_obj_idx)]  # select the subset colors, value has to be
+    cmap = ListedColormap(subset_colors)  # Discrete colormap
+    bounds = list(range(len(obj_list) + 1))  # Boundaries for discrete colors
+    norm = BoundaryNorm(bounds, len(obj_list))  # Normalize to discrete boundaries
+
+    # map current label (ordered by obj_list) to align with color (ordered by SIM_OBJECTS_LIST)
+    # Step 1: Remove duplicates from subset_obj_idx while preserving the order
+    unique_subset_idx = list(dict.fromkeys(subset_obj_idx))  # [9, 2, 14, 13, 8]
+
+    # Step 2: Create a mapping from original labels to indices in the sorted subset
+    sim_obj_idx = [SIM_OBJECTS_LIST.index(obj_list[int(l)]) for l in labels]
+    label_to_subset_idx = {label: sim_obj_idx[i] for i, label in enumerate(labels)}  # Map labels to subset indices
+    sorted_unique_idx = sorted(unique_subset_idx)  # Sort the unique subset indices
+    index_mapping = {idx: i for i, idx in enumerate(sorted_unique_idx)}  # Map sorted indices to new positions
+
+    # Step 3: Map original labels to new positions
+    mapped_labels = np.array([index_mapping[label_to_subset_idx[label]] for label in labels])
+    return mapped_labels, cmap, norm, subset_obj_idx, label_to_subset_idx
+
+
+def get_curr_labels_on_cbar(subset_obj_idx, label_to_subset_idx):
+    cbar_labels = np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)]
+    reversed_mp = {sim_idx: label for label, sim_idx in label_to_subset_idx.items()}
+    original_labels = [reversed_mp[sim_idx] for sim_idx in sorted(subset_obj_idx)]
+    tick_labels = [f"{cbar_label}\n(label {orig_label})" for cbar_label, orig_label in
+                   zip(cbar_labels, original_labels)]
+    return tick_labels
+
+
+def viz_test_objects_embedding(transfer_class, Encoder, Classifier, pred_label_target):
+    # if embeddings need feature reduction to 2D, show the actual predictions for reference
+    if configs.encoder_output_dim > 2:
+        *_, pred_label_source = transfer_class.eval(Encoder=Encoder, Classifier=Classifier,  # evaluate source tool
+                                                    tool_list=configs.source_tool_list, return_pred=True)
+        all_embeds, all_labels, source_len, target_len, target_test_len = transfer_class.encode_all_data(
+            Encoder=Encoder, new_obj_only=True)
+        labels = np.concatenate([pred_label_source.cpu().detach().numpy(), pred_label_target.cpu().detach().numpy()],
+                                axis=0)
+        viz_embeddings(obj_list=configs.new_object_list, embeds=all_embeds, labels=labels,
+                       len_list=[source_len, target_len, target_test_len], show_curr_label=True,
+                       subtitle=f"Test Predictions. Target {configs.target_tool_list} \n Source: {configs.source_tool_list}")
+
+    # visualize the data in 2 D space. The original labels are preserved because there will be colored background for predicted labels
+    # If the embedding is 2D, use the trained Classifier for decision boundaries, the background color will match the actual predictions
+    # if > 2, the boundaries are from a logistic regression clf trained on t-sne reduced 2D space,
+    #   the background does not reflect actual predictions, it approximates what a linear classifier does on full-sized embeddings.
+    viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier)
+
+
+def viz_embeddings(embeds: np.ndarray, labels: np.ndarray, len_list: list,
+                   loss_func: str = configs.loss_func,
+                   obj_list: list = configs.old_object_list + configs.new_object_list,
+                   save_fig: bool = True, title='', subtitle='', show_curr_label=False) -> None:
     """
     !!!make sure that labels were created following the index of obj_list!!!
 
@@ -186,26 +241,7 @@ def viz_shared_latent_space(embeds: np.ndarray, labels: np.ndarray, len_list: li
     markers = ['o', '^', 's']  # Markers for tools. Circle for source, triangle for target, x for target test
 
     # take the subset of all colors (from SIM_OBJECTS_LIST) for obj_list
-    subset_obj_idx = [SIM_OBJECTS_LIST.index(obj) for obj in obj_list]
-    logging.debug(f"subset_obj_idx: {subset_obj_idx}, unique labels: {np.unique(labels)}")
-    sim_colors = plt.cm.tab20b(np.linspace(0, 1, len(SIM_OBJECTS_LIST)))  # fix colors for all 15 objects
-    subset_colors = sim_colors[sorted(subset_obj_idx)]  # select the subset colors, value has to be
-    cmap = ListedColormap(subset_colors)  # Discrete colormap
-    bounds = list(range(len(obj_list) + 1))  # Boundaries for discrete colors
-    norm = BoundaryNorm(bounds, len(obj_list))  # Normalize to discrete boundaries
-
-    # map current label (ordered by obj_list) to align with color (ordered by SIM_OBJECTS_LIST)
-    # Step 1: Remove duplicates from subset_obj_idx while preserving the order
-    unique_subset_idx = list(dict.fromkeys(subset_obj_idx))  # [9, 2, 14, 13, 8]
-
-    # Step 2: Create a mapping from original labels to indices in the sorted subset
-    sim_obj_idx = [SIM_OBJECTS_LIST.index(obj_list[l]) for l in labels]
-    label_to_subset_idx = {label: sim_obj_idx[i] for i, label in enumerate(labels)}  # Map labels to subset indices
-    sorted_unique_idx = sorted(unique_subset_idx)  # Sort the unique subset indices
-    index_mapping = {idx: i for i, idx in enumerate(sorted_unique_idx)}  # Map sorted indices to new positions
-
-    # Step 3: Map original labels to new positions
-    mapped_labels = np.array([index_mapping[label_to_subset_idx[label]] for label in labels])
+    mapped_labels, cmap, norm, subset_obj_idx, label_to_subset_idx = map_objects_to_colors(obj_list, labels)
 
     # for the color bar reference only, in case the last batch of objects for plt are a subset of obj_list
     scatter = plt.scatter(
@@ -235,14 +271,11 @@ def viz_shared_latent_space(embeds: np.ndarray, labels: np.ndarray, len_list: li
         )
 
     cbar = plt.colorbar(scatter, ticks=np.arange(len(obj_list)))
-    if show_orig_label:
-        cbar_labels = np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)]
-        reversed_mp = {sim_idx: label for label, sim_idx in label_to_subset_idx.items()}
-        original_labels = [reversed_mp[sim_idx] for sim_idx in sorted(subset_obj_idx)]
-        tick_labels = [f"{cbar_label}\n(orig {orig_label})" for cbar_label, orig_label in zip(cbar_labels, original_labels) ]
-        cbar.ax.set_yticklabels(tick_labels)
+    if show_curr_label:
+        cbar.ax.set_yticklabels(get_curr_labels_on_cbar(subset_obj_idx, label_to_subset_idx))
     else:
-        cbar.ax.set_yticklabels(np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)])  # colors are sorted by sim object, so should the object names
+        cbar.ax.set_yticklabels(np.array(SIM_OBJECTS_LIST)[sorted(
+            subset_obj_idx)])  # colors are sorted by sim object, so should the object names
     cbar.set_label("Objects", rotation=270, labelpad=20)
 
     plt.legend(title="Tool Type")
@@ -258,86 +291,82 @@ def viz_shared_latent_space(embeds: np.ndarray, labels: np.ndarray, len_list: li
     plt.show()
     plt.close()
 
-# def viz_shared_latent_space(loss_func: str, all_obj_list: list, all_embeds: np.ndarray,
-#                             all_labels: np.ndarray, len_list: list, save_fig: bool = True, title='') -> None:
-#     """
-#
-#     :param loss_func: name for the loss function
-#     :param all_obj_list: set of all object names, in the order of old + new
-#     :param all_embeds:  array of all 1D embeddings from source (all and/or new obj), target (old obj), and target test (new obj),
-#                         shape=(sum(len_list), len_1D_emb)
-#     :param all_labels:
-#     :param len_list: length of data from each tool&(object set) combo:
-#                         [n_emb_source_tool_source_objects, n_emb_target_tool_old_obj, n_emb_target_tool_new_obj]:
-#                         (n_source_tools * n_source_objects * n_trials, n_old_objects * n_trials, n_new_objects * n*n_trials)
-#     :param save_fig: save the fig or not
-#     :param title: customized title section, following "T-SNE Visualization of Embeddings in "
-#     :return: None
-#     """
-#     logging.debug(f"➡️ viz_shared_latent_space..")
-#     source_len, target_len, target_test_len = len_list
-#     all_labels = np.squeeze(all_labels, axis=None)
-#     # Create tool labels: 0 for source, 1 for target, 2 for target test
-#     tool_labels = np.array([0] * source_len + [1] * target_len + [2] * target_test_len)
-#
-#     logging.debug(f"all_obj_list: {all_obj_list}")
-#     logging.debug(f"source_len, target_len, target_test_len: {source_len, target_len, target_test_len}")
-#     logging.debug(f"all_embeds shape: {all_embeds.shape}")
-#     logging.debug(f"all_labels: \n      {all_labels}")
-#
-#     # Step 1: Dimensionality reduction using t-SNE
-#     tsne = TSNE(n_components=2, random_state=42, init='pca', learning_rate="auto")
-#     embeds_2d = tsne.fit_transform(all_embeds)
-#
-#     plt.figure(figsize=(8, 6))
-#     plt.rcParams['font.size'] = 12
-#     markers = ['o', '^', 'x']  # Markers for tools. Circle for source, triangle for target, x for target test
-#     colors = plt.cm.tab20(np.linspace(0, 1, len(all_obj_list)))
-#     cmap = ListedColormap(colors)  # Discrete colormap
-#     bounds = list(range(len(all_obj_list) + 1))  # Boundaries for discrete colors
-#     norm = BoundaryNorm(bounds, cmap.N)  # Normalize to discrete boundaries
-#
-#     scatter = plt.scatter(
-#         embeds_2d[:, 0], embeds_2d[:, 1],
-#         c=all_labels,
-#         cmap=cmap,  # Use discrete colormap
-#         norm=norm,  # Apply discrete normalization
-#         s=0  # Use invisible points for the color bar reference
-#     )
-#
-#     for tool_label, marker in enumerate(markers):
-#         mask = tool_labels == tool_label
-#         plt.scatter(
-#             embeds_2d[mask, 0], embeds_2d[mask, 1],
-#             c=all_labels[mask],
-#             # without discrete normalization, cmap will align labels differently when they don't have the same range (i.e. labels [0, 3] range is not 15)
-#             cmap=cmap,  # Use discrete colormap
-#             norm=norm,  # Apply discrete normalization
-#             marker=marker,
-#             s=50,
-#             alpha=0.7,
-#             label=f"{['Source Tool(All)', 'Target Tool(Train)', 'Target Tool(Test)'][tool_label]}"
-#         )
-#
-#     # Step 3: Add legend for tools (shapes)
-#     plt.legend(title="Tool Type")
-#
-#     # Step 4: Add color bar for objects
-#     cbar = plt.colorbar(scatter, ticks=range(len(all_obj_list)))
-#     cbar.ax.set_yticklabels(all_obj_list)
-#     cbar.set_label("Objects", rotation=270, labelpad=20)
-#
-#     # Plot details
-#     if title:
-#         save_name = title
-#     else:
-#         save_name = f"shared_space-{loss_func} loss"
-#     plt.title(f"T-SNE Visualization of Embeddings in {save_name}")
-#     plt.xlabel("t-SNE Component 1")
-#     plt.ylabel("t-SNE Component 2")
-#     plt.grid(True)
-#
-#     if save_fig:
-#         plt.savefig(r'./figs/' + save_name + '.png', bbox_inches='tight')
-#     plt.show()
-#     plt.close()
+
+def viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier):
+    object_list = configs.new_object_list
+    # Step 1: Generate embedded data
+    all_embeds, all_labels, source_len, target_len, target_test_len = transfer_class.encode_all_data(Encoder=Encoder,
+                                                                                                     new_obj_only=True)
+    source_emb = all_embeds[:source_len]
+    source_y = np.squeeze(all_labels[:source_len])
+    target_emb = all_embeds[-target_test_len:]
+    target_y = np.squeeze(all_labels[-target_test_len:])
+
+    # Step 2:
+    if all_embeds.shape[1] > 2:  # Apply T-SNE for dimensionality reduction
+        tsne = TSNE(n_components=2, random_state=42, init='pca', learning_rate="auto")
+        all_embeddings_2d = tsne.fit_transform(all_embeds)
+        embeddings_2d = all_embeddings_2d[:source_len]
+        new_embeddings_2d = all_embeddings_2d[-target_test_len:]
+    elif all_embeds.shape[1] == 2:
+        embeddings_2d = source_emb
+        new_embeddings_2d = target_emb
+        all_embeddings_2d = all_embeds
+    else:
+        raise Exception(f"embedding shape is not correct: {all_embeds.shape}")
+
+    # Step 4: Create a grid for decision boundary
+    x_min, x_max = all_embeddings_2d[:, 0].min() - 1, all_embeddings_2d[:, 0].max() + 1
+    y_min, y_max = all_embeddings_2d[:, 1].min() - 1, all_embeddings_2d[:, 1].max() + 1
+    n_points = 200
+    xx, yy = np.meshgrid(np.linspace(x_min, x_max, n_points), np.linspace(y_min, y_max, n_points))
+    grid_points = np.c_[xx.ravel(), yy.ravel()]  # (n_points*n_points, 2)
+    # Step 2: Train a classifier in the 2D T-SNE space
+    if all_embeds.shape[1] == 2:  # use the trained classifier directly because input shape matches
+        grid_proba = Classifier(torch.tensor(grid_points, dtype=torch.float32, device=configs.device))
+        grid_proba = grid_proba.cpu().detach().numpy()  # (n_points*n_points, C)
+    else:  # use LogisticRegression to classify data on the t-sne transformed space (approximate the decision boundaries of the Classifier)
+        secondary_classifier = LogisticRegression(multi_class='multinomial', max_iter=500, random_state=42)
+        secondary_classifier.fit(embeddings_2d, source_y)
+        grid_proba = secondary_classifier.predict_proba(grid_points)  # Shape: [n_grid_points, C]
+
+    grid_classes = np.argmax(grid_proba, axis=1)  # (n_points*n_points, )
+
+    plt.figure(figsize=(8, 6))
+    plt.rcParams['font.size'] = 12
+
+    # Step 5: Plot the decision boundary
+    levels = np.arange(-1, len(object_list))  # strangely it needs the lowest level as -1 to show all colors!!!
+    grid_classes, cmap, norm, subset_obj_idx, label_to_subset_idx = map_objects_to_colors(object_list, grid_classes)
+    plt.contourf(xx, yy, grid_classes.reshape(xx.shape), cmap=cmap, levels=levels,
+                 alpha=0.3)  # contourf flips the array upside down
+
+    # Step 6: Overlay the original and test embeddings
+    pred_label_source, *_ = map_objects_to_colors(object_list, source_y)
+    pred_label_target, *_ = map_objects_to_colors(object_list, target_y)
+    scatter_original = plt.scatter(
+        embeddings_2d[:, 0], embeddings_2d[:, 1],
+        c=pred_label_source, cmap=cmap, norm=norm, s=50, alpha=0.8, label="Original Embeddings"
+    )
+    plt.scatter(
+        new_embeddings_2d[:, 0], new_embeddings_2d[:, 1],
+        c=pred_label_target, cmap=cmap, norm=norm, edgecolor='k', s=80, alpha=1.0, marker='s', label="Test Embeddings"
+    )
+
+    # Add a color bar and legend
+    cbar = plt.colorbar(scatter_original, ticks=np.arange(len(object_list)))
+    cbar.ax.set_yticklabels(np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)])
+    cbar.set_label("Classes", rotation=270, labelpad=20)
+
+    if configs.encoder_output_dim > 2:
+        subtitle = ("Approximated decision boundary based on the clusters in this 2D space. \n"
+                    "Actual predictions might not match the background color.")
+    else:
+        subtitle = ("Exact decision boundary from the trained Classifier.\n"
+                    "Actual predictions match the background color.")
+    plt.title(f"Visualization with Classifier Decision Boundary \n{subtitle}")
+    plt.xlabel("Dimension 1")
+    plt.ylabel("Dimension 2")
+    plt.legend(loc="upper right")
+    plt.grid(True)
+    plt.show()
