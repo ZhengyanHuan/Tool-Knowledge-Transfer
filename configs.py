@@ -20,16 +20,16 @@ encoder_pt_name = f"myencoder_{loss_func}.pt"
 clf_pt_name = f"myclassifier_{loss_func}.pt"
 retrain_encoder = True
 retrain_clr = True
+viz_dataset = True
 viz_process = True
 
 #########################encoder parameters
 l2_norm = loss_func == "sincere"
 
+encoder_hidden_dim = 256
+encoder_output_dim = 4  # 2 makes it easy to visualize decision boundary
 
-encoder_hidden_dim = 1024
-encoder_output_dim = 256
-
-epoch_encoder = 1000
+epoch_encoder = 2000
 lr_encoder = 1e-3
 ############## TL loss parameters ##########
 TL_margin = 1
@@ -39,7 +39,7 @@ pairs_per_batch_per_object = 10
 sincere_temp = 0.1
 
 #############classifier parameters #######
-epoch_classifier = 1000
+epoch_classifier = 2000
 lr_classifier = 1e-1
 val_portion = 0
 
