@@ -254,13 +254,15 @@ def viz_embeddings(embeds: np.ndarray, labels: np.ndarray, len_list: list,
     )
 
     for tool_label, marker in enumerate(markers):
+        # if on unit sphere, shrink the target tool embeddings' sphere, so they don't block the source embeddings
+        shrink = 0.95 if tool_label == 2 and configs.l2_norm else 1
         mask = tool_labels == tool_label
         masked_labels = labels[mask]
         if len(masked_labels) == 0:
             continue
         edge_color = 'black' if tool_label == 2 else None  # add edge to test tool marker
         plt.scatter(
-            embeds_2d[mask, 0], embeds_2d[mask, 1],
+            embeds_2d[mask, 0]*shrink, embeds_2d[mask, 1]*shrink,
             c=mapped_labels[mask],
             cmap=cmap,  # Use discrete colormap
             norm=norm,
@@ -349,9 +351,11 @@ def viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier
         embeddings_2d[:, 0], embeddings_2d[:, 1],
         c=pred_label_source, cmap=cmap, norm=norm, s=50, alpha=0.8, label="Original Embeddings"
     )
+    # if on unit sphere, shrink the target tool embeddings' sphere, so they don't block the source embeddings
+    shrink = 0.95 if configs.l2_norm else 1
     plt.scatter(
-        new_embeddings_2d[:, 0], new_embeddings_2d[:, 1],
-        c=pred_label_target, cmap=cmap, norm=norm, edgecolor='k', s=80, alpha=1.0, marker='s', label="Test Embeddings"
+        new_embeddings_2d[:, 0]*shrink, new_embeddings_2d[:, 1]*shrink,
+        c=pred_label_target, cmap=cmap, norm=norm, edgecolor='k', s=80, alpha=1.0, marker='s', label="Target Tool"
     )
 
     # Add a color bar and legend
