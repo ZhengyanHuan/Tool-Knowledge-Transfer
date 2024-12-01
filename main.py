@@ -69,9 +69,9 @@ if configs.retrain_encoder:
     main_logger.info(f"⏱️Time used for encoder training: {round((time.time() - encoder_time) // 60)} "
                      f"min {(time.time() - encoder_time) % 60:.1f} sec.")
 
-    if configs.viz_process:
-        main_logger.info("👀visualize embeddings in shared latent space...")
-        viz_embeddings_by_object_set(viz_objects=["all", "shared", "test"], input_dim=input_dim, transfer_class=myclass)
+if configs.viz_share_space:
+    main_logger.info("👀visualize embeddings in shared latent space...")
+    viz_embeddings_by_object_set(viz_objects=["all", "shared", "test"], input_dim=input_dim, transfer_class=myclass)
 
 # %% 3. classifier
 if configs.retrain_clr:
@@ -104,7 +104,7 @@ main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 6
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
 
 viz_test_objects_embedding(transfer_class=myclass, Encoder=Encoder, Classifier=Classifier,
-                           pred_label_target=pred_label_target)
+                           test_accuracy=accuracy, pred_label_target=pred_label_target)
 
 # %% Parameters tuning
 # import random

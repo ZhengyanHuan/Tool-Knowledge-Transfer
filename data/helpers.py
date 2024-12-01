@@ -13,7 +13,7 @@ import model
 # manually order objects by similarity
 SIM_OBJECTS_LIST = ['empty', 'water', 'detergent', 'chia-seed', 'cane-sugar', 'salt',
                     'styrofoam-bead', 'split-green-pea', 'wheat', 'chickpea', 'kidney-bean',
-                    'wooden-button', 'glass-bead', 'plastic-bead', 'metal-nut-bolt']
+                    'wooden-button', 'plastic-bead', 'glass-bead', 'metal-nut-bolt']
 SORTED_DATA_OBJ_LIST = sorted(SIM_OBJECTS_LIST)  # for input data from data files, the labels were created in this order
 
 
@@ -85,18 +85,18 @@ def viz_input_data(data, shared_only: bool, test_only: bool, loss_func_name: str
                                             data=data)
         if shared_only:
             len_target_test = 0
-            plot_title += "(Shared Object Only)"
+            plot_title += "(Shared Objects)"
     if not shared_only:
         X_array, Y_array = stack_input_data(X_array, Y_array, behavior_list, target_tool_list, new_object_list,
                                             data=data)
         if test_only:
             len_target_shared = 0
-            plot_title += "(Test Object Only)"
+            plot_title += " (Test Objects)"
     # map original labels to new labels (based on SIM_OBJECTS_LIST) to match the color bar build on SIM_OBJECTS_LIST
     Y_objects = [SORTED_DATA_OBJ_LIST[label] for label in np.squeeze(Y_array)]
     Y_curr_labels = np.array([all_obj_list.index(obj) for obj in Y_objects])  # reassign labels based on all_obj_list
 
-    subtitle = f"target tool: {target_tool_list}, source tool: {source_tool_list}"
+    subtitle = f"target tool: {target_tool_list}, \n source tool: {source_tool_list}"
     viz_embeddings(loss_func=loss_func_name, obj_list=all_obj_list,
                    embeds=X_array, labels=Y_curr_labels, save_fig=True,
                    len_list=[len_source, len_target_shared, len_target_test], title=plot_title, subtitle=subtitle)
@@ -121,7 +121,7 @@ def viz_embeddings_by_object_set(viz_objects: list, transfer_class, input_dim: i
             source_tool_list=source_tool_list, target_tool_list=target_tool_list,
             modality_list=modality_list, old_object_list=curr_old_object_list, new_object_list=curr_new_object_list,
             trail_list=trail_list)
-        subtitle = f"target tool: {target_tool_list}, source tool: {source_tool_list}"
+        subtitle = f"target tool: {target_tool_list}, \nsource tool: {source_tool_list}"
         viz_embeddings(
             loss_func=loss_func, obj_list=all_obj_list, embeds=all_embeds, labels=all_labels,
             len_list=[source_len, target_len, target_test_len], save_fig=True, title=title, subtitle=subtitle)
@@ -179,7 +179,7 @@ def get_curr_labels_on_cbar(subset_obj_idx, label_to_subset_idx):
     return tick_labels
 
 
-def viz_test_objects_embedding(transfer_class, Encoder, Classifier, pred_label_target):
+def viz_test_objects_embedding(transfer_class, Encoder, Classifier, test_accuracy, pred_label_target):
     # if embeddings need feature reduction to 2D, show the actual predictions for reference
     if configs.encoder_output_dim > 2:
         *_, pred_label_source = transfer_class.eval(Encoder=Encoder, Classifier=Classifier,  # evaluate source tool
@@ -190,14 +190,14 @@ def viz_test_objects_embedding(transfer_class, Encoder, Classifier, pred_label_t
                                  pred_label_target.cpu().detach().numpy()], axis=0)
         viz_embeddings(obj_list=configs.new_object_list, embeds=all_embeds, labels=labels,
                        len_list=[source_len, target_len, target_test_len], show_curr_label=True,
-                       subtitle=f"Test Predictions. Target {configs.target_tool_list} \n "
-                                f"Source: {configs.source_tool_list}")
+                       subtitle=f"Test Predictions. Accuracy: {test_accuracy*100:.1}%, Target {configs.target_tool_list}"
+                                f" \n Source: {configs.source_tool_list}")
 
     # visualize the data in 2 D space. The original labels are preserved because there will be colored background for predicted labels
     # If the embedding is 2D, use the trained Classifier for decision boundaries, the background color will match the actual predictions
     # if > 2, the boundaries are from a logistic regression clf trained on t-sne reduced 2D space,
     #   the background does not reflect actual predictions, it approximates what a linear classifier does on full-sized embeddings.
-    viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier)
+    viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier, accuracy=test_accuracy)
 
 
 def viz_embeddings(embeds: np.ndarray, labels: np.ndarray, len_list: list,
@@ -237,7 +237,7 @@ def viz_embeddings(embeds: np.ndarray, labels: np.ndarray, len_list: list,
     else:
         embeds_2d = embeds
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(10, 8))
     plt.rcParams['font.size'] = 12
     markers = ['o', '^', 's']  # Markers for tools. Circle for source, triangle for target, x for target test
 
@@ -269,11 +269,12 @@ def viz_embeddings(embeds: np.ndarray, labels: np.ndarray, len_list: list,
             marker=marker,
             edgecolor=edge_color,
             s=80,
-            alpha=0.9,
+            alpha=1.0,
             label=f"{['Source Tool(All)', 'Target Tool(Train)', 'Target Tool(Test)'][tool_label]}"
         )
 
-    cbar = plt.colorbar(scatter, ticks=np.arange(len(obj_list)))
+    cbar = plt.colorbar(scatter, ticks=np.arange(len(obj_list))+0.5)  # ticks at the center of each color
+    cbar.ax.tick_params(which='minor', length=0)  # Hide minor ticks on each color's boundary
     if show_curr_label:
         cbar.ax.set_yticklabels(get_curr_labels_on_cbar(subset_obj_idx, label_to_subset_idx))
     else:
@@ -281,13 +282,15 @@ def viz_embeddings(embeds: np.ndarray, labels: np.ndarray, len_list: list,
             subset_obj_idx)])  # colors are sorted by sim object, so should the object names
     cbar.set_label("Objects", rotation=270, labelpad=20)
 
-    plt.legend(title="Tool Type")
+    # plt.legend(title="Tool Type", loc='upper center', bbox_to_anchor=(0.5, -0.15))
+    plt.legend()
     save_name = title if title else f"shared_space-{loss_func} loss"
     viz_discpt = "T-SNE " if embeds.shape[1] > 2 else ""
     plt.title(f"{viz_discpt}Visualization of Embeddings in {save_name} \n {subtitle}")
     plt.xlabel(f"{viz_discpt}Dimension 1")
     plt.ylabel(f"{viz_discpt}Dimension 2")
     plt.grid(True)
+    # plt.tight_layout()
 
     if save_fig:
         plt.savefig(r'./figs/' + save_name + '.png', bbox_inches='tight')
@@ -295,7 +298,7 @@ def viz_embeddings(embeds: np.ndarray, labels: np.ndarray, len_list: list,
     plt.close()
 
 
-def viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier):
+def viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier, accuracy=None):
     object_list = configs.new_object_list
     # Step 1: Generate embedded data
     all_embeds, all_labels, source_len, target_len, target_test_len = transfer_class.encode_all_data(Encoder=Encoder,
@@ -319,8 +322,14 @@ def viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier
         raise Exception(f"embedding shape is not correct: {all_embeds.shape}")
 
     # Step 4: Create a grid for decision boundary
-    x_min, x_max = all_embeddings_2d[:, 0].min() - 1, all_embeddings_2d[:, 0].max() + 1
-    y_min, y_max = all_embeddings_2d[:, 1].min() - 1, all_embeddings_2d[:, 1].max() + 1
+    if configs.l2_norm:
+        buffer = 0.1
+        x_min, x_max = -1 - buffer, 1 + buffer
+        y_min, y_max = -1 - buffer, 1 + buffer
+    else:
+        buffer = 1
+        x_min, x_max = all_embeddings_2d[:, 0].min() - buffer, all_embeddings_2d[:, 0].max() + buffer
+        y_min, y_max = all_embeddings_2d[:, 1].min() - buffer, all_embeddings_2d[:, 1].max() + buffer
     n_points = 200
     xx, yy = np.meshgrid(np.linspace(x_min, x_max, n_points), np.linspace(y_min, y_max, n_points))
     grid_points = np.c_[xx.ravel(), yy.ravel()]  # (n_points*n_points, 2)
@@ -335,21 +344,20 @@ def viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier
 
     grid_classes = np.argmax(grid_proba, axis=1)  # (n_points*n_points, )
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(10, 8))
     plt.rcParams['font.size'] = 12
 
     # Step 5: Plot the decision boundary
     levels = np.arange(-1, len(object_list))  # strangely it needs the lowest level as -1 to show all colors!!!
     grid_classes, cmap, norm, subset_obj_idx, label_to_subset_idx = map_objects_to_colors(object_list, grid_classes)
-    plt.contourf(xx, yy, grid_classes.reshape(xx.shape), cmap=cmap, levels=levels,
-                 alpha=0.3)  # contourf flips the array upside down
+    plt.contourf(xx, yy, grid_classes.reshape(xx.shape), cmap=cmap, levels=levels, alpha=0.3)  # contourf flips the array upside down
 
     # Step 6: Overlay the original and test embeddings
     pred_label_source, *_ = map_objects_to_colors(object_list, source_y)
     pred_label_target, *_ = map_objects_to_colors(object_list, target_y)
     scatter_original = plt.scatter(
         embeddings_2d[:, 0], embeddings_2d[:, 1],
-        c=pred_label_source, cmap=cmap, norm=norm, s=50, alpha=0.8, label="Original Embeddings"
+        c=pred_label_source, cmap=cmap, norm=norm, s=50, alpha=1.0, label="Source Tool"
     )
     # if on unit sphere, shrink the target tool embeddings' sphere, so they don't block the source embeddings
     shrink = 0.95 if configs.l2_norm else 1
@@ -359,19 +367,25 @@ def viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier
     )
 
     # Add a color bar and legend
-    cbar = plt.colorbar(scatter_original, ticks=np.arange(len(object_list)))
+    cbar = plt.colorbar(scatter_original, ticks=np.arange(len(object_list))+0.5)  # ticks at the center of each color
+    cbar.ax.tick_params(which='minor', length=0)  # Hide minor ticks on each color's boundary
     cbar.ax.set_yticklabels(np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)])
     cbar.set_label("Classes", rotation=270, labelpad=20)
 
     if configs.encoder_output_dim > 2:
         subtitle = ("Approximated decision boundary based on the clusters in this 2D space. \n"
-                    "Actual predictions might not match the background color.")
+                    f"Actual predictions might not match the background color. Accuracy: {accuracy*100:.1f}%")
     else:
         subtitle = ("Exact decision boundary from the trained Classifier.\n"
-                    "Actual predictions match the background color.")
-    plt.title(f"Visualization with Classifier Decision Boundary \n{subtitle}")
+                    f"Actual predictions match the background color. Accuracy: {accuracy*100:.1f}%")
+    plt.title(f"Visualization with Classifier Decision Boundary on Test Set - {configs.loss_func} \n{subtitle}")
     plt.xlabel("Dimension 1")
     plt.ylabel("Dimension 2")
-    plt.legend(loc="upper right")
+    # plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15))
+    plt.legend()
     plt.grid(True)
+    # plt.tight_layout()
+    if configs.l2_norm:
+        plt.xlim(-1 - 0.1, 1 + 0.1)
+        plt.ylim(-1 - 0.1, 1 + 0.1)
     plt.show()
