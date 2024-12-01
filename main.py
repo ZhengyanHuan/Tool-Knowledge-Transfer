@@ -1,8 +1,7 @@
+import logging
 import os
 import random
-import sys
 import time
-import logging
 
 import numpy as np
 import torch
@@ -47,22 +46,14 @@ torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
 
 # %% 1. task setup
 main_logger.debug(f"========================= New Run =========================")  # new log starts here
-# for reproducibility
-seed = 43
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
-
-
 myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=configs.loss_func, data_name=configs.data_name)
 
 input_dim = 0
 for modality in configs.modality_list:
-    input_dim += len(myclass.data_dict[configs.behavior_list[0]][configs.target_tool_list[0]][modality][configs.old_object_list[0]]['X'][0])
+    obj_trial_batch = myclass.data_dict[configs.behavior_list[0]][configs.target_tool_list[0]][modality]
+    input_dim += len(obj_trial_batch[configs.old_object_list[0]]['X'][0])
 
-if configs.viz_process:
+if configs.viz_dataset:
     main_logger.info("👀visualize initial data ...")
     for options in [[False, False], [True, False], [False, True]]:
         shared_only, test_only = options
@@ -78,9 +69,9 @@ if configs.retrain_encoder:
     main_logger.info(f"⏱️Time used for encoder training: {round((time.time() - encoder_time) // 60)} "
                      f"min {(time.time() - encoder_time) % 60:.1f} sec.")
 
-if configs.viz_process:
-    main_logger.info("👀visualize embeddings in shared latent space...")
-    viz_embeddings(viz_objects=["all", "shared", "test"], input_dim=input_dim, transfer_class=myclass)
+    if configs.viz_process:
+        main_logger.info("👀visualize embeddings in shared latent space...")
+        viz_embeddings_by_object_set(viz_objects=["all", "shared", "test"], input_dim=input_dim, transfer_class=myclass)
 
 # %% 3. classifier
 if configs.retrain_clr:
@@ -88,7 +79,8 @@ if configs.retrain_clr:
     clf_time = time.time()
 
     Encoder = model.encoder(input_size=input_dim).to(configs.device)
-    Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name, map_location=torch.device(configs.device)))
+    Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name,
+                                       map_location=torch.device(configs.device)))
     myclassifier = myclass.train_classifier(Encoder=Encoder)
     torch.save(myclassifier.state_dict(), './saved_model/classifier/' + configs.clf_pt_name)
 
@@ -105,15 +97,16 @@ Classifier = model.classifier(configs.encoder_output_dim).to(configs.device)
 Classifier.load_state_dict(
     torch.load('./saved_model/classifier/' + configs.clf_pt_name, map_location=torch.device(configs.device)))
 
-accuracy, _, pred_label_target = myclass.eval(Encoder=Encoder, Classifier=Classifier,   # evaluate target tool
+accuracy, _, pred_label_target = myclass.eval(Encoder=Encoder, Classifier=Classifier,  # evaluate target tool
                                               tool_list=configs.target_tool_list, return_pred=True)
 main_logger.info(f"test accuracy: {accuracy * 100:.2f}%")
 main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 60)} "
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
 
-viz_test_objects_embedding(transfer_class=myclass, Encoder=Encoder, Classifier=Classifier, pred_label_target=pred_label_target)
+viz_test_objects_embedding(transfer_class=myclass, Encoder=Encoder, Classifier=Classifier,
+                           pred_label_target=pred_label_target)
 
-#%% Parameters tuning
+# %% Parameters tuning
 # import random
 # import train
 # import numpy as np

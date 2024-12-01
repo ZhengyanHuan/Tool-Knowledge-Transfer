@@ -1,19 +1,20 @@
 # %%
+import logging
 import os
 import pickle
-import logging
-import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.optim as optim
+
 import configs
 import model
 from data.helpers import sanity_check_data_labels, SORTED_DATA_OBJ_LIST
 from sincere_loss_class import SINCERELoss
 
-#%%
+
+# %%
 class Tool_Knowledge_transfer_class:
     def __init__(self, encoder_loss_fuc="TL", data_name="dataset_discretized.bin"):
         """
@@ -86,7 +87,6 @@ class Tool_Knowledge_transfer_class:
         else:
             logging.warning(f'invalid model type: {type}, plot not available.')
 
-
     def prepare_data_classifier(self, behavior_list, source_tool_list, new_object_list, modality_list, trail_list,
                                 Encoder):
         logging.debug(f"➡️ prepare_data_classifier..")
@@ -118,7 +118,8 @@ class Tool_Knowledge_transfer_class:
         loss_record = np.zeros([2, configs.epoch_classifier])
         logging.debug(f"➡️ train_classifier..")
 
-        train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self.prepare_data_classifier(behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder)
+        train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self.prepare_data_classifier(
+            behavior_list, source_tool_list, new_object_list, modality_list, trail_list, Encoder)
         Classifier = model.classifier(configs.encoder_output_dim, len(new_object_list)).to(configs.device)
 
         optimizer = optim.AdamW(Classifier.parameters(), lr=lr_clf)
@@ -127,9 +128,9 @@ class Tool_Knowledge_transfer_class:
             pred_tr = Classifier(train_encoded_source)
             pred_flat_tr = pred_tr.view(-1, len(new_object_list))  # (num_data, num_class)
             loss_tr = self.CEloss(pred_flat_tr, train_truth_flat)
-            loss_record[0,i] = loss_tr.detach().cpu().numpy()
+            loss_record[0, i] = loss_tr.detach().cpu().numpy()
 
-            if len(val_truth_flat>0):
+            if len(val_truth_flat > 0):
                 with torch.no_grad():
                     pred_val = Classifier(val_encoded_source)
                     pred_flat_val = pred_val.view(-1, len(new_object_list))
@@ -140,18 +141,21 @@ class Tool_Knowledge_transfer_class:
             loss_tr.backward()
             optimizer.step()
 
-            if (i+1)%500 == 0:
+            if (i + 1) % 500 == 0:
                 pred_label = torch.argmax(pred_flat_tr, dim=-1)
                 correct_num = torch.sum(pred_label == train_truth_flat)
                 accuracy_train = correct_num / len(train_truth_flat)
 
-                logging.info(f"epoch {i + 1}/{configs.epoch_classifier}, train loss: {loss_tr.item():.4f}, train accuracy: {accuracy_train.item() * 100 :.2f}%")
-                if len(val_truth_flat>0):
+                logging.info(f"epoch {i + 1}/{configs.epoch_classifier}, train loss: {loss_tr.item():.4f}, "
+                             f"train accuracy: {accuracy_train.item() * 100 :.2f}%")
+                if len(val_truth_flat > 0):
                     pred_label = torch.argmax(pred_flat_val, dim=-1)
                     correct_num = torch.sum(pred_label == val_truth_flat)
-                    accuracy_val= correct_num / len(val_truth_flat)
+                    accuracy_val = correct_num / len(val_truth_flat)
 
-                    logging.info(f"epoch {i + 1}/{configs.epoch_classifier}, val loss: {loss_val.item():.4f}, val accuracy: {accuracy_val.item() * 100 :.2f}%")
+                    logging.info(
+                        f"epoch {i + 1}/{configs.epoch_classifier}, val loss: {loss_val.item():.4f}, "
+                        f"val accuracy: {accuracy_val.item() * 100 :.2f}%")
 
         self.plot_func(loss_record, 'classifier', f'classifier_{self.encoder_loss_fuc}')
         return Classifier
@@ -162,7 +166,7 @@ class Tool_Knowledge_transfer_class:
         logging.debug(f"➡️ eval..")
         logging.debug(f"{tool_list}: {new_object_list}")
         source_data = self.get_data(behavior_list, tool_list, modality_list, new_object_list, trail_list)
-        truth_flat = np.zeros(len(tool_list)*len(trail_list)*len(new_object_list))
+        truth_flat = np.zeros(len(tool_list) * len(trail_list) * len(new_object_list))
         for t in range(len(tool_list)):
             for o in range(len(new_object_list)):
                 start = t * (len(new_object_list) * len(trail_list)) + o * len(trail_list)
@@ -172,7 +176,8 @@ class Tool_Knowledge_transfer_class:
         with torch.no_grad():
             encoded_source = Encoder(source_data)
             pred = Classifier(encoded_source)
-            logging.debug(f"source_data: {source_data.shape}, encoded_source: {encoded_source.shape}, pred: {pred.shape}")
+            logging.debug(
+                f"source_data: {source_data.shape}, encoded_source: {encoded_source.shape}, pred: {pred.shape}")
         pred_flat = pred.view(-1, len(new_object_list))
         pred_label = torch.argmax(pred_flat, dim=-1)
 
@@ -196,7 +201,8 @@ class Tool_Knowledge_transfer_class:
         :param source_tool_list:
         :param target_tool_list:
         :param modality_list:
-        :param old_object_list: e.g. ['chickpea', 'split-green-pea', 'glass-bead', 'chia-seed', 'wheat', 'wooden-button', 'styrofoam-bead', 'metal-nut-bolt', 'salt']
+        :param old_object_list: e.g. ['chickpea', 'split-green-pea', 'glass-bead', 'chia-seed', 'wheat',
+                                      'wooden-button', 'styrofoam-bead', 'metal-nut-bolt', 'salt']
         :param trail_list: the index of training trails, e.g. [0,1,2,3,4,5,6,7]
         :return:
         '''
@@ -218,9 +224,11 @@ class Tool_Knowledge_transfer_class:
         '''
         self.input_dim = 0
         for modality in modality_list:
-            self.input_dim+=len(self.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0])
+            self.input_dim += len(
+                self.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0])
 
-        Encoder = model.encoder(self.input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(configs.device)
+        Encoder = model.encoder(self.input_dim, configs.encoder_output_dim,
+                                configs.encoder_hidden_dim).to(configs.device)
         optimizer = optim.AdamW(Encoder.parameters(), lr=lr_en)
 
         for i in range(configs.epoch_encoder):
@@ -234,13 +242,14 @@ class Tool_Knowledge_transfer_class:
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if (i+1)%500 == 0:
+            if (i + 1) % 500 == 0:
                 logging.info(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
 
         self.plot_func(loss_record, 'encoder', f'encoder_{self.encoder_loss_fuc}')
         return Encoder
 
-    def sincere_ls_fn(self, source_data, truth_source, target_data, truth_target, Encoder, temperature=configs.sincere_temp):
+    def sincere_ls_fn(self, source_data, truth_source, target_data, truth_target, Encoder,
+                      temperature=configs.sincere_temp):
         all_embeds_norm, all_labels = self.get_embeddings_and_labels(
             Encoder, source_data, target_data, truth_source, truth_target, l2_norm=True)
         sincere_loss = SINCERELoss(temperature)
@@ -248,23 +257,22 @@ class Tool_Knowledge_transfer_class:
             all_labels = torch.squeeze(all_labels)  # labels (torch.tensor): (B,)
         return sincere_loss(all_embeds_norm, all_labels)
 
-    def  get_same_object_list(self, encoded_source, encoded_target):
+    def get_same_object_list(self, encoded_source, encoded_target):
         same_object_list = []
         tot_len = encoded_source.shape[2]
         target_len = encoded_target.shape[2]
         for i in range(tot_len):
             if i < target_len:
-                object_list1 = encoded_source[:,:,i,:,:].reshape([-1,configs.encoder_output_dim])
-                object_list2 = encoded_target[:,:,i,:,:].reshape([-1,configs.encoder_output_dim])
+                object_list1 = encoded_source[:, :, i, :, :].reshape([-1, configs.encoder_output_dim])
+                object_list2 = encoded_target[:, :, i, :, :].reshape([-1, configs.encoder_output_dim])
                 object_list = torch.concat([object_list1, object_list2], dim=0)
             else:
-                object_list = encoded_source[:,:,i,:,:].reshape([-1,configs.encoder_output_dim])
+                object_list = encoded_source[:, :, i, :, :].reshape([-1, configs.encoder_output_dim])
             same_object_list.append(object_list)
-
 
         return same_object_list
 
-    def TL_loss_fn(self, source_data, target_data, Encoder, alpha = configs.TL_margin):
+    def TL_loss_fn(self, source_data, target_data, Encoder, alpha=configs.TL_margin):
         encoded_source = Encoder(source_data)
         encoded_target = Encoder(target_data)
         same_object_list = self.get_same_object_list(encoded_source, encoded_target)
@@ -285,23 +293,26 @@ class Tool_Knowledge_transfer_class:
             # Sample anchor and positive
             A_index = np.random.choice(trail_tot_num_list[object_index], size=configs.pairs_per_batch_per_object)
             P_index = np.random.choice(trail_tot_num_list[object_index], size=configs.pairs_per_batch_per_object)
-            A_mat[object_index * configs.pairs_per_batch_per_object: (object_index + 1) * configs.pairs_per_batch_per_object] = object_list[A_index,:]
-            P_mat[object_index * configs.pairs_per_batch_per_object: (object_index + 1) * configs.pairs_per_batch_per_object] = object_list[P_index,:]
+            start = object_index * configs.pairs_per_batch_per_object
+            end = (object_index + 1) * configs.pairs_per_batch_per_object
+            A_mat[start: end] = object_list[A_index,:]
+            P_mat[start: end] = object_list[P_index,:]
 
             # Sample negative
             N_object_list = np.random.choice(len(trail_tot_num_list), size=configs.pairs_per_batch_per_object)
-            N_list = torch.zeros(configs.pairs_per_batch_per_object, configs.encoder_output_dim, dtype=torch.float32).to(configs.device)
+            N_list = torch.zeros(configs.pairs_per_batch_per_object, configs.encoder_output_dim,
+                                 dtype=torch.float32).to(configs.device)
             for i in range(len(N_object_list)):
                 N_object_index = N_object_list[i]
                 N_trail_index = np.random.choice(trail_tot_num_list[N_object_index])
                 N_list[i] = same_object_list[N_object_index][N_trail_index]
-                N_mat[object_index * configs.pairs_per_batch_per_object: (object_index + 1) * configs.pairs_per_batch_per_object] = N_list
+                N_mat[start: end] = N_list
 
-        dPA = torch.norm(A_mat- P_mat, dim=1)
-        dNA = torch.norm(A_mat- N_mat, dim=1)
+        dPA = torch.norm(A_mat - P_mat, dim=1)
+        dNA = torch.norm(A_mat - N_mat, dim=1)
 
         d = dPA - dNA + alpha
-        d[d<0] = 0
+        d[d < 0] = 0
 
         loss = torch.mean(d)
         return loss
@@ -332,8 +343,10 @@ class Tool_Knowledge_transfer_class:
                         meta_data[behavior][tool][object] = len(trail_list)
                         for trail_index in range(len(trail_list)):
                             trail = trail_list[trail_index]
-                            data[behavior_index][tool_index][object_index][trail_index] = self.data_dict[behavior][tool][modality_list[0]][object]['X'][trail]
-                            label[behavior_index][tool_index][object_index][trail_index] = self.data_dict[behavior][tool][modality_list[0]][object]['Y'][trail]
+                            data[behavior_index][tool_index][object_index][trail_index] = \
+                            self.data_dict[behavior][tool][modality_list[0]][object]['X'][trail]
+                            label[behavior_index][tool_index][object_index][trail_index] = \
+                            self.data_dict[behavior][tool][modality_list[0]][object]['Y'][trail]
 
             data = torch.tensor(data, dtype=torch.float32, device=configs.device)
             label = torch.tensor(label, dtype=torch.int64, device=configs.device)
@@ -361,7 +374,8 @@ class Tool_Knowledge_transfer_class:
         logging.debug(f"relative_labels: \n    {relative_labels}")
         return relative_labels.reshape(original_labels.shape)
 
-    def get_data_and_convert_labels(self, behavior_list=configs.behavior_list, source_tool_list=configs.source_tool_list,
+    def get_data_and_convert_labels(self, behavior_list=configs.behavior_list,
+                                    source_tool_list=configs.source_tool_list,
                                     target_tool_list=configs.target_tool_list, modality_list=configs.modality_list,
                                     old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
                                     trail_list=configs.trail_list, test_target=False):

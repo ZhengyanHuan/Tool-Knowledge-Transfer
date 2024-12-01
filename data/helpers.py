@@ -1,14 +1,14 @@
 import logging
 
 import numpy as np
+import torch
 from matplotlib import pyplot as plt
-from matplotlib.colors import ListedColormap, BoundaryNorm, to_hex, LinearSegmentedColormap
+from matplotlib.colors import ListedColormap, BoundaryNorm
 from sklearn.linear_model import LogisticRegression
 from sklearn.manifold import TSNE
-import torch
 
-import model
 import configs
+import model
 
 # manually order objects by similarity
 SIM_OBJECTS_LIST = ['empty', 'water', 'detergent', 'chia-seed', 'cane-sugar', 'salt',
@@ -186,11 +186,12 @@ def viz_test_objects_embedding(transfer_class, Encoder, Classifier, pred_label_t
                                                     tool_list=configs.source_tool_list, return_pred=True)
         all_embeds, all_labels, source_len, target_len, target_test_len = transfer_class.encode_all_data(
             Encoder=Encoder, new_obj_only=True)
-        labels = np.concatenate([pred_label_source.cpu().detach().numpy(), pred_label_target.cpu().detach().numpy()],
-                                axis=0)
+        labels = np.concatenate([pred_label_source.cpu().detach().numpy(),
+                                 pred_label_target.cpu().detach().numpy()], axis=0)
         viz_embeddings(obj_list=configs.new_object_list, embeds=all_embeds, labels=labels,
                        len_list=[source_len, target_len, target_test_len], show_curr_label=True,
-                       subtitle=f"Test Predictions. Target {configs.target_tool_list} \n Source: {configs.source_tool_list}")
+                       subtitle=f"Test Predictions. Target {configs.target_tool_list} \n "
+                                f"Source: {configs.source_tool_list}")
 
     # visualize the data in 2 D space. The original labels are preserved because there will be colored background for predicted labels
     # If the embedding is 2D, use the trained Classifier for decision boundaries, the background color will match the actual predictions
