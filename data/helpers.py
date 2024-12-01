@@ -169,8 +169,11 @@ def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
     logging.debug(f"labels: \n      {labels}")
 
     # Dimensionality reduction using t-SNE
-    tsne = TSNE(n_components=2, random_state=42, init='pca', learning_rate="auto")
-    embeds_2d = tsne.fit_transform(embeds)
+    if embeds.shape[1] > 2:
+        tsne = TSNE(n_components=2, random_state=42, init='pca', learning_rate="auto")
+        embeds_2d = tsne.fit_transform(embeds)
+    else:
+        embeds_2d = embeds
 
     plt.figure(figsize=(8, 6))
     plt.rcParams['font.size'] = 12
@@ -238,9 +241,10 @@ def viz_shared_latent_space(loss_func: str, obj_list: list, embeds: np.ndarray,
 
     plt.legend(title="Tool Type")
     save_name = title if title else f"shared_space-{loss_func} loss"
-    plt.title(f"T-SNE Visualization of Embeddings in {save_name} \n {subtitle}")
-    plt.xlabel("t-SNE Component 1")
-    plt.ylabel("t-SNE Component 2")
+    viz_discpt = "T-SNE " if embeds.shape[1] > 2 else ""
+    plt.title(f"{viz_discpt}Visualization of Embeddings in {save_name} \n {subtitle}")
+    plt.xlabel(f"{viz_discpt}Dimension 1")
+    plt.ylabel(f"{viz_discpt}Dimension 2")
     plt.grid(True)
 
     if save_fig:
