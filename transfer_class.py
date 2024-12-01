@@ -112,7 +112,9 @@ class Tool_Knowledge_transfer_class:
 
         return train_encoded_source, val_encoded_source, train_truth.reshape(-1), val_truth.reshape(-1)
 
-    def train_classifier(self,behavior_list, source_tool_list,new_object_list, modality_list, trail_list, Encoder,lr_clf = configs.lr_classifier):
+    def train_classifier(self, Encoder, behavior_list=configs.behavior_list, trail_list=configs.trail_list,
+                         new_object_list=configs.new_object_list, modality_list=configs.modality_list,
+                         source_tool_list=configs.source_tool_list, lr_clf=configs.lr_classifier):
         loss_record = np.zeros([2, configs.epoch_classifier])
         logging.debug(f"➡️ train_classifier..")
 
@@ -154,8 +156,9 @@ class Tool_Knowledge_transfer_class:
         self.plot_func(loss_record, 'classifier', f'classifier_{self.encoder_loss_fuc}')
         return Classifier
 
-    def eval(self, Encoder, Classifier, behavior_list, tool_list,new_object_list, modality_list, trail_list,
-             return_pred=False):
+    def eval(self, Encoder, Classifier, tool_list=configs.target_tool_list, behavior_list=configs.behavior_list,
+             new_object_list=configs.new_object_list, modality_list=configs.modality_list,
+             trail_list=configs.trail_list, return_pred=False):
         logging.debug(f"➡️ eval..")
         logging.debug(f"{tool_list}: {new_object_list}")
         source_data = self.get_data(behavior_list, tool_list, modality_list, new_object_list, trail_list)
@@ -183,8 +186,10 @@ class Tool_Knowledge_transfer_class:
         else:
             return accuracy_test
 
-    def train_encoder(self, behavior_list, source_tool_list, target_tool_list, old_object_list, new_object_list,
-                      modality_list, trail_list, lr_en=configs.lr_encoder):
+    def train_encoder(self, behavior_list=configs.behavior_list,
+                      source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
+                      old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
+                      modality_list=configs.modality_list, trail_list=configs.trail_list, lr_en=configs.lr_encoder):
         '''
 
         :param behavior_list:
@@ -423,11 +428,15 @@ class Tool_Knowledge_transfer_class:
 
         return all_embeds, all_labels
 
-    def encode_all_data(self, Encoder, behavior_list, source_tool_list, target_tool_list, modality_list, old_object_list,
-                        new_object_list, trail_list, new_obj_only=False, train_obj_only=False):
+    def encode_all_data(self, Encoder, new_obj_only=False, train_obj_only=False,
+                        behavior_list=configs.behavior_list, source_tool_list=configs.source_tool_list,
+                        target_tool_list=configs.target_tool_list, modality_list=configs.modality_list,
+                        old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
+                        trail_list=configs.trail_list):
         logging.debug(f"➡️encode all data...")
         if new_obj_only:
             target_tool_train = []
+            old_object_list = []
         else:
             target_tool_train = target_tool_list
         source_data, target_data, truth_source, truth_target = self.get_data_and_convert_labels(

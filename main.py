@@ -28,16 +28,6 @@ if not os.path.exists(log_file_path):
 logging.basicConfig(level=logging.DEBUG, filename=log_file_path + "/log_file_main.log",
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-main_logger.debug(f"========================= New Run =========================")  # new log starts here
-# for reproducibility
-seed = 43
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
-
-# %% 1. task parameters
 main_logger.info(f"input data name: {configs.data_name}")
 main_logger.info(f"behavior_list: {configs.behavior_list}, modality_list: {configs.target_tool_list}, "
                  f"trail_list: {configs.trail_list}")
@@ -47,25 +37,22 @@ main_logger.info(f"old_object_list: {configs.old_object_list}")
 main_logger.info(f"new_object_list: {configs.new_object_list}")
 main_logger.info(f"loss_func: {configs.loss_func}")
 
+# %% 1. task setup
+main_logger.debug(f"========================= New Run =========================")  # new log starts here
+# for reproducibility
+seed = 43
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
 
-trail_list = configs.trail_list
-behavior_list = configs.behavior_list
-modality_list = configs.modality_list
-source_tool_list = configs.source_tool_list
-target_tool_list = configs.target_tool_list
-old_object_list = configs.old_object_list
-new_object_list = configs.new_object_list
 
-data_name = configs.data_name
-loss_func = configs.loss_func
-encoder_pt_name = configs.encoder_pt_name
-clf_pt_name = configs.clf_pt_name
-
-myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=loss_func, data_name=data_name)
+myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=configs.loss_func, data_name=configs.data_name)
 
 input_dim = 0
-for modality in modality_list:
-    input_dim += len(myclass.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0])
+for modality in configs.modality_list:
+    input_dim += len(myclass.data_dict[configs.behavior_list[0]][configs.target_tool_list[0]][modality][configs.old_object_list[0]]['X'][0])
 
 if configs.viz_process:
     main_logger.info("👀visualize initial data ...")
@@ -76,13 +63,10 @@ if configs.viz_process:
 start_time = time.time()
 # %% 2. encoder
 if configs.retrain_encoder:
-    main_logger.info(f"👉 ------------ Training representation encoder using {loss_func} loss ------------ ")
+    main_logger.info(f"👉 ------------ Training representation encoder using {configs.loss_func} loss ------------ ")
     encoder_time = time.time()
-    myencoder = myclass.train_encoder(
-        behavior_list=behavior_list, source_tool_list=source_tool_list, target_tool_list=target_tool_list,
-        old_object_list=old_object_list, new_object_list=new_object_list, modality_list=modality_list,
-        trail_list=trail_list)
-    torch.save(myencoder.state_dict(), './saved_model/encoder/' + encoder_pt_name)
+    myencoder = myclass.train_encoder()
+    torch.save(myencoder.state_dict(), './saved_model/encoder/' + configs.encoder_pt_name)
     main_logger.info(f"⏱️Time used for encoder training: {round((time.time() - encoder_time) // 60)} "
                      f"min {(time.time() - encoder_time) % 60:.1f} sec.")
 
@@ -95,51 +79,39 @@ if configs.retrain_clr:
     main_logger.info(f"👉 ------------ Training classification head ------------ ")
     clf_time = time.time()
 
-    Encoder = model.encoder(input_size=input_dim, output_size=configs.encoder_output_dim,
-                            hidden_size=configs.encoder_hidden_dim).to(configs.device)
-    Encoder.load_state_dict(torch.load(
-        './saved_model/encoder/' + encoder_pt_name, map_location=torch.device(configs.device)))
-    myclassifier = myclass.train_classifier(
-        behavior_list=behavior_list, source_tool_list=source_tool_list, new_object_list=new_object_list,
-        modality_list=modality_list, trail_list=trail_list, Encoder=Encoder)
-    torch.save(myclassifier.state_dict(), './saved_model/classifier/' + clf_pt_name)
+    Encoder = model.encoder(input_size=input_dim).to(configs.device)
+    Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name, map_location=torch.device(configs.device)))
+    myclassifier = myclass.train_classifier(Encoder=Encoder)
+    torch.save(myclassifier.state_dict(), './saved_model/classifier/' + configs.clf_pt_name)
 
     main_logger.info(f"⏱️Time used for classifier training: {round((time.time() - clf_time) // 60)} "
                      f"min {(time.time() - clf_time) % 60:.1f} sec.")
 
 # %% 4. evaluation
 main_logger.info(f"👉 ------------ Evaluating the classifier ------------ ")
-Encoder = model.encoder(input_size=input_dim, output_size=configs.encoder_output_dim,
-                        hidden_size=configs.encoder_hidden_dim).to(configs.device)
+Encoder = model.encoder(input_size=input_dim).to(configs.device)
 Encoder.load_state_dict(
-    torch.load('./saved_model/encoder/' + encoder_pt_name, map_location=torch.device(configs.device)))
+    torch.load('./saved_model/encoder/' + configs.encoder_pt_name, map_location=torch.device(configs.device)))
 
-Classifier = model.classifier(configs.encoder_output_dim, len(new_object_list)).to(configs.device)
+Classifier = model.classifier(configs.encoder_output_dim).to(configs.device)
 Classifier.load_state_dict(
-    torch.load('./saved_model/classifier/' + clf_pt_name, map_location=torch.device(configs.device)))
+    torch.load('./saved_model/classifier/' + configs.clf_pt_name, map_location=torch.device(configs.device)))
 
-accuracy = myclass.eval(Encoder, Classifier, behavior_list, target_tool_list, new_object_list, modality_list,
-                        trail_list)
+accuracy, _, pred_label_target = myclass.eval(Encoder=Encoder, Classifier=Classifier,   # evaluate target tool
+                                              tool_list=configs.target_tool_list, return_pred=True)
 main_logger.info(f"test accuracy: {accuracy * 100:.2f}%")
 main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 60)} "
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
 
-*_, pred_label_source = myclass.eval(
-    Encoder, Classifier, behavior_list, source_tool_list, new_object_list, modality_list, trail_list, return_pred=True)
-*_, pred_label_target = myclass.eval(
-    Encoder, Classifier, behavior_list, target_tool_list, new_object_list, modality_list, trail_list, return_pred=True)
+*_, pred_label_source = myclass.eval(Encoder=Encoder, Classifier=Classifier,  # evaluate source tool
+                                     tool_list=configs.source_tool_list, return_pred=True)
 all_embeds, all_labels, source_len, target_len, target_test_len = myclass.encode_all_data(
-    Encoder, new_obj_only=True, train_obj_only=False, behavior_list=behavior_list,
-    source_tool_list=source_tool_list, target_tool_list=target_tool_list,
-    modality_list=modality_list, old_object_list=[], new_object_list=new_object_list,
-    trail_list=trail_list)
+    Encoder=Encoder, new_obj_only=True, train_obj_only=False, old_object_list=[])
 labels = np.concatenate([pred_label_source.cpu().detach().numpy(), pred_label_target.cpu().detach().numpy()], axis=0)
-viz_shared_latent_space(obj_list=new_object_list, embeds=all_embeds, labels=labels,
+viz_shared_latent_space(obj_list=configs.new_object_list, embeds=all_embeds, labels=labels,
                         len_list=[source_len, target_len, target_test_len], show_orig_label=True,
-                        subtitle=f"Test Predictions. Target {target_tool_list} \n Source: {source_tool_list}")
-
-viz_classifier_learned_boundary(myclass, Encoder, Classifier, source_tool_list, target_tool_list, old_object_list,
-                                new_object_list, behavior_list, modality_list, trail_list)
+                        subtitle=f"Test Predictions. Target {configs.target_tool_list} "
+                                 f"\n Source: {configs.source_tool_list}")
 
 #%% Parameters tuning
 # import random
