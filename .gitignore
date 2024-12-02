@@ -7,3 +7,5 @@ __pycache__/
 
 # Optionally ignore .pyc files outside __pycache__ directories
 *.pyc
+
+ignored_files/
