@@ -337,3 +337,40 @@ def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifie
         plt.ylim(-1 - 0.1, 1 + 0.1)
     plt.show()
 
+
+def plot_learning_progression(record, type, save_name='test', plot_every=10):  # type-> 'encoder', 'classifier'
+    logging.debug(f"➡️ plot_func for {type}: {save_name}...")
+    plt.figure(figsize=(8, 6))
+    plt.rcParams['font.size'] = 18
+
+    color_group = ['red', 'blue']
+    if type == 'encoder':
+        encoder_param = configs.TL_margin if configs.loss_func == "TL" else configs.sincere_temp
+        encoder_param_name = "margin" if configs.loss_func == "TL" else "temperature"
+        xaxis = np.arange(1, len(record) + 1)
+        plt.plot(xaxis[::plot_every], record[::plot_every], color_group[0])
+        plt.xlabel('epochs')
+        plt.ylabel('loss')
+        plt.title(f'Encoder Training Loss Progression - Loss: {configs.loss_func} \n '
+                  f'Epochs: lr: {configs.lr_encoder}, {encoder_param_name}: {encoder_param}'
+                  f', emb_size: {configs.encoder_output_dim}')
+        plt.grid()
+        plt.savefig(r'./figs/' + save_name + '.png', bbox_inches='tight')
+        plt.show()
+        plt.close()
+    elif type == 'classifier':
+        xaxis = np.arange(1, record.shape[1] + 1)
+        plt.plot(xaxis[::plot_every], record[0, ::plot_every], color_group[0], label='tr loss')
+        if record[1, -1] != 0:
+            plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label='val loss')
+        plt.xlabel('epochs')
+        plt.title(f'Classifier Training Loss Progression \n '
+                  f'Epochs: lr: {configs.lr_classifier}')
+        plt.ylabel('loss')
+        plt.grid()
+        plt.legend()
+        plt.savefig(r'./figs/' + save_name + '.png', bbox_inches='tight')
+        plt.show()
+        plt.close()
+    else:
+        logging.warning(f'invalid model type: {type}, plot not available.')

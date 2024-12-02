@@ -48,8 +48,11 @@ def make_new_labels_to_curr_obj(original_labels: Union[torch.Tensor, np.array], 
 
 def create_tool_idx_list(source_label_len=0, assist_label_train_len=0,
                          assist_label_test_len=0, target_label_train_len=0, target_label_test_len=0) -> list:
-    # tool_order_list = ['Source Tool(All)', 'Assist Tool(Train)', 'Assist Tool(Test)',
-    #                    'Target Tool(Train)', 'Target Tool(Test)']
+    """
+    :return:
+    tool_order_list = ['Source Tool(All)', 'Assist Tool(Train)', 'Assist Tool(Test)',
+                       'Target Tool(Train)', 'Target Tool(Test)']
+    """
     return [0] * source_label_len + [1] * assist_label_train_len + [2] * assist_label_test_len + [
         3] * target_label_train_len + [4] * target_label_test_len
 
@@ -67,14 +70,6 @@ def get_all_embeddings_or_data(
         target_tool_list=configs.target_tool_list, old_object_list=configs.old_object_list,
         new_object_list=configs.new_object_list) -> Tuple[List[np.ndarray], List[np.ndarray], dict]:
     """
-
-    :param trans_cls:
-    :param encoder:
-    :param source_tool_list:
-    :param assist_tool_list:
-    :param target_tool_list:
-    :param old_object_list:
-    :param new_object_list:
     :return:
         data order: source_old, source_new, assist_old, assist_new, target_old, target_new
         labels are indexed in the order of old_object_list + new_object_list
