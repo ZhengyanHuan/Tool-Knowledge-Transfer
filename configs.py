@@ -20,6 +20,16 @@ encoder_pt_name = f"myencoder_{loss_func}.pt"
 clf_pt_name = f"myclassifier_{loss_func}.pt"
 retrain_encoder = True
 retrain_clr = True
+
+encoder_exp_name = "source-assist"  # besides source, use old object from assist tool to train encoder. default is ""
+# encoder_exp_name = "source-all":  # use all other tools (source+assist) to train encoder
+clf_exp_name = "source-assist"  # besides source, use new object from assist tool to train clf. default is ""
+# encoder_exp_name = ""
+# clf_exp_name = ""
+if "assist" not in encoder_exp_name:
+    if "all" in encoder_exp_name:
+        source_tool_list += assist_tool_list
+    assist_tool_list = []
 viz_dataset = True
 viz_process = True
 

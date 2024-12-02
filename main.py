@@ -9,6 +9,7 @@ import torch
 import configs
 import model
 from data.helpers import viz_input_data, viz_embeddings_by_object_set, viz_test_objects_embedding
+from helpers.data_helpers import select_context_for_experiment
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %%  0. setup
@@ -43,6 +44,9 @@ configs.set_torch_seed()
 main_logger.debug(f"========================= New Run =========================")  # new log starts here
 myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=configs.loss_func, data_name=configs.data_name)
 
+(encoder_source_tool_list, encoder_target_tool_list,
+ clf_source_tool_list, clf_target_tool_list) = select_context_for_experiment(configs.encoder_exp_name, configs.clf_exp_name)
+
 input_dim = 0
 for modality in configs.modality_list:
     obj_trial_batch = myclass.data_dict[configs.behavior_list[0]][configs.target_tool_list[0]][modality]
@@ -59,8 +63,9 @@ start_time = time.time()
 if configs.retrain_encoder:
     main_logger.info(f"👉 ------------ Training representation encoder using {configs.loss_func} loss ------------ ")
     encoder_time = time.time()
-    myencoder = myclass.train_encoder()
     configs.set_torch_seed()
+    myencoder = myclass.train_encoder(source_tool_list=encoder_source_tool_list,
+                                      target_tool_list=encoder_target_tool_list)
     torch.save(myencoder.state_dict(), './saved_model/encoder/' + configs.encoder_pt_name)
     main_logger.info(f"⏱️Time used for encoder training: {round((time.time() - encoder_time) // 60)} "
                      f"min {(time.time() - encoder_time) % 60:.1f} sec.")
@@ -77,7 +82,8 @@ if configs.retrain_clr:
     Encoder = model.encoder(input_size=input_dim).to(configs.device)
     Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name,
                                        map_location=torch.device(configs.device)))
-    myclassifier = myclass.train_classifier(Encoder=Encoder)
+    myclassifier = myclass.train_classifier(Encoder=Encoder,
+                                            source_tool_list=clf_source_tool_list)
     torch.save(myclassifier.state_dict(), './saved_model/classifier/' + configs.clf_pt_name)
 
     main_logger.info(f"⏱️Time used for classifier training: {round((time.time() - clf_time) // 60)} "
@@ -94,7 +100,7 @@ Classifier.load_state_dict(
     torch.load('./saved_model/classifier/' + configs.clf_pt_name, map_location=torch.device(configs.device)))
 
 accuracy, _, pred_label_target = myclass.eval(Encoder=Encoder, Classifier=Classifier,  # evaluate target tool
-                                              tool_list=configs.target_tool_list, return_pred=True)
+                                              tool_list=clf_target_tool_list, return_pred=True)
 main_logger.info(f"test accuracy: {accuracy * 100:.2f}%")
 main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 60)} "
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
