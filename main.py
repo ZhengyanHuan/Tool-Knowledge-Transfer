@@ -8,8 +8,9 @@ import torch
 
 import configs
 import model
-from data.helpers import viz_input_data, viz_embeddings_by_object_set, viz_test_objects_embedding
 from helpers.data_helpers import select_context_for_experiment
+from helpers.viz_helpers import viz_emb_in_shared_space, viz_test_objects_embedding
+from helpers.viz_helpers import viz_input_data
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %%  0. setup
@@ -71,9 +72,11 @@ if configs.retrain_encoder:
                      f"min {(time.time() - encoder_time) % 60:.1f} sec.")
 
 if configs.viz_share_space:
+    Encoder = model.encoder(input_size=input_dim).to(configs.device)
+    Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name,
+                                       map_location=torch.device(configs.device)))
     main_logger.info("👀visualize embeddings in shared latent space...")
-    viz_embeddings_by_object_set(viz_objects=["all", "shared", "test"], input_dim=input_dim, transfer_class=myclass)
-
+    viz_emb_in_shared_space(trans_cls=myclass, encoder=Encoder, viz_l2_norm=configs.viz_share_space_l2_norm)
 # %% 3. classifier
 if configs.retrain_clr:
     main_logger.info(f"👉 ------------ Training classification head ------------ ")
