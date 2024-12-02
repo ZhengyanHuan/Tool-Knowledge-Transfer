@@ -118,6 +118,7 @@ class Tool_Knowledge_transfer_class:
     def train_classifier(self, Encoder, behavior_list=configs.behavior_list, trail_list=configs.trail_list,
                          new_object_list=configs.new_object_list, modality_list=configs.modality_list,
                          source_tool_list=configs.source_tool_list, lr_clf=configs.lr_classifier):
+        configs.set_torch_seed()
         loss_record = np.zeros([2, configs.epoch_classifier])
         logging.debug(f"➡️ train_classifier..")
 

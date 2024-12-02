@@ -57,3 +57,10 @@ elif torch.backends.mps.is_available():
     device = 'mps'  # apple M1 chip
 else:
     device = 'cpu'
+
+def set_torch_seed(seed=43):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
+    random.seed(seed)
+    np.random.seed(seed)

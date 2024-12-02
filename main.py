@@ -37,12 +37,7 @@ main_logger.info(f"new_object_list: {configs.new_object_list}")
 main_logger.info(f"loss_func: {configs.loss_func}")
 
 # for reproducibility
-seed = 43
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
+configs.set_torch_seed()
 
 # %% 1. task setup
 main_logger.debug(f"========================= New Run =========================")  # new log starts here
@@ -65,6 +60,7 @@ if configs.retrain_encoder:
     main_logger.info(f"👉 ------------ Training representation encoder using {configs.loss_func} loss ------------ ")
     encoder_time = time.time()
     myencoder = myclass.train_encoder()
+    configs.set_torch_seed()
     torch.save(myencoder.state_dict(), './saved_model/encoder/' + configs.encoder_pt_name)
     main_logger.info(f"⏱️Time used for encoder training: {round((time.time() - encoder_time) // 60)} "
                      f"min {(time.time() - encoder_time) % 60:.1f} sec.")
