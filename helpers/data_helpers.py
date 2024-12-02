@@ -36,21 +36,6 @@ def sanity_check_data_labels(data_dict: dict):
         raise AssertionError
 
 
-def stack_input_data(X_array, Y_array, behavior_list, tool_list, obj_list, data):
-    """stack new data to X_array, Y_array"""
-    X_array = [X_array] if len(X_array) != 0 else []
-    Y_array = [Y_array] if len(Y_array) != 0 else []
-    meta_data = {b: {t: {} for t in tool_list} for b in behavior_list}
-    for b_idx, b in enumerate(behavior_list):
-        for t_idx, t in enumerate(tool_list):
-            for o_idx, o in enumerate(obj_list):
-                X_array.append(data[b][t]['audio'][o]['X'])
-                Y_array.append(data[b][t]['audio'][o]['Y'])
-                meta_data[b][t][o] = len(data[b][t]['audio'][o]['Y'])
-    logging.debug(f"data input meta_data: {meta_data}")
-    return np.vstack(X_array), np.vstack(Y_array)
-
-
 def make_new_labels_to_curr_obj(original_labels: Union[torch.Tensor, np.array], object_list: list):
     """take original label from the data set, assign new labels by all objects in old+new order"""
     if original_labels is None:
@@ -65,7 +50,8 @@ def create_tool_idx_list(source_label_len=0, assist_label_train_len=0,
                          assist_label_test_len=0, target_label_train_len=0, target_label_test_len=0) -> list:
     # tool_order_list = ['Source Tool(All)', 'Assist Tool(Train)', 'Assist Tool(Test)',
     #                    'Target Tool(Train)', 'Target Tool(Test)']
-    return [0] * source_label_len + [1] * assist_label_train_len + [2] * assist_label_test_len + [3] * target_label_train_len + [4] * target_label_test_len
+    return [0] * source_label_len + [1] * assist_label_train_len + [2] * assist_label_test_len + [
+        3] * target_label_train_len + [4] * target_label_test_len
 
 
 def restart_label_index_from_zero(labels):
@@ -75,8 +61,8 @@ def restart_label_index_from_zero(labels):
     return np.array([value_to_index[value] for value in labels])
 
 
-def get_all_embeddings(
-        trans_cls, encoder: model.encoder,
+def get_all_embeddings_or_data(
+        trans_cls, encoder: model.encoder = None, data_dim=None,
         source_tool_list=configs.source_tool_list, assist_tool_list=configs.assist_tool_list,
         target_tool_list=configs.target_tool_list, old_object_list=configs.old_object_list,
         new_object_list=configs.new_object_list) -> Tuple[List[np.ndarray], List[np.ndarray], dict]:
@@ -94,6 +80,7 @@ def get_all_embeddings(
         labels are indexed in the order of old_object_list + new_object_list
     """
     logging.debug(f"➡️ get_all_embeddings...")
+    assert (encoder or data_dim) is not None
     all_emb = []
     all_labels = []
     meta_data = {}
@@ -102,12 +89,19 @@ def get_all_embeddings(
             meta_data[t_idx * o_idx + o_idx] = tool_list + object_list
             data, labels = trans_cls.get_data(tool_list=tool_list, object_list=object_list, get_labels=True)
             if data is not None:
-                encoded_data = encoder(data).reshape(-1, configs.encoder_output_dim).cpu().detach().numpy()
+                if encoder is not None:
+                    encoded_data = encoder(data).reshape(-1, configs.encoder_output_dim).cpu().detach().numpy()
+                else:
+                    encoded_data = data.cpu().detach().numpy().reshape(-1, data_dim)
                 labels = make_new_labels_to_curr_obj(original_labels=labels,
                                                      object_list=old_object_list + new_object_list)
+
                 labels = labels.reshape(-1, 1)
             else:
-                encoded_data = np.empty((0, configs.encoder_output_dim), dtype=np.float32)
+                if encoder is not None:
+                    encoded_data = np.empty((0, configs.encoder_output_dim), dtype=np.float32)
+                else:
+                    encoded_data = np.empty((0, data_dim), dtype=np.float32)
                 labels = np.empty((0, 1), dtype=np.int64)
             all_emb.append(encoded_data)
             all_labels.append(labels)
@@ -142,21 +136,3 @@ def select_context_for_experiment(encoder_exp_name="", clf_exp_name=""):
         clf_source_tool_list = source_tool_list + assist_tool_list
 
     return encoder_source_tool_list, encoder_target_tool_list, clf_source_tool_list, clf_target_tool_list
-
-# def select_embedding_by_context(all_emb: List[np.ndarray], all_labels: List[np.ndarray],
-#                                 meta_data: dict, tool_groups: List[List[str]], object_groups: List[List[str]]) \
-#         -> Tuple[List[np.ndarray], List[np.ndarray]]:
-#     selected_emb = []
-#     selected_label = []
-#     for tool_list in tool_groups:
-#         for obj_list in object_groups:
-#             data_idx = None
-#             for idx, context in meta_data.items():
-#                 if context == tool_list + obj_list:
-#                     data_idx = idx
-#             if data_idx is not None:
-#                 selected_emb.append(all_emb[meta_data[data_idx]])
-#                 selected_label.append(all_labels[data_idx])
-#             else:
-#                 raise Exception(f"can't find context: {tool_list}: {obj_list}")
-#     return selected_emb, selected_label

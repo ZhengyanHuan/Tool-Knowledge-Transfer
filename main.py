@@ -9,8 +9,7 @@ import torch
 import configs
 import model
 from helpers.data_helpers import select_context_for_experiment
-from helpers.viz_helpers import viz_emb_in_shared_space, viz_test_objects_embedding
-from helpers.viz_helpers import viz_input_data
+from helpers.viz_helpers import viz_test_objects_embedding, viz_data
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %%  0. setup
@@ -49,15 +48,16 @@ myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=configs.loss_func, data
  clf_source_tool_list, clf_target_tool_list) = select_context_for_experiment(configs.encoder_exp_name, configs.clf_exp_name)
 
 input_dim = 0
+data_dim = 0
 for modality in configs.modality_list:
     obj_trial_batch = myclass.data_dict[configs.behavior_list[0]][configs.target_tool_list[0]][modality]
-    input_dim += len(obj_trial_batch[configs.old_object_list[0]]['X'][0])
+    x_sample = obj_trial_batch[configs.old_object_list[0]]['X'][0]
+    input_dim += len(x_sample)
+    data_dim = x_sample.shape[-1]
 
 if configs.viz_dataset:
     main_logger.info("👀visualize initial data ...")
-    for options in [[False, False], [True, False], [False, True]]:
-        shared_only, test_only = options
-        viz_input_data(shared_only=shared_only, test_only=test_only, data=myclass.data_dict)
+    viz_data(trans_cls=myclass, data_dim=data_dim, encoder=None, viz_l2_norm=False)
 
 start_time = time.time()
 # %% 2. encoder
@@ -76,7 +76,7 @@ if configs.viz_share_space:
     Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name,
                                        map_location=torch.device(configs.device)))
     main_logger.info("👀visualize embeddings in shared latent space...")
-    viz_emb_in_shared_space(trans_cls=myclass, encoder=Encoder, viz_l2_norm=configs.viz_share_space_l2_norm)
+    viz_data(trans_cls=myclass, encoder=Encoder, viz_l2_norm=configs.viz_share_space_l2_norm)
 # %% 3. classifier
 if configs.retrain_clr:
     main_logger.info(f"👉 ------------ Training classification head ------------ ")

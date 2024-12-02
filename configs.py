@@ -1,3 +1,6 @@
+import random
+
+import numpy as np
 import torch
 
 behavior_list = ['3-stirring-fast']
