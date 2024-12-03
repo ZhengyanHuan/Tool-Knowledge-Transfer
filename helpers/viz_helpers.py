@@ -75,7 +75,8 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None, viz_l2_no
                                        assist_label_train_len=len_list[2], assist_label_test_len=len_list[3],
                                        target_label_train_len=len_list[4], target_label_test_len=len_list[5])
     data_descpt = "All Input Data" if encoder is None else f"All Embedded Data-{loss_func} Loss"
-    _viz_embeddings(embeds=np.vstack(data_groups), labels=np.vstack(label_groups), viz_l2_norm=viz_l2_norm,
+    _viz_embeddings(embeds=np.vstack(data_groups), labels=np.vstack(label_groups),
+                    viz_l2_norm=viz_l2_norm, l2_norm=trans_cls.enc_l2_norm,
                     tool_labels=tool_labels, obj_list=all_object_list, save_fig=True, title=f"{data_descpt}",
                     subtitle=f"source tool: {source_tool_list}, target tool: "
                              f"{target_tool_list} \n assisted tool: {assist_tool_list}")
@@ -86,7 +87,8 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None, viz_l2_no
                                        assist_label_train_len=len(assist_label_train),
                                        target_label_train_len=len(target_label_train))
     data_descpt = "Encoder Train Set Input Data" if encoder is None else f"Encoder Train Set Embedded Data-{loss_func} Loos"
-    _viz_embeddings(embeds=data, labels=labels, viz_l2_norm=viz_l2_norm, tool_labels=tool_labels,
+    _viz_embeddings(embeds=data, labels=labels, tool_labels=tool_labels,
+                    viz_l2_norm=viz_l2_norm, l2_norm=trans_cls.enc_l2_norm,
                     obj_list=all_object_list, save_fig=True, title=f"{data_descpt}",
                     subtitle=f"source tool: {source_tool_list}, target tool: {target_tool_list} \n"
                              f"assisted tool: {assist_tool_list}")
@@ -99,15 +101,15 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None, viz_l2_no
                                        assist_label_test_len=len(assist_label_test),
                                        target_label_test_len=len(target_label_test))
     data_descpt = "Encoder Test Set Input Data" if encoder is None else f"Encoder Test Set Embedded Data-{loss_func} Loos"
-    _viz_embeddings(viz_l2_norm=viz_l2_norm, embeds=data, labels=labels, tool_labels=tool_labels,
-                    obj_list=new_object_list, save_fig=True, title=f"{data_descpt}",
+    _viz_embeddings(viz_l2_norm=viz_l2_norm, l2_norm=trans_cls.enc_l2_norm, embeds=data, labels=labels,
+                    tool_labels=tool_labels, obj_list=new_object_list, save_fig=True, title=f"{data_descpt}",
                     subtitle=f"source tool: {source_tool_list}, target tool: {target_tool_list} \n"
                              f"assisted tool: {assist_tool_list}")
 
 
 def _viz_embeddings(embeds: np.ndarray, labels: np.ndarray, tool_labels: list, loss_func: str = configs.loss_func,
-                    obj_list: list = configs.old_object_list + configs.new_object_list, viz_l2_norm=True,
-                    save_fig: bool = True, title='', subtitle='', show_curr_label=False):
+                    obj_list: list = configs.old_object_list + configs.new_object_list, l2_norm=False,
+                    viz_l2_norm=False, save_fig: bool = True, title='', subtitle='', show_curr_label=False):
     """
     visualize embeddings in 2D space and use object as color and tool as marker.
     :param embeds: embedding by trial/sample:  [n_sample, emb_len]. The section of rows has to follow this order:
@@ -170,12 +172,12 @@ def _viz_embeddings(embeds: np.ndarray, labels: np.ndarray, tool_labels: list, l
         shrink = 1  # if on unit sphere, change tools' radius, so they don't block each other
         edge_color = None  # add edge to test object marker
         if tool_label in [1, 2]:  # assist embedding
-            if configs.l2_norm and viz_l2_norm:
+            if l2_norm and viz_l2_norm:
                 shrink = 1.05  # outside source embedding circle
             if tool_label == 2:  # test object
                 edge_color = 'gray'
         elif tool_label in [3, 4]:  # target embedding
-            if configs.l2_norm and viz_l2_norm:
+            if l2_norm and viz_l2_norm:
                 shrink = 0.95  # inside source embedding circle
             if tool_label == 4:  # test object
                 edge_color = 'black'
@@ -241,8 +243,10 @@ def viz_test_objects_embedding(transfer_class, Encoder, Classifier, test_accurac
 def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier, accuracy=None,
                                               new_object_list=configs.new_object_list,
                                               encoder_output_dim=configs.encoder_output_dim,
-                                              clf_exp_name=configs.clf_exp_name):
-    vis_l2_norm = configs.l2_norm
+                                              clf_exp_name=configs.clf_exp_name,
+                                              loss_func=configs.loss_func):
+    vis_l2_norm = transfer_class.enc_l2_norm
+    l2_norm = transfer_class.enc_l2_norm
     object_list = new_object_list
     # Step 1: Generate embedded data
     all_emb, all_labels, _ = get_all_embeddings_or_data(trans_cls=transfer_class, encoder=Encoder, old_object_list=[])
@@ -267,7 +271,7 @@ def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifie
         raise Exception(f"embedding shape is not correct: {all_emb.shape}")
 
     # Step 3: Create a grid for decision boundary on 2d space
-    if configs.l2_norm:
+    if l2_norm:
         buffer = 0.1
         x_min, x_max = -1 - buffer, 1 + buffer
         y_min, y_max = -1 - buffer, 1 + buffer
@@ -308,13 +312,13 @@ def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifie
         c=color_label_source, cmap=cmap, norm=norm, s=50, alpha=1.0, label="Source Tool"
     )
     # if on unit sphere, shrink the target tool embeddings' sphere, so they don't block the source embeddings
-    shrink = 0.95 if configs.l2_norm else 1
+    shrink = 0.95 if l2_norm else 1
     plt.scatter(
         new_embeddings_2d[:, 0] * shrink, new_embeddings_2d[:, 1] * shrink,
         c=color_label_target, cmap=cmap, norm=norm, edgecolor='k', s=80, alpha=1.0, marker='s', label="Target Tool"
     )
     if "assist" in clf_exp_name:
-        shrink = 1.05 if configs.l2_norm else 1
+        shrink = 1.05 if l2_norm else 1
         plt.scatter(
             assist_embeddings_2d[:, 0] * shrink, assist_embeddings_2d[:, 1] * shrink,
             c=color_label_assist, cmap=cmap, norm=norm, edgecolor='gray', s=80, alpha=1.0, marker='X',

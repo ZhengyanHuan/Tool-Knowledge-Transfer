@@ -25,6 +25,8 @@ class Tool_Knowledge_transfer_class:
                            "dataset_discretized.bin" for discretized data, flattened to 1D
         """
         ####load dataset
+        assert encoder_loss_fuc in ['TL', 'sincere']
+
         robots_data_filepath = r'data' + os.sep + data_name
         bin_file = open(robots_data_filepath, 'rb')
         robot = pickle.load(bin_file)
@@ -33,6 +35,8 @@ class Tool_Knowledge_transfer_class:
         self.data_dict = robot
         sanity_check_data_labels(self.data_dict)
         self.encoder_loss_fuc = encoder_loss_fuc
+        logging.info(f"Encoder loss function: {encoder_loss_fuc}")
+        self.enc_l2_norm = self._decide_l2_norm()
 
         #### load names
         data_file_path = os.sep.join([r'data', 'dataset_metadata.bin'])
@@ -52,6 +56,10 @@ class Tool_Knowledge_transfer_class:
         ####
         self.CEloss = torch.nn.CrossEntropyLoss()
         self.input_dim = 0
+
+    def _decide_l2_norm(self):
+        """might change this rule later"""
+        return self.encoder_loss_fuc == "sincere"
 
     def _assign_labels_to_data(self, structured_data: torch.Tensor, object_list: list) -> torch.Tensor:
         """
@@ -76,6 +84,7 @@ class Tool_Knowledge_transfer_class:
         logging.debug(f"get source data for classifier from {new_object_list}")
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, new_object_list, trail_list)
         with torch.no_grad():
+            Encoder.l2_norm = self.enc_l2_norm
             encoded_source = Encoder(source_data)
 
         train_encoded_source = encoded_source[:, :, :, :train_test_index, :]
@@ -160,6 +169,7 @@ class Tool_Knowledge_transfer_class:
         truth_flat = torch.tensor(truth_flat, dtype=torch.int64, device=configs.device)
 
         with torch.no_grad():
+            Encoder.l2_norm = self.enc_l2_norm
             encoded_source = Encoder(source_data)
             pred = Classifier(encoded_source)
         pred_flat = pred.view(-1, len(new_object_list))
@@ -214,7 +224,8 @@ class Tool_Knowledge_transfer_class:
             self.input_dim += len(
                 self.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0])
 
-        Encoder = model.encoder(self.input_dim).to(configs.device)
+        Encoder = model.encoder(self.input_dim, l2_norm=self.enc_l2_norm).to(configs.device)
+        Encoder.l2_norm = self.enc_l2_norm
         optimizer = optim.AdamW(Encoder.parameters(), lr=lr_en)
 
         for i in range(epoch_encoder):
@@ -272,6 +283,7 @@ class Tool_Knowledge_transfer_class:
 
     def TL_loss_fn(self, source_data, target_data, Encoder, alpha, encoder_output_dim,
                    pairs_per_batch_per_object) -> torch.Tensor:
+        Encoder.l2_norm = self.enc_l2_norm
         encoded_source = Encoder(source_data)
         encoded_target = Encoder(target_data)
         same_object_list = self._get_same_object_list(encoded_source, encoded_target, encoder_output_dim)
@@ -414,6 +426,7 @@ class Tool_Knowledge_transfer_class:
         and flatten the embeddings to [num_samples, emb_dim] , i.e., [n_behavior*n_tools*num_objects*n_trials, emb_dim]
         :return all_embeds: [num_samples, emb_dim], all_labels: [num_samples, 1]
         """
+        Encoder.l2_norm = self.enc_l2_norm
         if source_data is not None:
             encoded_source = Encoder(source_data).reshape(-1, encoder_output_dim)
             truth_source = truth_source.reshape(-1, 1)

@@ -6,7 +6,7 @@ import configs
 
 class encoder(nn.Module):
     def __init__(self, input_size, output_size=configs.encoder_output_dim,
-                 hidden_size=configs.encoder_hidden_dim, l2_norm=configs.l2_norm):
+                 hidden_size=configs.encoder_hidden_dim, l2_norm=False):
         super(encoder, self).__init__()
         self.l2_norm = l2_norm
         self.network = nn.Sequential(
