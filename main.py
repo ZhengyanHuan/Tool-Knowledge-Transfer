@@ -98,7 +98,7 @@ Encoder = model.encoder(input_size=input_dim).to(configs.device)
 Encoder.load_state_dict(
     torch.load('./saved_model/encoder/' + configs.encoder_pt_name, map_location=torch.device(configs.device)))
 
-Classifier = model.classifier(configs.encoder_output_dim).to(configs.device)
+Classifier = model.classifier().to(configs.device)
 Classifier.load_state_dict(
     torch.load('./saved_model/classifier/' + configs.clf_pt_name, map_location=torch.device(configs.device)))
 
