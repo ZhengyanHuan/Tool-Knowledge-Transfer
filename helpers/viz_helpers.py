@@ -53,8 +53,13 @@ def _get_curr_labels_on_cbar(subset_obj_idx, label_to_subset_idx):
     return tick_labels
 
 
-def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None, viz_l2_norm=configs.viz_share_space_l2_norm):
+def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None, viz_l2_norm=configs.viz_share_space_l2_norm,
+             loss_func=configs.loss_func, source_tool_list=configs.source_tool_list,
+             target_tool_list=configs.target_tool_list, assist_tool_list=configs.assist_tool_list,
+             new_object_list=configs.new_object_list, old_object_list=configs.old_object_list
+):
     assert (encoder or data_dim) is not None
+    all_object_list = old_object_list + new_object_list
     data_groups, label_groups, _ = get_all_embeddings_or_data(trans_cls=trans_cls, encoder=encoder, data_dim=data_dim)
     # all_emb order: source_old, source_new, assist_old, assist_new, target_old, target_new
     source_data_train, source_label_train = data_groups[0], label_groups[0]
@@ -69,22 +74,22 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None, viz_l2_no
     tool_labels = create_tool_idx_list(source_label_len=len_list[0] + len_list[1],
                                        assist_label_train_len=len_list[2], assist_label_test_len=len_list[3],
                                        target_label_train_len=len_list[4], target_label_test_len=len_list[5])
-    data_descpt = "All Input Data" if encoder is None else f"All Embedded Data-{configs.loss_func} Loss"
+    data_descpt = "All Input Data" if encoder is None else f"All Embedded Data-{loss_func} Loss"
     _viz_embeddings(embeds=np.vstack(data_groups), labels=np.vstack(label_groups), viz_l2_norm=viz_l2_norm,
-                    tool_labels=tool_labels, obj_list=configs.all_object_list, save_fig=True, title=f"{data_descpt}",
-                    subtitle=f"source tool: {configs.source_tool_list}, target tool: "
-                             f"{configs.target_tool_list} \n assisted tool: {configs.assist_tool_list}")
+                    tool_labels=tool_labels, obj_list=all_object_list, save_fig=True, title=f"{data_descpt}",
+                    subtitle=f"source tool: {source_tool_list}, target tool: "
+                             f"{target_tool_list} \n assisted tool: {assist_tool_list}")
     # Viz train data on 2D space
     data = np.vstack([source_data_train, source_data_test, assist_data_train, target_data_train])
     labels = np.vstack([source_label_train, source_label_test, assist_label_train, target_label_train])
     tool_labels = create_tool_idx_list(source_label_len=len(source_label_train) + len(source_label_test),
                                        assist_label_train_len=len(assist_label_train),
                                        target_label_train_len=len(target_label_train))
-    data_descpt = "Encoder Train Set Input Data" if encoder is None else f"Encoder Train Set Embedded Data-{configs.loss_func} Loos"
+    data_descpt = "Encoder Train Set Input Data" if encoder is None else f"Encoder Train Set Embedded Data-{loss_func} Loos"
     _viz_embeddings(embeds=data, labels=labels, viz_l2_norm=viz_l2_norm, tool_labels=tool_labels,
-                    obj_list=configs.all_object_list, save_fig=True, title=f"{data_descpt}",
-                    subtitle=f"source tool: {configs.source_tool_list}, target tool: {configs.target_tool_list} \n"
-                             f"assisted tool: {configs.assist_tool_list}")
+                    obj_list=all_object_list, save_fig=True, title=f"{data_descpt}",
+                    subtitle=f"source tool: {source_tool_list}, target tool: {target_tool_list} \n"
+                             f"assisted tool: {assist_tool_list}")
 
     # viz test data on shared latent space
     data = np.vstack([source_data_test, assist_data_test, target_data_test])
@@ -93,11 +98,11 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None, viz_l2_no
     tool_labels = create_tool_idx_list(source_label_len=len(source_label_test),
                                        assist_label_test_len=len(assist_label_test),
                                        target_label_test_len=len(target_label_test))
-    data_descpt = "Encoder Test Set Input Data" if encoder is None else f"Encoder Test Set Embedded Data-{configs.loss_func} Loos"
+    data_descpt = "Encoder Test Set Input Data" if encoder is None else f"Encoder Test Set Embedded Data-{loss_func} Loos"
     _viz_embeddings(viz_l2_norm=viz_l2_norm, embeds=data, labels=labels, tool_labels=tool_labels,
-                    obj_list=configs.all_object_list, save_fig=True, title=f"{data_descpt}",
-                    subtitle=f"source tool: {configs.source_tool_list}, target tool: {configs.target_tool_list} \n"
-                             f"assisted tool: {configs.assist_tool_list}")
+                    obj_list=new_object_list, save_fig=True, title=f"{data_descpt}",
+                    subtitle=f"source tool: {source_tool_list}, target tool: {target_tool_list} \n"
+                             f"assisted tool: {assist_tool_list}")
 
 
 def _viz_embeddings(embeds: np.ndarray, labels: np.ndarray, tool_labels: list, loss_func: str = configs.loss_func,
@@ -233,9 +238,12 @@ def viz_test_objects_embedding(transfer_class, Encoder, Classifier, test_accurac
     _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier, accuracy=test_accuracy)
 
 
-def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier, accuracy=None):
+def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier, accuracy=None,
+                                              new_object_list=configs.new_object_list,
+                                              encoder_output_dim=configs.encoder_output_dim,
+                                              clf_exp_name=configs.clf_exp_name):
     vis_l2_norm = configs.l2_norm
-    object_list = configs.new_object_list
+    object_list = new_object_list
     # Step 1: Generate embedded data
     all_emb, all_labels, _ = get_all_embeddings_or_data(trans_cls=transfer_class, encoder=Encoder, old_object_list=[])
     source_emb, source_y = all_emb[1], all_labels[1]
@@ -305,7 +313,7 @@ def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifie
         new_embeddings_2d[:, 0] * shrink, new_embeddings_2d[:, 1] * shrink,
         c=color_label_target, cmap=cmap, norm=norm, edgecolor='k', s=80, alpha=1.0, marker='s', label="Target Tool"
     )
-    if "assist" in configs.clf_exp_name:
+    if "assist" in clf_exp_name:
         shrink = 1.05 if configs.l2_norm else 1
         plt.scatter(
             assist_embeddings_2d[:, 0] * shrink, assist_embeddings_2d[:, 1] * shrink,
@@ -319,7 +327,7 @@ def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifie
     cbar.ax.set_yticklabels(np.array(SIM_OBJECTS_LIST)[sorted(subset_obj_idx)])
     cbar.set_label("Classes", rotation=270, labelpad=20)
 
-    if configs.encoder_output_dim > 2:
+    if encoder_output_dim > 2:
         subtitle = ("Approximated decision boundary based on the clusters in this 2D space. \n"
                     f"Actual predictions might not match the background color. Accuracy: {accuracy * 100:.1f}%")
     else:
@@ -338,22 +346,23 @@ def _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifie
     plt.show()
 
 
-def plot_learning_progression(record, type, save_name='test', plot_every=10):  # type-> 'encoder', 'classifier'
+def plot_learning_progression(record, type, TL_margin, loss_func, sincere_temp, lr_classifier, lr_encoder,
+                              encoder_output_dim, save_name='test', plot_every=10, ):  # type-> 'encoder', 'classifier'
     logging.debug(f"➡️ plot_func for {type}: {save_name}...")
     plt.figure(figsize=(8, 6))
     plt.rcParams['font.size'] = 18
 
     color_group = ['red', 'blue']
     if type == 'encoder':
-        encoder_param = configs.TL_margin if configs.loss_func == "TL" else configs.sincere_temp
-        encoder_param_name = "margin" if configs.loss_func == "TL" else "temperature"
+        encoder_param = TL_margin if loss_func == "TL" else sincere_temp
+        encoder_param_name = "margin" if loss_func == "TL" else "temperature"
         xaxis = np.arange(1, len(record) + 1)
         plt.plot(xaxis[::plot_every], record[::plot_every], color_group[0])
         plt.xlabel('epochs')
         plt.ylabel('loss')
-        plt.title(f'Encoder Training Loss Progression - Loss: {configs.loss_func} \n '
-                  f'Epochs: lr: {configs.lr_encoder}, {encoder_param_name}: {encoder_param}'
-                  f', emb_size: {configs.encoder_output_dim}')
+        plt.title(f'Encoder Training Loss Progression - Loss: {loss_func} \n '
+                  f'Epochs: lr: {lr_encoder}, {encoder_param_name}: {encoder_param}'
+                  f', emb_size: {encoder_output_dim}')
         plt.grid()
         plt.savefig(r'./figs/' + save_name + '.png', bbox_inches='tight')
         plt.show()
@@ -364,8 +373,8 @@ def plot_learning_progression(record, type, save_name='test', plot_every=10):  #
         if record[1, -1] != 0:
             plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label='val loss')
         plt.xlabel('epochs')
-        plt.title(f'Classifier Training Loss Progression \n '
-                  f'Epochs: lr: {configs.lr_classifier}')
+        plt.title(f'Classifier Training Loss Progression - Encoder Loss: {loss_func} \n '
+                  f'Epochs: lr: {lr_classifier}')
         plt.ylabel('loss')
         plt.grid()
         plt.legend()

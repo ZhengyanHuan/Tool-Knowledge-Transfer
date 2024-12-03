@@ -42,7 +42,6 @@ def make_new_labels_to_curr_obj(original_labels: Union[torch.Tensor, np.array], 
         return original_labels
     obj_flattened = [SORTED_DATA_OBJ_LIST[item] for item in original_labels.flatten()]
     relative_labels = np.array([object_list.index(obj) for obj in obj_flattened])
-    logging.debug(f"relative_labels: \n    {relative_labels}")
     return relative_labels.reshape(original_labels.shape)
 
 
@@ -66,6 +65,7 @@ def restart_label_index_from_zero(labels):
 
 def get_all_embeddings_or_data(
         trans_cls, encoder: model.encoder = None, data_dim=None,
+        behavior_list=configs.behavior_list, modality_list=configs.modality_list, trail_list=configs.trail_list,
         source_tool_list=configs.source_tool_list, assist_tool_list=configs.assist_tool_list,
         target_tool_list=configs.target_tool_list, old_object_list=configs.old_object_list,
         new_object_list=configs.new_object_list) -> Tuple[List[np.ndarray], List[np.ndarray], dict]:
@@ -82,7 +82,9 @@ def get_all_embeddings_or_data(
     for t_idx, tool_list in enumerate([source_tool_list, assist_tool_list, target_tool_list]):
         for o_idx, object_list in enumerate([old_object_list, new_object_list]):
             meta_data[t_idx * o_idx + o_idx] = tool_list + object_list
-            data, labels = trans_cls.get_data(tool_list=tool_list, object_list=object_list, get_labels=True)
+            data, labels = trans_cls.get_data(tool_list=tool_list, object_list=object_list, get_labels=True,
+                                              behavior_list=behavior_list, modality_list=modality_list,
+                                              trail_list=trail_list)
             if data is not None:
                 if encoder is not None:
                     encoded_data = encoder(data).reshape(-1, configs.encoder_output_dim).cpu().detach().numpy()
