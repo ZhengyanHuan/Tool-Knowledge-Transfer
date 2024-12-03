@@ -54,21 +54,18 @@ for modality in configs.modality_list:
 
 
 # %%
-behavior_list = configs.behavior_list
-source_tool_list = configs.source_tool_list
-target_tool_list = configs.target_tool_list
-modality_list = configs.modality_list
-trail_list = configs.trail_list
-
 train_val_list = ['detergent', 'kidney-bean', 'plastic-bead', 'chia-seed', 'salt', 'empty', 'metal-nut-bolt',
                   'wooden-button', 'styrofoam-bead', 'water', 'glass-bead', 'wheat']
 test_list = ['cane-sugar', 'split-green-pea', 'chickpea']
+source_tool_list = ['plastic-spoon']
+target_tool_list = ['metal-scissor']
 loss_func = "TL"  # "TL" for triplet loss or "sincere"
 myclass = Tool_Knowledge_transfer_class(encoder_loss_fuc=loss_func)
 
 input_dim = 0
-for modality in modality_list:
-    input_dim += len(myclass.data_dict[behavior_list[0]][target_tool_list[0]][modality][test_list[0]]['X'][0])
+for modality in configs.modality_list:
+    input_dim += len(myclass.data_dict[configs.behavior_list[0]][configs.target_tool_list[0]
+                     ][modality][test_list[0]]['X'][0])
 
 start_time = time.time()
 # %%
@@ -76,11 +73,15 @@ number_of_folds = 2  # num of folds for cross validation on train_val_list. e.g,
 alpha_list = [0.5, 1]  # parameter for triplet Loss: margin
 lr_en_list = [0.01, 0.1]  # learning rate for encoder and classifier
 plot_learning = False
+
 best_alpha, best_lr_en = train.train_TL_k_fold(
-    myclass=myclass, train_val_list=train_val_list, behavior_list=behavior_list,
-    source_tool_list=source_tool_list, target_tool_list=target_tool_list, modality_list=modality_list,
-    trail_list=trail_list, input_dim=input_dim, number_of_folds=number_of_folds,
+    myclass=myclass, train_val_list=train_val_list,
+    source_tool_list=source_tool_list, target_tool_list=target_tool_list,
+    input_dim=input_dim, number_of_folds=number_of_folds,
     alpha_list=alpha_list, lr_en_list=lr_en_list, plot_learning=plot_learning)
 
-test_acc = train.train_TL_fixed_param(myclass, train_val_list, test_list, behavior_list, source_tool_list,
-                                      target_tool_list, modality_list, trail_list, input_dim, best_alpha, best_lr_en)
+# best_alpha, best_lr_en = 1, 1e-3
+test_acc = train.train_TL_fixed_param(
+    myclass=myclass, train_val_obj_list=train_val_list, test_obj_list=test_list,
+    source_tool_list=source_tool_list, target_tool_list=target_tool_list,
+    input_dim=input_dim, best_alpha=best_alpha, best_lr_en=best_lr_en, test_name="test_fold0_")

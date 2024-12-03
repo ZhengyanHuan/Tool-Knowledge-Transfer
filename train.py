@@ -1,76 +1,104 @@
-import torch
+import logging
 import time
-import model
-import configs
+import warnings
+from typing import List, Union
 
-def train_TL_k_fold(myclass, train_val_list, test_list, behavior_list ,source_tool_list, target_tool_list, modality_list ,trail_list ,input_dim, number_of_folds, alpha_list, lr_en_list):
+import torch
+
+import configs
+import model
+from transfer_class import Tool_Knowledge_transfer_class
+
+encoder_pt_name = f"tmp_myencoder.pt"
+clf_pt_name = f"tmp_myclassifier.pt"
+
+
+def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List[str], input_dim: int,
+                    number_of_folds: int, alpha_list: List[Union[float, int]], lr_en_list: List[Union[float, int]],
+                    behavior_list=configs.behavior_list, source_tool_list=configs.source_tool_list,
+                    target_tool_list=configs.target_tool_list, modality_list=configs.modality_list,
+                    trail_list=configs.trail_list, plot_learning=True):
     '''
-    Assume that the last 3 objects are unknow to the tool, we use the 12 known ones to split train and val.
+    cross validation split on objects: some objects for train, the rest objects for val
+    Assume that the last 3 objects are unknown to the tool, we use the 12 known ones to split train and val.
     '''
     # train_val_list = all_object_list[:12]
     # test_list = all_object_list[12:]
-    encoder_pt_name = f"myencoder_tmp.pt"
-    clf_pt_name = f"myclassifier_tmp.pt"
-
     best_acc = -1
     best_alpha = -1
     best_lr_en = -1
+    rand_guess_acc = -1
+    curr_fold_len = len(train_val_list) // number_of_folds
+
+    logging.info("###########################search start###########################")
     for alpha in alpha_list:
-
         for lr_en in lr_en_list:
-            print("Learning rate for the encoder is:  " +str(lr_en))
-            print("TL margin is:  " + str(alpha))
-            for i in range(number_of_folds):
-                acc_sum = 0
-                fold_len = len(train_val_list )//number_of_folds
-                val_list = train_val_list[ i *fold_len: ( i +1 ) *fold_len]
+            logging.info("Learning rate for the encoder is:  " + str(lr_en))
+            logging.info("TL margin is:  " + str(alpha))
+            logging.info("=========================cv start=========================")
+            # start cv for current hyper-param combo
+            acc_sum = 0
+            cv_start_time = time.time()
+            for fold_idx in range(number_of_folds):
+                logging.info(f"------------------fold {fold_idx + 1}/{number_of_folds} start-----------------")
+                obj_fold_len = len(train_val_list) // number_of_folds
+                if fold_idx == number_of_folds - 1 and (fold_idx + 1) * obj_fold_len < len(train_val_list):
+                    end_idx = len(train_val_list)  # make sure the last val fold covers the rest of objects
+                    curr_fold_len = len(train_val_list) - fold_idx * obj_fold_len
+                else:
+                    end_idx = (fold_idx + 1) * obj_fold_len
+                val_list = train_val_list[fold_idx * obj_fold_len: end_idx]
                 train_list = [item for item in train_val_list if item not in val_list]
-
                 ######
-                print(f"training representation encoder...")
+                logging.info(f"👉 training representation encoder...")
                 encoder_time = time.time()
-                myencoder = myclass.train_encoder(behavior_list, source_tool_list, target_tool_list, val_list +test_list,
-                                                  modality_list, trail_list) # old list is all the list except val_list+test_list, i.e., train_list
+                configs.set_torch_seed()
+                myencoder = myclass.train_encoder(
+                    behavior_list=behavior_list, source_tool_list=source_tool_list, target_tool_list=target_tool_list,
+                    old_object_list=train_list, new_object_list=val_list, modality_list=modality_list,
+                    trail_list=trail_list, plot_learning=plot_learning)
+                # old list is all the list except val_list+test_list, i.e., train_list TODO: DISCUSS
                 torch.save(myencoder.state_dict(), './saved_model/encoder/' + encoder_pt_name)
-                print(
-                    f"Time used for encoder training: {round((time.time() - encoder_time) // 60)} min {(time.time() - encoder_time) % 60:.1f} sec.")
+                logging.info(f"Time used for encoder training: {round((time.time() - encoder_time) // 60)} min "
+                             f"{(time.time() - encoder_time) % 60:.1f} sec.")
 
                 ########
-
-                print(f"training classification head...")
+                logging.info(f"👉 training classification head...")
                 clf_time = time.time()
+                Encoder = model.encoder(input_size=input_dim).to(configs.device)
+                Encoder.load_state_dict(torch.load('./saved_model/encoder/' + encoder_pt_name,
+                                                   map_location=torch.device(configs.device)))
+                configs.set_torch_seed()
+                Classifier = myclass.train_classifier(Encoder=Encoder, behavior_list=behavior_list,
+                                                      source_tool_list=source_tool_list, new_object_list=val_list,
+                                                      modality_list=modality_list, trail_list=trail_list,
+                                                      plot_learning=plot_learning)
+                torch.save(Classifier.state_dict(), './saved_model/classifier/' + clf_pt_name)
 
-                Encoder = model.encoder(input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(
-                    configs.device)
-                Encoder.load_state_dict(
-                    torch.load('./saved_model/encoder/' + encoder_pt_name, map_location=torch.device(configs.device)))
-                myclassifier = myclass.train_classifier(behavior_list, source_tool_list, val_list, modality_list,
-                                                        trail_list, Encoder)
-                torch.save(myclassifier.state_dict(), './saved_model/classifier/' + clf_pt_name)
-
-                print(
-                    f"Time used for classifier training: {round((time.time() - clf_time) // 60)} min {(time.time() - clf_time) % 60:.1f} sec.")
+                logging.info(f"Time used for classifier training: {round((time.time() - clf_time) // 60)} min "
+                             f"{(time.time() - clf_time) % 60:.1f} sec.")
 
                 ##########
-                start_time = time.time()
-                Encoder = model.encoder(input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(
-                    configs.device)
-                Encoder.load_state_dict(
-                    torch.load('./saved_model/encoder/' + encoder_pt_name, map_location=torch.device(configs.device)))
+                Encoder = model.encoder(input_size=input_dim).to(configs.device)
+                Encoder.load_state_dict(torch.load('./saved_model/encoder/' + encoder_pt_name,
+                                                   map_location=torch.device(configs.device)))
 
-                Classifier = model.classifier(configs.encoder_output_dim, len(val_list)).to(configs.device)
-                Classifier.load_state_dict(
-                    torch.load('./saved_model/classifier/' + clf_pt_name, map_location=torch.device(configs.device)))
+                Classifier = model.classifier(output_size=len(val_list)).to(configs.device)
+                Classifier.load_state_dict(torch.load('./saved_model/classifier/' + clf_pt_name,
+                                                      map_location=torch.device(configs.device)))
 
-                print(f"Evaluating the classifier...")
-                val_acc = myclass.eval(Encoder, Classifier, behavior_list, target_tool_list, val_list, modality_list,
-                                       trail_list)
+                logging.info(f"👉 Evaluating the classifier...")
+                val_acc = myclass.eval(Encoder=Encoder, Classifier=Classifier, behavior_list=behavior_list,
+                                       tool_list=target_tool_list, new_object_list=val_list,
+                                       modality_list=modality_list, trail_list=trail_list)
                 acc_sum += val_acc
+                logging.info(f"👉 fold {fold_idx + 1}/{number_of_folds} val_obj: {val_list} \n"
+                             f"TL margin: {alpha}, lr: {lr_en}, test accuracy: {val_acc * 100:.2f}%")
 
-                print(
-                    f"total time used: {round((time.time() - start_time) // 60)} min {(time.time() - start_time) % 60:.1f} sec.")
+            logging.info(f"☑️ total time used for this cv: {round((time.time() - cv_start_time) // 60)} min "
+                         f"{(time.time() - cv_start_time) % 60:.1f} sec.")
 
-            avg_acc = acc_sum /number_of_folds
+            avg_acc = acc_sum / number_of_folds
             if avg_acc > best_acc:
                 best_acc = avg_acc
                 best_alpha = alpha
@@ -80,49 +108,40 @@ def train_TL_k_fold(myclass, train_val_list, test_list, behavior_list ,source_to
                  f"random guess accuracy: {rand_guess_acc * 100:.2f}%")
     return best_alpha, best_lr_en
 
-def train_TL_fixed_para(myclass, train_val_list, test_list, behavior_list ,source_tool_list, target_tool_list, modality_list ,trail_list ,input_dim, alpha, lr_en):
-    encoder_pt_name = f"myencoder_best_para.pt"
-    clf_pt_name = f"myclassifier_best_para.pt"
 
-    ######
-    print(f"training representation encoder...")
-    encoder_time = time.time()
-    myencoder = myclass.train_encoder(behavior_list, source_tool_list, target_tool_list,  test_list,
-                                      modality_list,
-                                      trail_list)  # old list is all the list except val_list+test_list, i.e., train_list
-    torch.save(myencoder.state_dict(), './saved_model/encoder/' + encoder_pt_name)
-    print(
-        f"Time used for encoder training: {round((time.time() - encoder_time) // 60)} min {(time.time() - encoder_time) % 60:.1f} sec.")
+def train_TL_fixed_param(myclass: Tool_Knowledge_transfer_class, train_val_obj_list: List[str], test_obj_list: List[str],
+                         input_dim: int, best_alpha: float, best_lr_en: Union[float, int],
+                         behavior_list=configs.behavior_list, source_tool_list=configs.source_tool_list,
+                         target_tool_list=configs.target_tool_list, test_name="test_fold_",
+                         modality_list=configs.modality_list, trail_list=configs.trail_list):
+    logging.warning("train_TL_fixed_param function currently only applies the best TL alpha and training learning rate"
+                    ", all other hyper-params are by default from configs.")
+    configs.set_torch_seed()
+    Encoder = myclass.train_encoder(
+        lr_en=best_lr_en, TL_margin=best_alpha,
+        source_tool_list=source_tool_list, target_tool_list=target_tool_list,
+        old_object_list=train_val_obj_list, new_object_list=test_obj_list,
+        behavior_list=behavior_list, modality_list=modality_list, trail_list=trail_list)
+    torch.save(Encoder.state_dict(), './saved_model/encoder/' + test_name + encoder_pt_name)
 
-    ########
+    Classifier = myclass.train_classifier(
+        Encoder=Encoder, lr_clf=best_lr_en, source_tool_list=source_tool_list, trail_list=trail_list,
+        new_object_list=test_obj_list, behavior_list=behavior_list, modality_list=modality_list)
+    torch.save(Classifier.state_dict(), './saved_model/classifier/' + test_name + clf_pt_name)
 
-    print(f"training classification head...")
-    clf_time = time.time()
+    Encoder = model.encoder(input_size=input_dim).to(configs.device)
+    Encoder.load_state_dict(torch.load('./saved_model/encoder/' + test_name + encoder_pt_name,
+                                       map_location=torch.device(configs.device)))
 
-    Encoder = model.encoder(input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(
-        configs.device)
-    Encoder.load_state_dict(
-        torch.load('./saved_model/encoder/' + encoder_pt_name, map_location=torch.device(configs.device)))
-    myclassifier = myclass.train_classifier(behavior_list, source_tool_list, test_list, modality_list,
-                                            trail_list, Encoder)
-    torch.save(myclassifier.state_dict(), './saved_model/classifier/' + clf_pt_name)
+    Classifier = model.classifier(output_size=len(test_obj_list)).to(configs.device)
+    Classifier.load_state_dict(torch.load('./saved_model/classifier/' + test_name + clf_pt_name,
+                                          map_location=torch.device(configs.device)))
 
-    print(
-        f"Time used for classifier training: {round((time.time() - clf_time) // 60)} min {(time.time() - clf_time) % 60:.1f} sec.")
+    logging.info(f"Evaluating the classifier...")
+    test_acc = myclass.eval(Encoder=Encoder, Classifier=Classifier, new_object_list=test_obj_list,
+                            tool_list=target_tool_list, return_pred=False)
 
-    ##########
-    start_time = time.time()
-    Encoder = model.encoder(input_dim, configs.encoder_output_dim, configs.encoder_hidden_dim).to(
-        configs.device)
-    Encoder.load_state_dict(
-        torch.load('./saved_model/encoder/' + encoder_pt_name, map_location=torch.device(configs.device)))
-
-    Classifier = model.classifier(configs.encoder_output_dim, len(test_list)).to(configs.device)
-    Classifier.load_state_dict(
-        torch.load('./saved_model/classifier/' + clf_pt_name, map_location=torch.device(configs.device)))
-
-    print(f"Evaluating the classifier...")
-    test_acc = myclass.eval(Encoder, Classifier, behavior_list, target_tool_list, test_list, modality_list,
-                            trail_list)
+    logging.info(f"✅✅✅ test accuracy is: {test_acc * 100:.1f}%, "
+                 f"random guess accuracy: {100/len(test_obj_list):.2f}%")
 
     return test_acc
