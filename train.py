@@ -75,7 +75,9 @@ def train_TL_k_fold(myclass, train_val_list, test_list, behavior_list ,source_to
                 best_acc = avg_acc
                 best_alpha = alpha
                 best_lr_en = lr_en
-    print("The best avg val accuracy is: " + str(best_acc.item()))
+                rand_guess_acc = 1 / curr_fold_len
+    logging.info(f"✅ The best avg val accuracy is: {best_acc * 100:.1f}%, "
+                 f"random guess accuracy: {rand_guess_acc * 100:.2f}%")
     return best_alpha, best_lr_en
 
 def train_TL_fixed_para(myclass, train_val_list, test_list, behavior_list ,source_tool_list, target_tool_list, modality_list ,trail_list ,input_dim, alpha, lr_en):

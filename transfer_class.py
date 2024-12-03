@@ -52,7 +52,6 @@ class Tool_Knowledge_transfer_class:
         ####
         self.CEloss = torch.nn.CrossEntropyLoss()
         self.input_dim = 0
-        # self.Classifier = model.classifier(configs.encoder_output_dim, configs.new_object_num)
 
     def _assign_labels_to_data(self, structured_data: torch.Tensor, object_list: list) -> torch.Tensor:
         """
@@ -128,18 +127,18 @@ class Tool_Knowledge_transfer_class:
                 correct_num = torch.sum(pred_label == train_truth_flat)
                 accuracy_train = correct_num / len(train_truth_flat)
 
-                logging.info(f"epoch {i + 1}/{configs.epoch_classifier}, train loss: {loss_tr.item():.4f}, "
-                             f"train accuracy: {accuracy_train.item() * 100 :.2f}%")
+                logging.info(f"epoch {i + 1}/{epoch_classifier}, train loss: {loss_tr.item():.4f}, "
+                             f"train accuracy: {accuracy_train.item() * 100 :.2f}%, "
+                             f"random guess accuracy: {100 / len(new_object_list):.2f}%")
                 if len(val_truth_flat > 0):
                     pred_label = torch.argmax(pred_flat_val, dim=-1)
                     correct_num = torch.sum(pred_label == val_truth_flat)
                     accuracy_val = correct_num / len(val_truth_flat)
 
                     logging.info(
-                        f"epoch {i + 1}/{configs.epoch_classifier}, val loss: {loss_val.item():.4f}, "
-                        f"val accuracy: {accuracy_val.item() * 100 :.2f}%")
-
-        plot_learning_progression(loss_record, 'classifier', f'classifier_{self.encoder_loss_fuc}')
+                        f"epoch {i + 1}/{epoch_classifier}, val loss: {loss_val.item():.4f}, "
+                        f"val accuracy: {accuracy_val.item() * 100 :.2f}%, "
+                        f"random guess accuracy: {100 / len(new_object_list):.2f}%")
         if plot_learning:
             plot_learning_progression(record=loss_record, type='classifier',
                                       lr_classifier=lr_clf, encoder_output_dim=encoder_output_dim,
@@ -167,11 +166,14 @@ class Tool_Knowledge_transfer_class:
         pred_label = torch.argmax(pred_flat, dim=-1)
 
         correct_num = torch.sum(pred_label == truth_flat)
-        accuracy_test = correct_num / len(truth_flat)
+        accuracy_test = (correct_num / len(truth_flat)).item()
+        truth_flat = truth_flat.tolist()
+        pred_label = pred_label.tolist()
 
-        logging.info(f"{len(truth_flat)} true labels: {truth_flat.tolist()}")
-        logging.info(f"{len(pred_label)} pred labels: {pred_label.tolist()}")
-        logging.info(f"test accuracy: {accuracy_test.item() * 100:.2f}%")
+        logging.info(f"{len(truth_flat)} true labels: {truth_flat}")
+        logging.info(f"{len(pred_label)} pred labels: {pred_label}")
+        logging.info(
+            f"test accuracy: {accuracy_test * 100:.2f}%, random guess accuracy: {100 / len(new_object_list):.2f}%")
         if return_pred:
             return accuracy_test, pred_flat, pred_label
         else:
@@ -230,9 +232,7 @@ class Tool_Knowledge_transfer_class:
             loss.backward()
             optimizer.step()
             if (i + 1) % 500 == 0:
-                logging.info(f"epoch {i + 1}/{configs.epoch_encoder}, loss: {loss.item():.4f}")
-
-        plot_learning_progression(loss_record, 'encoder', f'encoder_{self.encoder_loss_fuc}')
+                logging.info(f"epoch {i + 1}/{epoch_encoder}, loss: {loss.item():.4f}")
         if plot_learning:
             plot_learning_progression(record=loss_record, type='encoder',
                                       lr_classifier=None, encoder_output_dim=encoder_output_dim,
@@ -342,12 +342,17 @@ class Tool_Knowledge_transfer_class:
                 for tool_index, tool in enumerate(tool_list):
                     for object_index, object in enumerate(object_list):
                         meta_data[behavior][tool][object] = len(trail_list)
-                        for trail_index in range(len(trail_list)):
-                            trail = trail_list[trail_index]
-                            data[behavior_index][tool_index][object_index][trail_index] = \
-                                self.data_dict[behavior][tool][modality_list[0]][object]['X'][trail]
-                            label[behavior_index][tool_index][object_index][trail_index] = \
-                                self.data_dict[behavior][tool][modality_list[0]][object]['Y'][trail]
+                        for trial_index in range(len(trail_list)):
+                            try:
+                                trial = trail_list[trial_index]
+                                data[behavior_index][tool_index][object_index][trial_index] = \
+                                    self.data_dict[behavior][tool][modality_list[0]][object]['X'][trial]
+                                label[behavior_index][tool_index][object_index][trial_index] = \
+                                    self.data_dict[behavior][tool][modality_list[0]][object]['Y'][trial]
+                            except Exception as e:
+                                print(f"something wrong here: behavior: {behavior}, tool: {tool}, "
+                                      f"modality: {modality_list[0]}, object: {object}, trail index: {trial_index}")
+                                raise e
 
             data = torch.tensor(data, dtype=torch.float32, device=configs.device)
             label = torch.tensor(label, dtype=torch.int64, device=configs.device)
