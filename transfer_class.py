@@ -57,6 +57,11 @@ class Tool_Knowledge_transfer_class:
         self.CEloss = torch.nn.CrossEntropyLoss()
         self.input_dim = 0
 
+        ###
+        self.trained_encoder = None
+        self.trained_clf = None
+        self.encoder_output_dim = None
+
     def _decide_l2_norm(self):
         """might change this rule later"""
         return self.encoder_loss_fuc == "sincere"
@@ -153,6 +158,7 @@ class Tool_Knowledge_transfer_class:
                                       lr_classifier=lr_clf, encoder_output_dim=encoder_output_dim,
                                       loss_func=self.encoder_loss_fuc, TL_margin=None, sincere_temp=None,
                                       lr_encoder=None, save_name=f'classifier_{self.encoder_loss_fuc}')
+        self.trained_clf = Classifier
         return Classifier
 
     def eval(self, Encoder, Classifier, tool_list=configs.target_tool_list, behavior_list=configs.behavior_list,
@@ -210,22 +216,23 @@ class Tool_Knowledge_transfer_class:
         logging.debug(f"➡️ train_encoder..")
         loss_record = np.zeros(epoch_encoder)
 
-        source_data, target_data, truth_source, truth_target = self._get_encoder_data_and_labels(
+        source_data, target_data, truth_source, truth_target = self.get_encoder_data_and_labels(
             behavior_list=behavior_list, trail_list=trail_list, modality_list=modality_list,
             source_tool_list=source_tool_list, target_tool_list=target_tool_list,
-            old_object_list=old_object_list, new_object_list=new_object_list)
+            shared_object_list=old_object_list, novel_object_list=new_object_list)
         '''
         If we have more than one modality, we may need preprocessing and the input dim may not the 
         sum of data dim across all considered modalities. But I just put it here because we have 
         not figured out what to do.
         '''
+        self.encoder_output_dim = encoder_output_dim
         self.input_dim = 0
         for modality in modality_list:
             self.input_dim += len(
                 self.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0])
 
+        configs.set_torch_seed()
         Encoder = model.encoder(self.input_dim, l2_norm=self.enc_l2_norm).to(configs.device)
-        Encoder.l2_norm = self.enc_l2_norm
         optimizer = optim.AdamW(Encoder.parameters(), lr=lr_en)
 
         for i in range(epoch_encoder):
@@ -249,6 +256,7 @@ class Tool_Knowledge_transfer_class:
                                       lr_classifier=None, encoder_output_dim=encoder_output_dim,
                                       loss_func=self.encoder_loss_fuc, TL_margin=TL_margin, sincere_temp=sincere_tem,
                                       lr_encoder=lr_en, save_name=f'encoder_{self.encoder_loss_fuc}')
+        self.trained_encoder = Encoder
         return Encoder
 
     def sincere_loss_fn(self, source_data, truth_source, target_data, truth_target,
@@ -386,41 +394,43 @@ class Tool_Knowledge_transfer_class:
         else:
             return data
 
-    def _get_encoder_data_and_labels(self, behavior_list, source_tool_list, target_tool_list, modality_list,
-                                     old_object_list, new_object_list,trail_list):
+    def get_encoder_data_and_labels(self, behavior_list, source_tool_list, target_tool_list, modality_list,
+                                    shared_object_list, novel_object_list, trail_list):
         """
+        shared_object_list: typically old_object_list, but it can be any overlapping objects between source and target
+        novel_object_list: typically new_object_list, but it can be any  non-overlapping objects
         :return:
         data shape: [n_behavior, n_tools, num_objects, n_trials, data_sample_dim],
         label shape: [n_behavior, n_tools, num_objects, n_trials, 1], always starts from 0
 
-         source_data: data from source tool & old_object_list + new_object_list
-         truth_source: labels for source tool & old_object_list + new_object_list,
-                        index starts from 0 to len(old_object_list + new_object_list) - 1
-         target_data: data from target tool & new_object_list
-         truth_target: labels for target tool & new_object_list, index starts from 0 to len(old_object_list) - 1
+         source_data: data from source tool & shared_object_list + novel_object_list
+         truth_source: labels for source tool & shared_object_list + novel_object_list
+                        index starts from 0 to len(shared_object_list + novel_object_list) - 1
+         target_data: data from shared_object_list + novel_object_list
+         truth_target: labels for target tool & shared_object_list, index starts from 0 to len(shared_object_list) - 1
         """
-        logging.debug(f"➡️ get_data_and_convert_labels...")
+        logging.debug(f"➡️ get_encoder_data_and_labels...")
         assert behavior_list and trail_list and modality_list
         assert len(behavior_list) == 1  # for now, one behavior only
-        all_obj_list = old_object_list + new_object_list  # has to be this order
+        all_obj_list = shared_object_list + novel_object_list  # has to be this order
         # =========  get source tool data
         logging.debug(f"get source data for encoder: {source_tool_list}: {all_obj_list}")
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, all_obj_list, trail_list)
         # ========= get target tool data, get shared object by default
-        logging.debug(f"get target data for encoder: {target_tool_list}: {old_object_list}")
-        target_data = self.get_data(behavior_list, target_tool_list, modality_list, old_object_list, trail_list)
+        logging.debug(f"get target data for encoder: {target_tool_list}: {shared_object_list}")
+        target_data = self.get_data(behavior_list, target_tool_list, modality_list, shared_object_list, trail_list)
 
         truth_source, truth_target = None, None
         if source_data is not None:
             truth_source = self._assign_labels_to_data(structured_data=source_data, object_list=all_obj_list)
         if target_data is not None:
-            truth_target = self._assign_labels_to_data(structured_data=target_data, object_list=old_object_list)
+            truth_target = self._assign_labels_to_data(structured_data=target_data, object_list=shared_object_list)
 
         return source_data, target_data, truth_source, truth_target
 
     def _make_encoder_projections(self, Encoder, source_data, target_data, truth_source, truth_target,
-                                  encoder_output_dim, assist_data=None, truth_assist=None) -> Tuple[
-        torch.Tensor, torch.Tensor]:
+                                  encoder_output_dim, assist_data=None, truth_assist=None) \
+            -> Tuple[torch.Tensor, torch.Tensor]:
         """
         encode structured data [n_behavior, n_tools, num_objects, n_trials, data_sample_dim] ,
         and flatten the embeddings to [num_samples, emb_dim] , i.e., [n_behavior*n_tools*num_objects*n_trials, emb_dim]

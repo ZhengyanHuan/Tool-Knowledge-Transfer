@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import sys
 import time
 
 import numpy as np
@@ -64,7 +65,6 @@ start_time = time.time()
 if configs.retrain_encoder:
     main_logger.info(f"👉 ------------ Training representation encoder using {configs.loss_func} loss ------------ ")
     encoder_time = time.time()
-    configs.set_torch_seed()
     myencoder = myclass.train_encoder(source_tool_list=encoder_source_tool_list,
                                       target_tool_list=encoder_target_tool_list)
     torch.save(myencoder.state_dict(), './saved_model/encoder/' + configs.encoder_pt_name)
@@ -108,5 +108,8 @@ main_logger.info(f"test accuracy: {accuracy * 100:.2f}%")
 main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 60)} "
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
 
-viz_test_objects_embedding(transfer_class=myclass, Encoder=Encoder, Classifier=Classifier,
-                           test_accuracy=accuracy, pred_label_target=pred_label_target)
+main_logger.info("👀visualize decision boundary in shared latent space...")
+viz_test_objects_embedding(
+    transfer_class=myclass, Encoder=Encoder, Classifier=Classifier, test_accuracy=accuracy,
+    pred_label_target=pred_label_target, encoder_output_dim=configs.encoder_output_dim,
+    viz_l2_norm=configs.viz_share_space_l2_norm)

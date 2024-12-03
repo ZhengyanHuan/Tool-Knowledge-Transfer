@@ -5,6 +5,7 @@ import os
 import configs
 import train
 from helpers.data_helpers import select_context_for_experiment
+from helpers.viz_helpers import viz_test_objects_embedding
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %% 0. script setup
@@ -69,18 +70,17 @@ for modality in configs.modality_list:
 
 start_time = time.time()
 # %%
-number_of_folds = 2  # num of folds for cross validation on train_val_list. e.g, 12 obj: 3 val, 9 train
+number_of_folds = 4  # num of folds for cross validation on train_val_list. e.g, 12 obj: 3 val, 9 train
 alpha_list = [0.5, 1]  # parameter for triplet Loss: margin
 lr_en_list = [0.01, 0.1]  # learning rate for encoder and classifier
-plot_learning = False
 
-best_alpha, best_lr_en = train.train_TL_k_fold(
-    myclass=myclass, train_val_list=train_val_list,
-    source_tool_list=source_tool_list, target_tool_list=target_tool_list,
-    input_dim=input_dim, number_of_folds=number_of_folds,
-    alpha_list=alpha_list, lr_en_list=lr_en_list, plot_learning=plot_learning)
-
-# best_alpha, best_lr_en = 1, 1e-3
+if configs.cross_validate is True:
+    best_alpha, best_lr_en = train.train_TL_k_fold(
+        myclass=myclass, train_val_list=train_val_list, number_of_folds=number_of_folds,
+        lr_en_list=lr_en_list, alpha_list=alpha_list,
+        source_tool_list=source_tool_list, target_tool_list=target_tool_list, plot_learning=False)
+else:
+    best_alpha, best_lr_en = configs.TL_margin, configs.lr_encoder
 test_acc = train.train_TL_fixed_param(
     myclass=myclass, train_val_obj_list=train_val_list, test_obj_list=test_list,
     source_tool_list=source_tool_list, target_tool_list=target_tool_list,

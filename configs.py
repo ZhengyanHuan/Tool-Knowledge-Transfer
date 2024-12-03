@@ -5,11 +5,12 @@ import torch
 
 behavior_list = ['3-stirring-fast']
 modality_list = ['audio']
-# source_tool_list = ['plastic-spoon']
-source_tool_list = ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'plastic-knife', 'wooden-chopstick']
-target_tool_list = ['metal-scissor']
-all_tool_list = source_tool_list+target_tool_list
+source_tool_list = ['plastic-spoon', ]  # only one source tool
+assist_tool_list = ['wooden-fork', 'metal-whisk', "wooden-chopstick",  "plastic-knife"]  # can be treated as source tool
+target_tool_list = ['metal-scissor']  # only one target tool
+all_tool_list = source_tool_list+assist_tool_list+target_tool_list
 trail_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+split_by_trial = 0.8
 
 old_object_list = ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead',
                    'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button']
@@ -21,11 +22,9 @@ data_name = 'audio_16kHz_token_down16_beh3.bin'  # downsized and flattened token
 
 encoder_pt_name = f"myencoder_{loss_func}.pt"
 clf_pt_name = f"myclassifier_{loss_func}.pt"
-retrain_encoder = True
-retrain_clr = True
 
 encoder_exp_name = "source-assist"  # besides source, use old object from assist tool to train encoder. default is ""
-# encoder_exp_name = "source-all":  # use all other tools (source+assist) to train encoder
+# encoder_exp_name = "source-all"  # use all other tools (source+assist) to train encoder
 clf_exp_name = "source-assist"  # besides source, use new object from assist tool to train clf. default is ""
 # encoder_exp_name = ""
 # clf_exp_name = ""
@@ -33,27 +32,34 @@ if "assist" not in encoder_exp_name:
     if "all" in encoder_exp_name:
         source_tool_list += assist_tool_list
     assist_tool_list = []
-viz_dataset = True
-viz_process = True
 
-#########################encoder parameters
-l2_norm = loss_func == "sincere"
+retrain_encoder = False
+retrain_clr = False
+viz_dataset = False
+viz_share_space = True
+viz_share_space_l2_norm = False
 
+########## for cross validation ##########
+cross_validate = False
+lr_encoder = 1e-3  # encoder lr
+TL_margin = 1  # TL alpha
+
+
+########## default hyper params ##########
+# encoder parameters
 encoder_hidden_dim = 256
-encoder_output_dim = 4  # 2 makes it easy to visualize decision boundary
-
+encoder_output_dim = 128  # 2 makes it easy to visualize decision boundary
 epoch_encoder = 2000
-lr_encoder = 1e-3
-############## TL loss parameters ##########
-TL_margin = 1
+
+# TL loss parameters
 pairs_per_batch_per_object = 10
 
-############## SINCERE loss parameters ##########
-sincere_temp = 0.1
+# SINCERE loss parameters
+sincere_temp = 0.5
 
-#############classifier parameters #######
-epoch_classifier = 2000
-lr_classifier = 1e-1
+# classifier parameters
+epoch_classifier = 300
+lr_classifier = 1e-2
 val_portion = 0
 
 #################################################

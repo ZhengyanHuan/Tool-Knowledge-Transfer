@@ -104,8 +104,6 @@ def get_all_embeddings_or_data(
             all_labels.append(labels)
             logging.debug(f"encoded_data shape for {tool_list} and {len(object_list)} objects: {encoded_data.shape}")
             logging.debug(f"labels shape for {tool_list} and {len(object_list)} objects: {labels.shape}")
-    logging.debug(f"groups of data: {len(all_emb)}")
-    logging.debug(f"groups of labels: {len(all_labels)}")
 
     return all_emb, all_labels, meta_data
 
