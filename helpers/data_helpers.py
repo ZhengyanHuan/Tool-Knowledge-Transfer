@@ -1,6 +1,6 @@
 import copy
 import logging
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Dict
 
 import numpy as np
 import torch
@@ -102,32 +102,106 @@ def get_all_embeddings_or_data(
                 labels = np.empty((0, 1), dtype=np.int64)
             all_emb.append(encoded_data)
             all_labels.append(labels)
-            logging.debug(f"encoded_data shape for {tool_list} and {len(object_list)} objects: {encoded_data.shape}")
-            logging.debug(f"labels shape for {tool_list} and {len(object_list)} objects: {labels.shape}")
+            logging.debug(f"trial data shape for {tool_list} and {len(object_list)} objects: {encoded_data.shape}")
+            logging.debug(f"trial labels shape for {tool_list} and {len(object_list)} objects: {labels.shape}")
 
     return all_emb, all_labels, meta_data
 
 
-def select_context_for_experiment(encoder_exp_name="", clf_exp_name=""):
-    source_tool_list = copy.copy(configs.source_tool_list)
-    target_tool_list = copy.copy(configs.target_tool_list)
-    assist_tool_list = copy.copy(configs.assist_tool_list)
+def select_context_for_experiment(
+        encoder_exp_name=configs.encoder_exp_name, clf_exp_name=configs.clf_exp_name, exp_pred_obj=configs.exp_pred_obj,
+        source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
+        assist_tool_list=configs.assist_tool_list, old_object_list=configs.old_object_list,
+        new_object_list=configs.new_object_list, trial_list=configs.trail_list,
+        enc_trail_list=configs.enc_trail_list) -> Dict[str, List[str]]:
+    assert encoder_exp_name in ["default", "all", "assist", "assist_no-target", "baseline1", "baseline2", "baseline2-all"]
+    assert clf_exp_name in ["default", "assist"]
+    assert exp_pred_obj in ['all', 'new']
+    logging.debug(f"experiment: encoder: {encoder_exp_name}, clf: {clf_exp_name}, predict objects: {exp_pred_obj}")
+    all_object_list = old_object_list + new_object_list
 
-    encoder_source_tool_list = source_tool_list
-    encoder_target_tool_list = target_tool_list
-    clf_source_tool_list = source_tool_list
-    clf_target_tool_list = target_tool_list
+    exp_context_dict = {
+        'exp_pred_obj': exp_pred_obj,
+        'actual_source_tools': source_tool_list,
+        'actual_target_tools': target_tool_list,
+        'actual_assist_tools': [],
+        'enc_source_tools': source_tool_list,  # source tool that has all objects
+        'enc_target_tools': target_tool_list,  # target tool that only has new object
+        'enc_assist_tools': [],  # assist tool(s) that only has old objects
+        'enc_old_objs': old_object_list,  # share objects for source and target
+        'enc_new_objs': new_object_list,  # objects only for source
+        'enc_train_trail_list': trial_list,
 
-    if encoder_exp_name == "source-all":  # use all other tools to train encoder
-        encoder_source_tool_list = source_tool_list + assist_tool_list
-    elif encoder_exp_name == "source-assist":  # besides source, use old object from assist tool to train encoder
-        # balance the source tool and target tool number
+        'clf_source_tools': source_tool_list,  # the tool(s) used to train the clf
+        'clf_target_tools': target_tool_list,  # the tool used to test the clf
+        'clf_assist_tools': [],  # the assist tool used to train the clf
+        'clf_old_objs': old_object_list,  # objects used to train and test the classifier
+        'clf_new_objs': new_object_list,  # objects used to train and test the clf
+        'clf_val_portion': 0,
+    }
+    if exp_pred_obj == "all":  # predict all objects
+        exp_context_dict['clf_new_objs'] = all_object_list
+        exp_context_dict['clf_old_objs'] = []
+
+    # ---- encoder source tools
+    if encoder_exp_name == "all":  # use all other tools to train encoder
+        exp_context_dict['enc_source_tools'] = source_tool_list + assist_tool_list
+        exp_context_dict['actual_assist_tools'] = assist_tool_list
+    elif encoder_exp_name in ["assist", "assist_no-target"]:  # besides source, use old object from assist tools to train encoder
+        exp_context_dict['actual_assist_tools'] = assist_tool_list
+        exp_context_dict['enc_assist_tools'] = assist_tool_list
+        # balance the source tool and target tool number, in case assist and target outnumber source
+        #  so much that source&source pairs are considered less during contrastive learning
         tool_gap = len(assist_tool_list) + len(target_tool_list) - len(source_tool_list)
         if tool_gap > 0:
-            encoder_source_tool_list *= (tool_gap + 1)
-        encoder_target_tool_list = target_tool_list + assist_tool_list
+            exp_context_dict['enc_source_tools'] = source_tool_list * (tool_gap + 1)
+    elif encoder_exp_name == "baseline1":  # train on target tool only
+        exp_context_dict['actual_source_tools'] = target_tool_list
+        exp_context_dict['enc_source_tools'] = target_tool_list
+        exp_context_dict['enc_train_trail_list'] = enc_trail_list
+    elif encoder_exp_name == "baseline2-all":  # train on all tools that are not target tool
+        print(source_tool_list + assist_tool_list)
+        exp_context_dict['actual_source_tools'] = source_tool_list + assist_tool_list
+        exp_context_dict['enc_source_tools'] = source_tool_list + assist_tool_list
 
-    if clf_exp_name == "source-assist":  # besides source, use new object from assist tool to train clf
-        clf_source_tool_list = source_tool_list + assist_tool_list
+    # ---- encoder target tools and object selection
+    if encoder_exp_name == "assist":
+        exp_context_dict['enc_target_tools'] = target_tool_list + assist_tool_list
+    if encoder_exp_name == "assist_no-target":  # true zero shot learning, no target information during rep learning
+        assert len(assist_tool_list) != 0
+        exp_context_dict['enc_target_tools'] = assist_tool_list
+        # all objects for training encoder
+        exp_context_dict['enc_new_objs'] = all_object_list
+        exp_context_dict['enc_old_objs'] = []
+        # all objects for training and testing clf
+        exp_context_dict['clf_new_objs'] = all_object_list
+        exp_context_dict['clf_old_objs'] = []
+    elif "baseline" in encoder_exp_name:  # no transfer, so there's no new object for encoder,
+        exp_context_dict['enc_target_tools'] = []
+        if exp_pred_obj == "new":
+            exp_context_dict['enc_new_objs'] = []
+            exp_context_dict['enc_old_objs'] = new_object_list
+            exp_context_dict['clf_new_objs'] = new_object_list
+            exp_context_dict['clf_old_objs'] = []
+        elif exp_pred_obj == "all":
+            exp_context_dict['enc_new_objs'] = []
+            exp_context_dict['enc_old_objs'] = all_object_list
+            exp_context_dict['clf_new_objs'] = all_object_list
+            exp_context_dict['clf_old_objs'] = []
 
-    return encoder_source_tool_list, encoder_target_tool_list, clf_source_tool_list, clf_target_tool_list
+    # ---- classifier source
+    if clf_exp_name == "assist":  # besides source, use new objects from assist tools to train clf
+        if "assist" in encoder_exp_name:
+            exp_context_dict['clf_assist_tools'] = assist_tool_list
+        exp_context_dict['clf_source_tools'] = source_tool_list + assist_tool_list
+
+    # regardless of what clf_exp_name is
+    if encoder_exp_name == "baseline1":
+        exp_context_dict['clf_source_tools'] = target_tool_list
+    elif encoder_exp_name == "baseline2":  # regardless of what clf_exp_name is
+        exp_context_dict['clf_source_tools'] = source_tool_list
+
+    # ---- classifier target
+    # so far, always test on the target tool
+
+    return exp_context_dict

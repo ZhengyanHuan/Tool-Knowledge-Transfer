@@ -66,13 +66,22 @@ class Tool_Knowledge_transfer_class:
         """might change this rule later"""
         return self.encoder_loss_fuc == "sincere"
 
+    def filter_data_by_trial_idx(self, structured_data, trial_idx_list):
+        """
+        structured_data shape: [n_behavior, n_tools, len(object_list), n_trials, data_sample_dim]
+        """
+        filter_data = structured_data
+        if set(trial_idx_list) != set(self.trials):
+            filter_data = structured_data[:, :, :, trial_idx_list, :]
+        return filter_data
+
     def _assign_labels_to_data(self, structured_data: torch.Tensor, object_list: list) -> torch.Tensor:
         """
         structured_data shape: [n_behavior, n_tools, len(object_list), n_trials, data_sample_dim]
         return label shape: [n_behavior, n_tools, len(object_list), n_trials]"""
         truth = np.zeros_like(structured_data[:, :, :, :, -1].cpu())
         for i in range(len(object_list)):
-            truth[:, :, i, :] = i
+            truth[:, :, i, :] = i  # all trials (fourth dimension) have the same object label
         return torch.tensor(truth, dtype=torch.int64, device=configs.device)
 
     def _prepare_data_classifier(self, Encoder, behavior_list, source_tool_list, new_object_list,
@@ -198,7 +207,7 @@ class Tool_Knowledge_transfer_class:
     def train_encoder(self, behavior_list=configs.behavior_list,
                       source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
                       old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
-                      modality_list=configs.modality_list, trail_list=configs.trail_list, lr_en=configs.lr_encoder,
+                      modality_list=configs.modality_list, trail_list=configs.enc_trail_list, lr_en=configs.lr_encoder,
                       TL_margin=configs.TL_margin, encoder_output_dim=configs.encoder_output_dim,
                       sincere_tem=configs.sincere_temp, epoch_encoder=configs.epoch_encoder,
                       pairs_per_batch_per_object=configs.pairs_per_batch_per_object, plot_learning=True):
@@ -227,9 +236,10 @@ class Tool_Knowledge_transfer_class:
         '''
         self.encoder_output_dim = encoder_output_dim
         self.input_dim = 0
+        all_obj = old_object_list + new_object_list
         for modality in modality_list:
             self.input_dim += len(
-                self.data_dict[behavior_list[0]][target_tool_list[0]][modality][old_object_list[0]]['X'][0])
+                self.data_dict[behavior_list[0]][source_tool_list[0]][modality][all_obj[0]]['X'][0])
 
         configs.set_torch_seed()
         Encoder = model.encoder(self.input_dim, l2_norm=self.enc_l2_norm).to(configs.device)
@@ -377,8 +387,8 @@ class Tool_Knowledge_transfer_class:
             data = torch.tensor(data, dtype=torch.float32, device=configs.device)
             label = torch.tensor(label, dtype=torch.int64, device=configs.device)
             logging.debug(f"data mata: {meta_data}")
-            logging.debug(f"structured source tool data shape: {data.shape}")
-            logging.debug(f"structured source tool label shape: {label.shape}")
+            logging.debug(f"structured data shape: {data.shape} from tool(s): {tool_list}")
+            logging.debug(f"structured label shape: {label.shape}")
 
         else:
             data = None
@@ -416,6 +426,7 @@ class Tool_Knowledge_transfer_class:
         # =========  get source tool data
         logging.debug(f"get source data for encoder: {source_tool_list}: {all_obj_list}")
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, all_obj_list, trail_list)
+
         # ========= get target tool data, get shared object by default
         logging.debug(f"get target data for encoder: {target_tool_list}: {shared_object_list}")
         target_data = self.get_data(behavior_list, target_tool_list, modality_list, shared_object_list, trail_list)
