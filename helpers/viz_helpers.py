@@ -89,7 +89,7 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None,
     tool_labels = create_tool_idx_list(source_label_len=len_list[0] + len_list[1],
                                        assist_label_train_len=len_list[2], assist_label_test_len=len_list[3],
                                        target_label_train_len=len_list[4], target_label_test_len=len_list[5])
-    data_descpt = "Encoder Input Data from All Objects" if encoder is None else \
+    data_descpt = "Encoder Input Data (All Objects)" if encoder is None else \
         f"Encoder Output Data (All Objects) - {loss_func} Loss"
     if len(tool_labels) != 0:
         logging.debug(f"Viz data for all objects...")
@@ -106,7 +106,7 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None,
         tool_labels = create_tool_idx_list(source_label_len=len(source_label_train) + len(source_label_test),
                                            assist_label_train_len=len(assist_label_train),
                                            target_label_train_len=len(target_label_train))
-        data_descpt = "Encoder Input Data from Train Objects" if encoder is None else \
+        data_descpt = "Encoder Input Data (Train Objects)" if encoder is None else \
             f"Encoder Output Data (Train Objects) - {loss_func} Loss"
         _viz_embeddings(embeds=data, labels=labels, tool_labels=tool_labels,
                         viz_l2_norm=viz_l2_norm, obj_list=all_object_list, save_fig=True, title=f"{data_descpt}",
@@ -122,7 +122,7 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None,
         tool_labels = create_tool_idx_list(source_label_len=len(source_label_test),
                                            assist_label_test_len=len(assist_label_test),
                                            target_label_test_len=len(target_label_test))
-        data_descpt = "Encoder Input Data from Test Objects " if encoder is None else \
+        data_descpt = "Encoder Input Data (Test Objects)" if encoder is None else \
             f"Encoder Output Data (Test Objects) - {loss_func} Loss"
         _viz_embeddings(viz_l2_norm=viz_l2_norm, embeds=data, labels=labels,
                         tool_labels=tool_labels, obj_list=new_object_list, save_fig=True, title=f"{data_descpt}",
