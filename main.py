@@ -9,8 +9,8 @@ import torch
 
 import configs
 import model
-from helpers.data_helpers import select_context_for_experiment
-from helpers.viz_helpers import viz_test_objects_embedding, viz_data
+from myhelpers.data_helpers import select_context_for_experiment
+from myhelpers.viz_helpers import viz_test_objects_embedding, viz_data
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %%  0. setup
@@ -51,7 +51,7 @@ for modality in configs.modality_list:
     data_dim = x_sample.shape[-1]
 
 if configs.viz_dataset:
-    main_logger.info("👀visualize initial data ...")
+    main_logger.info("visualize initial data ...")
     viz_data(trans_cls=myclass, encoder=None, data_dim=data_dim,
              viz_l2_norm=configs.viz_share_space_l2_norm, assist_tool_list=context_dict['actual_assist_tools'],
              new_object_list=context_dict['enc_new_objs'], old_object_list=context_dict['enc_old_objs'],
@@ -60,28 +60,28 @@ if configs.viz_dataset:
 start_time = time.time()
 # %% 2. encoder
 if configs.retrain_encoder:
-    main_logger.info(f"👉 ------------ Training representation encoder using {configs.loss_func} loss ------------ ")
+    main_logger.info(f" ------------ Training representation encoder using {configs.loss_func} loss ------------ ")
     encoder_time = time.time()
     myencoder = myclass.train_encoder(
         source_tool_list=context_dict['enc_source_tools'], target_tool_list=context_dict['enc_target_tools'],
         new_object_list=context_dict['enc_new_objs'], old_object_list=context_dict['enc_old_objs'],
         trail_list=context_dict['enc_train_trail_list'])
     torch.save(myencoder.state_dict(), './saved_model/encoder/' + configs.encoder_pt_name)
-    main_logger.info(f"⏱️Time used for encoder training: {round((time.time() - encoder_time) // 60)} "
+    main_logger.info(f"Time used for encoder training: {round((time.time() - encoder_time) // 60)} "
                      f"min {(time.time() - encoder_time) % 60:.1f} sec.")
 
 if configs.viz_share_space:
     Encoder = model.encoder(input_size=input_dim).to(configs.device)
     Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name,
                                        map_location=torch.device(configs.device)))
-    main_logger.info("👀visualize embeddings in shared latent space...")
+    main_logger.info("visualize embeddings in shared latent space...")
     viz_data(trans_cls=myclass, encoder=Encoder, loss_func=configs.loss_func,
              viz_l2_norm=configs.viz_share_space_l2_norm, assist_tool_list=context_dict['enc_assist_tools'],
              new_object_list=context_dict['enc_new_objs'], old_object_list=context_dict['enc_old_objs'],
              source_tool_list=context_dict['actual_source_tools'], target_tool_list=context_dict['actual_target_tools'])
 # %% 3. classifier
 if configs.retrain_clr:
-    main_logger.info(f"👉 ------------ Training classification head ------------ ")
+    main_logger.info(f" ------------ Training classification head ------------ ")
     clf_time = time.time()
 
     Encoder = model.encoder(input_size=input_dim).to(configs.device)
@@ -93,11 +93,11 @@ if configs.retrain_clr:
                                             trail_list=context_dict['enc_train_trail_list'])
     torch.save(myclassifier.state_dict(), './saved_model/classifier/' + configs.clf_pt_name)
 
-    main_logger.info(f"⏱️Time used for classifier training: {round((time.time() - clf_time) // 60)} "
+    main_logger.info(f"Time used for classifier training: {round((time.time() - clf_time) // 60)} "
                      f"min {(time.time() - clf_time) % 60:.1f} sec.")
 
 # %% 4. evaluation
-main_logger.info(f"👉 ------------ Evaluating the classifier ------------ ")
+main_logger.info(f"------------ Evaluating the classifier ------------ ")
 Encoder = model.encoder(input_size=input_dim).to(configs.device)
 Encoder.load_state_dict(
     torch.load('./saved_model/encoder/' + configs.encoder_pt_name, map_location=torch.device(configs.device)))
@@ -110,10 +110,10 @@ accuracy, _, pred_label_target = myclass.eval(Encoder=Encoder, Classifier=Classi
                                               tool_list=context_dict['clf_target_tools'], return_pred=True,
                                               new_object_list=context_dict['clf_new_objs'])
 main_logger.info(f"test accuracy: {accuracy * 100:.2f}%")
-main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 60)} "
+main_logger.info(f"total time used: {round((time.time() - start_time) // 60)} "
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
 
-main_logger.info("👀visualize decision boundary in shared latent space...")
+main_logger.info("visualize decision boundary in shared latent space...")
 if len(context_dict['actual_source_tools']) == 1:
     source_tools_descpt = context_dict['actual_source_tools'][0]
 else:
@@ -126,3 +126,24 @@ viz_test_objects_embedding(
     viz_l2_norm=configs.viz_share_space_l2_norm,
     task_descpt=f"source:{source_tools_descpt}, target:{context_dict['actual_target_tools'][0]} "
                 f"encoder exp: {configs.encoder_exp_name}, clf exp: {configs.clf_exp_name}")
+
+#%%
+myencoder,myclassifier = myclass.train_end2end( context_dict = context_dict, epoch_end2end = configs.epoch_end2end, behavior_list=configs.behavior_list, trail_list=configs.enc_trail_list,
+                      modality_list=configs.modality_list, encoder_output_dim=configs.encoder_output_dim, lr_en=configs.lr_encoder,
+                        TL_margin = configs.TL_margin, sincere_tem = configs.sincere_temp , lr_clf=configs.lr_classifier,
+                      pairs_per_batch_per_object=configs.pairs_per_batch_per_object, plot_learning=True,val_portion=configs.val_portion,
+                      weight = configs.default_weight)
+
+if configs.viz_share_space:
+    Encoder = model.encoder(input_size=input_dim).to(configs.device)
+    Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name,
+                                       map_location=torch.device(configs.device)))
+    main_logger.info("visualize embeddings in shared latent space...")
+    viz_data(trans_cls=myclass, encoder=Encoder, loss_func=configs.loss_func,
+             viz_l2_norm=configs.viz_share_space_l2_norm, assist_tool_list=context_dict['enc_assist_tools'],
+             new_object_list=context_dict['enc_new_objs'], old_object_list=context_dict['enc_old_objs'],
+             source_tool_list=context_dict['actual_source_tools'], target_tool_list=context_dict['actual_target_tools'])
+
+
+torch.save(myencoder.state_dict(), './saved_model/encoder/' + configs.encoder_pt_name)
+torch.save(myclassifier.state_dict(), './saved_model/classifier/' + configs.clf_pt_name)

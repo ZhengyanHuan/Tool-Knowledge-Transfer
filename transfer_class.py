@@ -10,8 +10,8 @@ import torch.optim as optim
 
 import configs
 import model
-from helpers.data_helpers import sanity_check_data_labels
-from helpers.viz_helpers import plot_learning_progression
+from myhelpers.data_helpers import sanity_check_data_labels
+from myhelpers.viz_helpers import plot_learning_progression
 from sincere_loss_class import SINCERELoss
 
 
@@ -93,7 +93,7 @@ class Tool_Knowledge_transfer_class:
         label shape: [n_behavior*n_tools*num_objects&n_trials, ]
 
         """
-        logging.debug(f"➡️ prepare_data_classifier..")
+        logging.debug(f"prepare_data_classifier..")
         train_test_index = int(len(trail_list) * (1 - val_portion))
         logging.debug(f"get source data for classifier from {new_object_list}")
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, new_object_list, trail_list)
@@ -119,7 +119,7 @@ class Tool_Knowledge_transfer_class:
                          val_portion=configs.val_portion, plot_learning=True):
         configs.set_torch_seed()
         loss_record = np.zeros([2, epoch_classifier])
-        logging.debug(f"➡️ train_classifier..")
+        logging.debug(f"train_classifier..")
 
         train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self._prepare_data_classifier(
             behavior_list=behavior_list, source_tool_list=source_tool_list, new_object_list=new_object_list,
@@ -173,7 +173,7 @@ class Tool_Knowledge_transfer_class:
     def eval(self, Encoder, Classifier, tool_list=configs.target_tool_list, behavior_list=configs.behavior_list,
              new_object_list=configs.new_object_list, modality_list=configs.modality_list,
              trail_list=configs.trail_list, return_pred=False) -> Union[Tuple[float, list, list], float]:
-        logging.debug(f"➡️ eval..")
+        logging.debug(f" eval..")
         logging.debug(f"{tool_list}: {new_object_list}")
         source_data = self.get_data(behavior_list, tool_list, modality_list, new_object_list, trail_list)
         truth_flat = np.zeros(len(tool_list) * len(trail_list) * len(new_object_list))
@@ -222,7 +222,7 @@ class Tool_Knowledge_transfer_class:
         :param trail_list: the index of training trails, e.g. [0,1,2,3,4,5,6,7]
         :return: trained encoder
         """
-        logging.debug(f"➡️ train_encoder..")
+        logging.debug(f"train_encoder..")
         loss_record = np.zeros(epoch_encoder)
 
         source_data, target_data, truth_source, truth_target = self.get_encoder_data_and_labels(
@@ -357,7 +357,7 @@ class Tool_Knowledge_transfer_class:
         Note that the returned labels do NOT always start from 0
             i.e., object_list is a subset of the one used to create the labels in the dataset
         """
-        logging.debug(f"➡️get_data...")
+        logging.debug(f"get_data...")
 
         meta_data = {b: {t: {} for t in tool_list} for b in behavior_list}
         if len(modality_list) == 1 and behavior_list and tool_list and object_list and trail_list:
@@ -419,7 +419,7 @@ class Tool_Knowledge_transfer_class:
          target_data: data from shared_object_list + novel_object_list
          truth_target: labels for target tool & shared_object_list, index starts from 0 to len(shared_object_list) - 1
         """
-        logging.debug(f"➡️ get_encoder_data_and_labels...")
+        logging.debug(f" get_encoder_data_and_labels...")
         assert behavior_list and trail_list and modality_list
         assert len(behavior_list) == 1  # for now, one behavior only
         all_obj_list = shared_object_list + novel_object_list  # has to be this order
@@ -473,5 +473,107 @@ class Tool_Knowledge_transfer_class:
         all_embeds = torch.cat([encoded_source, encoded_assist, encoded_target], dim=0)
 
         return all_embeds, all_labels
+
+    def train_end2end(self, context_dict = None, val_dict = None, epoch_end2end = configs.epoch_end2end, behavior_list=configs.behavior_list, trail_list=configs.enc_trail_list,
+                      modality_list=configs.modality_list, encoder_output_dim=configs.encoder_output_dim, lr_en=configs.lr_encoder,
+                        TL_margin = configs.TL_margin, sincere_tem = configs.sincere_temp , lr_clf=configs.lr_classifier,
+                      pairs_per_batch_per_object=configs.pairs_per_batch_per_object, plot_learning=True,val_portion=configs.val_portion,
+                      weight = configs.default_weight):
+        logging.debug(f"train_end2end..")
+        encoder_loss_record = np.zeros(epoch_end2end)
+        clf_loss_record = np.zeros([2, epoch_end2end])
+
+        encoder_source_data, encoder_target_data, encoder_truth_source, encoder_truth_target = self.get_encoder_data_and_labels(
+            behavior_list=behavior_list, trail_list=trail_list, modality_list=modality_list,
+            source_tool_list=context_dict['enc_source_tools'], target_tool_list=context_dict['enc_target_tools'],
+            shared_object_list=context_dict['enc_old_objs'], novel_object_list=context_dict['enc_new_objs'])
+
+
+        self.encoder_output_dim = encoder_output_dim
+        self.input_dim = 0
+        all_obj = context_dict['enc_old_objs'] + context_dict['enc_new_objs']
+        for modality in modality_list:
+            self.input_dim += len(
+                self.data_dict[behavior_list[0]][context_dict['enc_source_tools'][0]][modality][all_obj[0]]['X'][0])
+
+        configs.set_torch_seed()
+        Encoder = model.encoder(self.input_dim, l2_norm=self.enc_l2_norm).to(configs.device)
+        Classifier = model.classifier(encoder_output_dim, len(context_dict['clf_new_objs'])).to(configs.device)
+
+        encoder_optimizer = optim.AdamW(Encoder.parameters(), lr=lr_en)
+        clf_optimizer = optim.AdamW(Classifier.parameters(), lr=lr_clf)
+
+        for i in range(epoch_end2end):
+
+            train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self._prepare_data_classifier(
+                behavior_list=behavior_list, source_tool_list=context_dict['clf_source_tools'],
+                new_object_list=context_dict['clf_new_objs'],
+                modality_list=modality_list, trail_list=trail_list, Encoder=Encoder, val_portion=val_portion)
+
+
+            if self.encoder_loss_fuc == "TL":
+                encoder_loss = self.TL_loss_fn(encoder_source_data, encoder_target_data, Encoder, alpha=TL_margin,
+                                       encoder_output_dim=encoder_output_dim,
+                                       pairs_per_batch_per_object=pairs_per_batch_per_object)
+            elif self.encoder_loss_fuc == "sincere":
+                encoder_loss = self.sincere_loss_fn(encoder_source_data, encoder_truth_source, encoder_target_data, encoder_truth_target, Encoder,
+                                            temperature=sincere_tem, encoder_output_dim=encoder_output_dim)
+            else:
+                raise Exception(f"{self.encoder_loss_fuc} not available.")
+
+
+            clf_pred_tr = Classifier(train_encoded_source)
+            pred_flat_tr = clf_pred_tr.view(-1, len(context_dict['clf_new_objs']))  # (num_data, num_class)
+            clf_loss_tr = self.CEloss(pred_flat_tr, train_truth_flat)
+
+            clf_loss_record[0, i] = clf_loss_tr.detach().cpu().numpy()
+            encoder_loss_record[i] = encoder_loss.detach().cpu().numpy()
+
+            if len(val_truth_flat > 0):
+                with torch.no_grad():
+                    pred_val = Classifier(val_encoded_source)
+                    pred_flat_val = pred_val.view(-1, len(context_dict['clf_new_objs']))
+                    clf_loss_val = self.CEloss(pred_flat_val, val_truth_flat)
+                    clf_loss_record[1, i] = clf_loss_val.detach().cpu().numpy()
+
+            loss = encoder_loss + weight * clf_loss_tr
+
+            encoder_optimizer.zero_grad()
+            clf_optimizer.zero_grad()
+            loss.backward()
+            encoder_optimizer.step()
+            clf_optimizer.step()
+            if (i + 1) % 500 == 0:
+
+                pred_label = torch.argmax(pred_flat_tr, dim=-1)
+                correct_num = torch.sum(pred_label == train_truth_flat)
+                accuracy_train = correct_num / len(train_truth_flat)
+
+
+                print(f"epoch {i + 1}/{epoch_end2end}, encoder loss: {encoder_loss.item():.4f}")
+                print(f"epoch {i + 1}/{epoch_end2end}, train loss: {clf_loss_tr.item():.4f}, "
+                             f"train accuracy: {accuracy_train.item() * 100 :.2f}%, "
+                             f"random guess accuracy: {100 / len(context_dict['clf_new_objs']):.2f}%")
+
+                logging.info(f"epoch {i + 1}/{epoch_end2end}, encoder loss: {encoder_loss.item():.4f}")
+                logging.info(f"epoch {i + 1}/{epoch_end2end}, train loss: {clf_loss_tr.item():.4f}, "
+                             f"train accuracy: {accuracy_train.item() * 100 :.2f}%, "
+                             f"random guess accuracy: {100 / len(context_dict['clf_new_objs']):.2f}%")
+
+
+        if plot_learning:
+            plot_learning_progression(record=encoder_loss_record, type='encoder',
+                                      lr_classifier=None, encoder_output_dim=encoder_output_dim,
+                                      loss_func=self.encoder_loss_fuc, TL_margin=TL_margin, sincere_temp=sincere_tem,
+                                      lr_encoder=lr_en, save_name=f'encoder_{self.encoder_loss_fuc}')
+
+            plot_learning_progression(record=clf_loss_record, type='classifier',
+                                      lr_classifier=lr_clf, encoder_output_dim=encoder_output_dim,
+                                      loss_func=self.encoder_loss_fuc, TL_margin=None, sincere_temp=None,
+                                      lr_encoder=None, save_name=f'classifier_{self.encoder_loss_fuc}')
+        return Encoder, Classifier
+
+
+
 
     # %%

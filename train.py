@@ -7,7 +7,7 @@ import torch
 
 import configs
 import model
-from helpers.viz_helpers import viz_test_objects_embedding
+from myhelpers.viz_helpers import viz_test_objects_embedding
 from transfer_class import Tool_Knowledge_transfer_class
 
 encoder_pt_name = f"tmp_myencoder.pt"
@@ -51,7 +51,7 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                 val_list = train_val_list[fold_idx * obj_fold_len: end_idx]
                 train_list = [item for item in train_val_list if item not in val_list]
                 ######
-                logging.info(f"👉 training representation encoder...")
+                logging.info(f"training representation encoder...")
                 encoder_time = time.time()
                 configs.set_torch_seed()
                 Encoder = myclass.train_encoder(
@@ -64,7 +64,7 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                              f"{(time.time() - encoder_time) % 60:.1f} sec.")
 
                 ########
-                logging.info(f"👉 training classification head...")
+                logging.info(f"training classification head...")
                 clf_time = time.time()
                 # Encoder = model.encoder(input_size=input_dim).to(configs.device)
                 # Encoder.load_state_dict(torch.load('./saved_model/encoder/' + encoder_pt_name,
@@ -88,15 +88,15 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                 # Classifier.load_state_dict(torch.load('./saved_model/classifier/' + clf_pt_name,
                 #                                       map_location=torch.device(configs.device)))
 
-                logging.info(f"👉 Evaluating the classifier...")
+                logging.info(f"Evaluating the classifier...")
                 val_acc = myclass.eval(Encoder=Encoder, Classifier=Classifier, behavior_list=behavior_list,
                                        tool_list=target_tool_list, new_object_list=val_list,
                                        modality_list=modality_list, trail_list=trail_list)
                 acc_sum += val_acc
-                logging.info(f"👉 fold {fold_idx + 1}/{number_of_folds} val_obj: {val_list} \n"
+                logging.info(f"fold {fold_idx + 1}/{number_of_folds} val_obj: {val_list} \n"
                              f"TL margin: {alpha}, lr: {lr_en}, test accuracy: {val_acc * 100:.2f}%")
 
-            logging.info(f"☑️ total time used for this cv: {round((time.time() - cv_start_time) // 60)} min "
+            logging.info(f"total time used for this cv: {round((time.time() - cv_start_time) // 60)} min "
                          f"{(time.time() - cv_start_time) % 60:.1f} sec.")
 
             avg_acc = acc_sum / number_of_folds
@@ -105,7 +105,7 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                 best_alpha = alpha
                 best_lr_en = lr_en
                 rand_guess_acc = 1 / curr_fold_len
-    logging.info(f"✅ The best avg val accuracy is: {best_acc * 100:.1f}%, "
+    logging.info(f"The best avg val accuracy is: {best_acc * 100:.1f}%, "
                  f"random guess accuracy: {rand_guess_acc * 100:.2f}%")
     return best_alpha, best_lr_en
 
@@ -142,7 +142,7 @@ def train_TL_fixed_param(myclass: Tool_Knowledge_transfer_class, train_val_obj_l
     test_acc, _, pred_label_target = myclass.eval(Encoder=Encoder, Classifier=Classifier, return_pred=True,
                                                   new_object_list=test_obj_list, tool_list=target_tool_list)
 
-    logging.info(f"✅✅✅ test accuracy is: {test_acc * 100:.1f}%, "
+    logging.info(f"test accuracy is: {test_acc * 100:.1f}%, "
                  f"random guess accuracy: {100/len(test_obj_list):.2f}%")
 
     viz_test_objects_embedding(transfer_class=myclass, Encoder=myclass.trained_encoder,
@@ -150,7 +150,7 @@ def train_TL_fixed_param(myclass: Tool_Knowledge_transfer_class, train_val_obj_l
                                source_tool_list=source_tool_list, target_tool_list=target_tool_list,
                                assist_tool_list=[], test_accuracy=test_acc, pred_label_target=pred_label_target)
 
-    logging.info(f"☑️ total time used for refit and test: {round((time.time() - start_time) // 60)} min "
+    logging.info(f"total time used for refit and test: {round((time.time() - start_time) // 60)} min "
                  f"{(time.time() - start_time) % 60:.1f} sec.")
 
     return test_acc
