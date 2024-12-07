@@ -11,4 +11,6 @@ __pycache__/
 ignored_files/**
 
 *.log
-logs/
+logs/**
+
+local_stuff/
