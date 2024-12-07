@@ -292,8 +292,8 @@ def select_context_for_experiment(
     # ---- classifier source
     if clf_exp_name == "assist":  # besides source, use new objects from assist tools to train clf
         if "assist" in encoder_exp_name:
+            exp_context_dict['clf_source_tools'] = source_tool_list + assist_tool_list
             exp_context_dict['clf_assist_tools'] = assist_tool_list
-        exp_context_dict['clf_source_tools'] = source_tool_list + assist_tool_list
 
     # regardless of what clf_exp_name is
     if encoder_exp_name == "baseline1":

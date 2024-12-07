@@ -122,7 +122,8 @@ viz_test_objects_embedding(
     transfer_class=myclass, Encoder=Encoder, Classifier=Classifier, test_accuracy=accuracy,
     pred_label_target=pred_label_target, encoder_output_dim=configs.encoder_output_dim,
     assist_tool_list=context_dict['clf_assist_tools'], new_object_list=context_dict['clf_new_objs'],
-    source_tool_list=context_dict['clf_source_tools'], target_tool_list=context_dict['clf_target_tools'],
+    source_tool_list=list(set(context_dict['clf_source_tools']) - set(context_dict['clf_assist_tools'])),
+    target_tool_list=context_dict['clf_target_tools'],
     viz_l2_norm=configs.viz_share_space_l2_norm,
     task_descpt=f"source:{source_tools_descpt}, target:{context_dict['actual_target_tools'][0]} "
                 f"encoder exp: {configs.encoder_exp_name}, clf exp: {configs.clf_exp_name}")

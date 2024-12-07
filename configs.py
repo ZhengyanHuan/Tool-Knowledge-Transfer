@@ -26,25 +26,25 @@ encoder_pt_name = f"myencoder_{loss_func}.pt"
 clf_pt_name = f"myclassifier_{loss_func}.pt"
 
 ##### context selection for experiments
-# encoder_exp_name = "assist"  # besides source, use old object from assist tool to train encoder. default is ""
+encoder_exp_name = "assist"  # besides source, use old object from assist tool to train encoder. default is ""
 # encoder_exp_name = "assist_no-target"  #  # no target tool for encoder, but project all source and assist tools to train clf
 # encoder_exp_name = "baseline1"
 # encoder_exp_name = "baseline2"
 # encoder_exp_name = "baseline2-all"
-encoder_exp_name = "default"
+# encoder_exp_name = "default"
 # encoder_exp_name = "all"  # use all other tools (source+assist) to train encoder
 
-# clf_exp_name = "assist"  # besides source, use new object from assist tool to train clf. default is ""
-clf_exp_name = "default"
+clf_exp_name = "assist"  # besides source, use new object from assist tool to train clf. default is ""
+# clf_exp_name = "default"
 
 exp_pred_obj = "new"  # default, classifier only predicts new object
 # exp_pred_obj = "all"
 
 ####### options by main.py running order
 viz_dataset = False
-retrain_encoder = True
-viz_share_space = True
-retrain_clr = True
+retrain_encoder = False
+viz_share_space = False
+retrain_clr = False
 viz_share_space_l2_norm = False
 
 ########## for cross validation ##########
@@ -55,7 +55,7 @@ TL_margin = 1  # TL alpha
 ########## default hyper params ##########
 # total patience is early_stop_patience*smooth_wind_size epochs
 early_stop_patience = 3
-smooth_wind_size = 50
+smooth_wind_size = 50  # check progression in every 50 epochs
 tolerance = 1e-3
 
 # encoder parameters

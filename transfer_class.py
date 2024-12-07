@@ -290,11 +290,11 @@ class Tool_Knowledge_transfer_class:
             # TODO: why is TL so noisy? (sampling problem?)
             #  why is SINCERE's val better than train?
 
-            if trial_val_portion > 0:
-                if loss_val < best_loss_val:
+            if trial_val_portion > 0:  # cross validation
+                if loss_val < best_loss_val:  # save best model with best val loss
                     best_loss_val = loss_val
                     best_enc = copy.deepcopy(Encoder)  # deep copy the model at this time
-                if epoch + 1 == epoch_encoder:  # last epoch
+                if epoch + 1 == epoch_encoder:  # last epoch, take the best model
                     Encoder = best_enc
                 # early stopping by smoothed windows, not epochs
                 if early_stop_patience is not None:

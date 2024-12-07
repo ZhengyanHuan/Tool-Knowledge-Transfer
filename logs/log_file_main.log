@@ -5598,3 +5598,1160 @@
 2024-12-07 01:31:50,635 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
 2024-12-07 01:31:50,635 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: []
 2024-12-07 01:31:50,635 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:33:36,622 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:33:36,622 - INFO - loss_func: sincere
+2024-12-07 01:33:36,622 - DEBUG - ========================= New Run =========================
+2024-12-07 01:33:36,624 - INFO - Encoder loss function: sincere
+2024-12-07 01:33:36,624 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:33:36,624 - DEBUG - objects: , 15, {'split-green-pea', 'chia-seed', 'styrofoam-bead', 'empty', 'salt', 'wheat', 'wooden-button', 'cane-sugar', 'detergent', 'chickpea', 'water', 'kidney-bean', 'metal-nut-bolt', 'glass-bead', 'plastic-bead'}
+2024-12-07 01:33:36,624 - DEBUG - tools: , 6, {'metal-scissor', 'plastic-knife', 'wooden-fork', 'wooden-chopstick', 'metal-whisk', 'plastic-spoon'}
+2024-12-07 01:33:36,624 - DEBUG - trials: , 10, {'trial-1', 'trial-6', 'trial-2', 'trial-8', 'trial-7', 'trial-5', 'trial-4', 'trial-0', 'trial-3', 'trial-9'}
+2024-12-07 01:33:36,624 - DEBUG - experiment: encoder: default, clf: default, predict objects: new
+2024-12-07 01:33:36,624 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': [], 'enc_source_tools': ['plastic-spoon'], 'enc_target_tools': ['metal-scissor'], 'enc_assist_tools': [], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': [], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:33:36,624 - INFO - 👉 ------------ Training representation encoder using sincere loss ------------ 
+2024-12-07 01:33:36,624 - DEBUG - ➡️ train_encoder..
+2024-12-07 01:33:36,624 - DEBUG - ➡️ get_encoder_data_and_labels...
+2024-12-07 01:33:36,624 - DEBUG - get source data for encoder: ['plastic-spoon']: ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button', 'chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:33:36,624 - DEBUG - ➡️get_data...
+2024-12-07 01:33:36,628 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10, 'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:33:36,628 - DEBUG - structured data shape: torch.Size([1, 1, 15, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:33:36,628 - DEBUG - structured label shape: torch.Size([1, 1, 15, 10, 1])
+2024-12-07 01:33:36,628 - DEBUG - get target data for encoder: ['metal-scissor']: ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button']
+2024-12-07 01:33:36,628 - DEBUG - ➡️get_data...
+2024-12-07 01:33:36,629 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}}}
+2024-12-07 01:33:36,629 - DEBUG - structured data shape: torch.Size([1, 1, 10, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:33:36,629 - DEBUG - structured label shape: torch.Size([1, 1, 10, 10, 1])
+2024-12-07 01:33:49,539 - INFO - epoch 500/2000, loss: 3.4661
+2024-12-07 01:34:01,316 - INFO - epoch 1000/2000, loss: 3.4441
+2024-12-07 01:34:12,874 - INFO - epoch 1500/2000, loss: 3.4407
+2024-12-07 01:34:24,158 - INFO - epoch 2000/2000, loss: 3.4396
+2024-12-07 01:34:24,158 - DEBUG - ➡️ plot_learning_progression for encoder: encoder_sincere...
+2024-12-07 01:34:24,686 - INFO - ⏱️Time used for encoder training: 0 min 48.1 sec.
+2024-12-07 01:34:24,690 - INFO - 👀visualize embeddings in shared latent space...
+2024-12-07 01:34:24,691 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:34:24,691 - DEBUG - ➡️get_data...
+2024-12-07 01:34:24,692 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}}}
+2024-12-07 01:34:24,692 - DEBUG - structured data shape: torch.Size([1, 1, 10, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:34:24,692 - DEBUG - structured label shape: torch.Size([1, 1, 10, 10, 1])
+2024-12-07 01:34:24,713 - DEBUG - trial data shape for ['plastic-spoon'] and 10 objects: (100, 16)
+2024-12-07 01:34:24,713 - DEBUG - trial labels shape for ['plastic-spoon'] and 10 objects: (100, 1)
+2024-12-07 01:34:24,713 - DEBUG - ➡️get_data...
+2024-12-07 01:34:24,714 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:34:24,714 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:34:24,715 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:34:24,740 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:34:24,740 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:34:24,740 - DEBUG - ➡️get_data...
+2024-12-07 01:34:24,740 - DEBUG - No data.
+2024-12-07 01:34:24,740 - DEBUG - trial data shape for [] and 10 objects: (0, 16)
+2024-12-07 01:34:24,740 - DEBUG - trial labels shape for [] and 10 objects: (0, 1)
+2024-12-07 01:34:24,740 - DEBUG - ➡️get_data...
+2024-12-07 01:34:24,740 - DEBUG - No data.
+2024-12-07 01:34:24,741 - DEBUG - trial data shape for [] and 5 objects: (0, 16)
+2024-12-07 01:34:24,741 - DEBUG - trial labels shape for [] and 5 objects: (0, 1)
+2024-12-07 01:34:24,741 - DEBUG - ➡️get_data...
+2024-12-07 01:34:24,741 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}}}
+2024-12-07 01:34:24,742 - DEBUG - structured data shape: torch.Size([1, 1, 10, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:34:24,742 - DEBUG - structured label shape: torch.Size([1, 1, 10, 10, 1])
+2024-12-07 01:34:24,763 - DEBUG - trial data shape for ['metal-scissor'] and 10 objects: (100, 16)
+2024-12-07 01:34:24,763 - DEBUG - trial labels shape for ['metal-scissor'] and 10 objects: (100, 1)
+2024-12-07 01:34:24,763 - DEBUG - ➡️get_data...
+2024-12-07 01:34:24,763 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:34:24,764 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:34:24,764 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:34:24,773 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:34:24,773 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:34:24,773 - DEBUG - Viz data for all objects...
+2024-12-07 01:34:24,773 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:34:24,773 - DEBUG - embeds shape: (300, 16), all_emb max: 0.147, min: -0.174
+2024-12-07 01:34:24,773 - DEBUG - labels: 
+      [ 0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2
+  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4
+  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7
+  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9
+  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14
+ 14 14 14 14 14 14  0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1
+  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4
+  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6
+  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8
+  9  9  9  9  9  9  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11
+ 11 11 11 11 11 11 12 12 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13
+ 13 13 14 14 14 14 14 14 14 14 14 14]
+2024-12-07 01:34:24,774 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4
+ 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ 4 4 4 4]
+2024-12-07 01:34:25,840 - DEBUG - dimension reduced embeds_2d max: 30.778, min: -18.112
+2024-12-07 01:34:25,841 - DEBUG - subset_obj_idx: [4, 3, 0, 13, 12, 5, 10, 6, 1, 11, 9, 2, 14, 7, 8], unique labels: [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14]
+2024-12-07 01:34:26,237 - DEBUG - Viz data for train objects...
+2024-12-07 01:34:26,238 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:34:26,238 - DEBUG - embeds shape: (250, 16), all_emb max: 0.147, min: -0.174
+2024-12-07 01:34:26,238 - DEBUG - labels: 
+      [ 0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2
+  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4
+  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7
+  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9
+  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14
+ 14 14 14 14 14 14  0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1
+  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4
+  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6
+  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8
+  9  9  9  9  9  9  9  9  9  9]
+2024-12-07 01:34:26,238 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3]
+2024-12-07 01:34:27,192 - DEBUG - dimension reduced embeds_2d max: 33.547, min: -18.045
+2024-12-07 01:34:27,193 - DEBUG - subset_obj_idx: [4, 3, 0, 13, 12, 5, 10, 6, 1, 11, 9, 2, 14, 7, 8], unique labels: [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14]
+2024-12-07 01:34:27,567 - DEBUG - Viz data for test objects...
+2024-12-07 01:34:27,567 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:34:27,567 - DEBUG - embeds shape: (100, 16), all_emb max: 0.132, min: -0.147
+2024-12-07 01:34:27,567 - DEBUG - labels: 
+      [0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3
+ 3 3 3 4 4 4 4 4 4 4 4 4 4 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2
+ 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4]
+2024-12-07 01:34:27,567 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4]
+2024-12-07 01:34:28,151 - DEBUG - dimension reduced embeds_2d max: 10.337, min: -5.354
+2024-12-07 01:34:28,151 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:34:28,499 - INFO - 👉 ------------ Training classification head ------------ 
+2024-12-07 01:34:28,505 - DEBUG - ➡️ train_classifier..
+2024-12-07 01:34:28,505 - DEBUG - ➡️ prepare_data_classifier..
+2024-12-07 01:34:28,505 - DEBUG - get source data for classifier from ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:34:28,505 - DEBUG - ➡️get_data...
+2024-12-07 01:34:28,506 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:34:28,506 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:34:28,506 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:34:28,538 - DEBUG - train_truth: 
+      tensor([[[[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+          [2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+          [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+          [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]]]], device='mps:0')
+2024-12-07 01:34:29,542 - INFO - epoch 500/3000, train loss: 0.0207, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:34:30,461 - INFO - epoch 1000/3000, train loss: 0.0076, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:34:31,319 - INFO - epoch 1500/3000, train loss: 0.0042, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:34:32,224 - INFO - epoch 2000/3000, train loss: 0.0028, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:34:33,088 - INFO - epoch 2500/3000, train loss: 0.0020, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:34:33,921 - INFO - epoch 3000/3000, train loss: 0.0015, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:34:33,921 - DEBUG - ➡️ plot_learning_progression for classifier: classifier_sincere...
+2024-12-07 01:34:34,124 - INFO - ⏱️Time used for classifier training: 0 min 5.6 sec.
+2024-12-07 01:34:34,124 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:34:34,130 - DEBUG - ➡️ eval..
+2024-12-07 01:34:34,130 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:34:34,130 - DEBUG - ➡️get_data...
+2024-12-07 01:34:34,131 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:34:34,131 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:34:34,131 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:34:34,133 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:34:34,133 - INFO - 50 pred labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:34:34,133 - INFO - test accuracy: 78.00%, random guess accuracy: 20.00%
+2024-12-07 01:34:34,133 - INFO - test accuracy: 78.00%
+2024-12-07 01:34:34,133 - INFO - ⏱️total time used: 0 min 57.5 sec.
+2024-12-07 01:34:34,133 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:34:34,133 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:34:34,133 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:34:34,133 - DEBUG - ➡️get_data...
+2024-12-07 01:34:34,133 - DEBUG - No data.
+2024-12-07 01:34:34,133 - DEBUG - trial data shape for ['plastic-spoon'] and 0 objects: (0, 16)
+2024-12-07 01:34:34,133 - DEBUG - trial labels shape for ['plastic-spoon'] and 0 objects: (0, 1)
+2024-12-07 01:34:34,133 - DEBUG - ➡️get_data...
+2024-12-07 01:34:34,134 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:34:34,134 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:34:34,134 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:34:34,145 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:34:34,145 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:34:34,145 - DEBUG - ➡️get_data...
+2024-12-07 01:34:34,145 - DEBUG - No data.
+2024-12-07 01:34:34,145 - DEBUG - trial data shape for [] and 0 objects: (0, 16)
+2024-12-07 01:34:34,145 - DEBUG - trial labels shape for [] and 0 objects: (0, 1)
+2024-12-07 01:34:34,145 - DEBUG - ➡️get_data...
+2024-12-07 01:34:34,145 - DEBUG - No data.
+2024-12-07 01:34:34,145 - DEBUG - trial data shape for [] and 5 objects: (0, 16)
+2024-12-07 01:34:34,145 - DEBUG - trial labels shape for [] and 5 objects: (0, 1)
+2024-12-07 01:34:34,145 - DEBUG - ➡️get_data...
+2024-12-07 01:34:34,145 - DEBUG - No data.
+2024-12-07 01:34:34,145 - DEBUG - trial data shape for ['metal-scissor'] and 0 objects: (0, 16)
+2024-12-07 01:34:34,145 - DEBUG - trial labels shape for ['metal-scissor'] and 0 objects: (0, 1)
+2024-12-07 01:34:34,145 - DEBUG - ➡️get_data...
+2024-12-07 01:34:34,146 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:34:34,146 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:34:34,146 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:34:34,159 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:34:34,160 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:34:34,160 - DEBUG - embeds shape: (100, 16), all_emb max: 0.132, min: -0.147
+2024-12-07 01:34:34,160 - DEBUG - source_y shape: (50, 1), assist_y shape: (0, 1), target_y shape: (50, 1)
+2024-12-07 01:34:34,770 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:34:34,904 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:34:34,904 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: []
+2024-12-07 01:34:34,904 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:37:32,374 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:37:32,374 - INFO - loss_func: sincere
+2024-12-07 01:37:32,375 - DEBUG - ========================= New Run =========================
+2024-12-07 01:37:32,376 - INFO - Encoder loss function: sincere
+2024-12-07 01:37:32,376 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:37:32,376 - DEBUG - objects: , 15, {'wooden-button', 'salt', 'split-green-pea', 'plastic-bead', 'metal-nut-bolt', 'chia-seed', 'kidney-bean', 'wheat', 'cane-sugar', 'glass-bead', 'empty', 'water', 'chickpea', 'detergent', 'styrofoam-bead'}
+2024-12-07 01:37:32,376 - DEBUG - tools: , 6, {'plastic-spoon', 'metal-whisk', 'plastic-knife', 'wooden-fork', 'wooden-chopstick', 'metal-scissor'}
+2024-12-07 01:37:32,376 - DEBUG - trials: , 10, {'trial-4', 'trial-1', 'trial-5', 'trial-2', 'trial-0', 'trial-8', 'trial-6', 'trial-9', 'trial-7', 'trial-3'}
+2024-12-07 01:37:32,376 - DEBUG - experiment: encoder: default, clf: default, predict objects: new
+2024-12-07 01:37:32,376 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': [], 'enc_source_tools': ['plastic-spoon'], 'enc_target_tools': ['metal-scissor'], 'enc_assist_tools': [], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': [], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:37:32,376 - INFO - 👉 ------------ Training representation encoder using sincere loss ------------ 
+2024-12-07 01:37:32,376 - DEBUG - ➡️ train_encoder..
+2024-12-07 01:37:32,376 - DEBUG - ➡️ get_encoder_data_and_labels...
+2024-12-07 01:37:32,376 - DEBUG - get source data for encoder: ['plastic-spoon']: ['cane-sugar', 'chia-seed', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'wooden-button', 'chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:37:32,376 - DEBUG - ➡️get_data...
+2024-12-07 01:37:32,380 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'cane-sugar': 10, 'chia-seed': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'wooden-button': 10, 'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:37:32,380 - DEBUG - structured data shape: torch.Size([1, 1, 13, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:37:32,380 - DEBUG - structured label shape: torch.Size([1, 1, 13, 10, 1])
+2024-12-07 01:37:32,380 - DEBUG - get target data for encoder: ['metal-scissor']: ['cane-sugar', 'chia-seed', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'wooden-button']
+2024-12-07 01:37:32,380 - DEBUG - ➡️get_data...
+2024-12-07 01:37:32,381 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'cane-sugar': 10, 'chia-seed': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'wooden-button': 10}}}
+2024-12-07 01:37:32,381 - DEBUG - structured data shape: torch.Size([1, 1, 8, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:37:32,381 - DEBUG - structured label shape: torch.Size([1, 1, 8, 10, 1])
+2024-12-07 01:37:43,840 - INFO - epoch 500/2000, loss: 3.1759
+2024-12-07 01:37:54,231 - INFO - epoch 1000/2000, loss: 3.1358
+2024-12-07 01:38:05,068 - INFO - epoch 1500/2000, loss: 3.1302
+2024-12-07 01:38:16,251 - INFO - epoch 2000/2000, loss: 3.1234
+2024-12-07 01:38:16,252 - DEBUG - ➡️ plot_learning_progression for encoder: encoder_sincere...
+2024-12-07 01:38:16,741 - INFO - ⏱️Time used for encoder training: 0 min 44.4 sec.
+2024-12-07 01:38:16,745 - INFO - 👀visualize embeddings in shared latent space...
+2024-12-07 01:38:16,746 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:38:16,746 - DEBUG - ➡️get_data...
+2024-12-07 01:38:16,747 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'cane-sugar': 10, 'chia-seed': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'wooden-button': 10}}}
+2024-12-07 01:38:16,747 - DEBUG - structured data shape: torch.Size([1, 1, 8, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:16,747 - DEBUG - structured label shape: torch.Size([1, 1, 8, 10, 1])
+2024-12-07 01:38:16,763 - DEBUG - trial data shape for ['plastic-spoon'] and 8 objects: (80, 16)
+2024-12-07 01:38:16,763 - DEBUG - trial labels shape for ['plastic-spoon'] and 8 objects: (80, 1)
+2024-12-07 01:38:16,763 - DEBUG - ➡️get_data...
+2024-12-07 01:38:16,764 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:16,764 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:16,764 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:16,791 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:38:16,791 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:38:16,791 - DEBUG - ➡️get_data...
+2024-12-07 01:38:16,791 - DEBUG - No data.
+2024-12-07 01:38:16,791 - DEBUG - trial data shape for [] and 8 objects: (0, 16)
+2024-12-07 01:38:16,791 - DEBUG - trial labels shape for [] and 8 objects: (0, 1)
+2024-12-07 01:38:16,791 - DEBUG - ➡️get_data...
+2024-12-07 01:38:16,791 - DEBUG - No data.
+2024-12-07 01:38:16,791 - DEBUG - trial data shape for [] and 5 objects: (0, 16)
+2024-12-07 01:38:16,791 - DEBUG - trial labels shape for [] and 5 objects: (0, 1)
+2024-12-07 01:38:16,791 - DEBUG - ➡️get_data...
+2024-12-07 01:38:16,792 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'cane-sugar': 10, 'chia-seed': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'wooden-button': 10}}}
+2024-12-07 01:38:16,792 - DEBUG - structured data shape: torch.Size([1, 1, 8, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:16,792 - DEBUG - structured label shape: torch.Size([1, 1, 8, 10, 1])
+2024-12-07 01:38:16,811 - DEBUG - trial data shape for ['metal-scissor'] and 8 objects: (80, 16)
+2024-12-07 01:38:16,811 - DEBUG - trial labels shape for ['metal-scissor'] and 8 objects: (80, 1)
+2024-12-07 01:38:16,811 - DEBUG - ➡️get_data...
+2024-12-07 01:38:16,812 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:16,812 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:16,812 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:16,824 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:38:16,824 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:38:16,824 - DEBUG - Viz data for all objects...
+2024-12-07 01:38:16,824 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:38:16,824 - DEBUG - embeds shape: (260, 16), all_emb max: 0.233, min: -0.301
+2024-12-07 01:38:16,824 - DEBUG - labels: 
+      [ 0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2
+  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4
+  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7
+  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9
+  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12  0  0  0  0  0  0  0  0  0  0  1  1  1  1
+  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3
+  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6
+  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8
+  8  8  8  8  9  9  9  9  9  9  9  9  9  9 10 10 10 10 10 10 10 10 10 10
+ 11 11 11 11 11 11 11 11 11 11 12 12 12 12 12 12 12 12 12 12]
+2024-12-07 01:38:16,825 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 4 4
+ 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ 4]
+2024-12-07 01:38:17,728 - DEBUG - dimension reduced embeds_2d max: 15.783, min: -12.363
+2024-12-07 01:38:17,729 - DEBUG - subset_obj_idx: [4, 3, 13, 12, 5, 10, 6, 11, 9, 2, 14, 7, 8], unique labels: [ 0  1  2  3  4  5  6  7  8  9 10 11 12]
+2024-12-07 01:38:18,117 - DEBUG - Viz data for train objects...
+2024-12-07 01:38:18,117 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:38:18,118 - DEBUG - embeds shape: (210, 16), all_emb max: 0.233, min: -0.301
+2024-12-07 01:38:18,118 - DEBUG - labels: 
+      [ 0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2
+  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4
+  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7
+  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9
+  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12  0  0  0  0  0  0  0  0  0  0  1  1  1  1
+  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3
+  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6
+  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  7  7]
+2024-12-07 01:38:18,118 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3]
+2024-12-07 01:38:18,893 - DEBUG - dimension reduced embeds_2d max: 11.084, min: -13.710
+2024-12-07 01:38:18,894 - DEBUG - subset_obj_idx: [4, 3, 13, 12, 5, 10, 6, 11, 9, 2, 14, 7, 8], unique labels: [ 0  1  2  3  4  5  6  7  8  9 10 11 12]
+2024-12-07 01:38:19,247 - DEBUG - Viz data for test objects...
+2024-12-07 01:38:19,247 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:38:19,247 - DEBUG - embeds shape: (100, 16), all_emb max: 0.088, min: -0.085
+2024-12-07 01:38:19,247 - DEBUG - labels: 
+      [0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3
+ 3 3 3 4 4 4 4 4 4 4 4 4 4 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2
+ 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4]
+2024-12-07 01:38:19,248 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4]
+2024-12-07 01:38:19,917 - DEBUG - dimension reduced embeds_2d max: 6.662, min: -11.089
+2024-12-07 01:38:19,917 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:38:20,230 - INFO - 👉 ------------ Training classification head ------------ 
+2024-12-07 01:38:20,236 - DEBUG - ➡️ train_classifier..
+2024-12-07 01:38:20,236 - DEBUG - ➡️ prepare_data_classifier..
+2024-12-07 01:38:20,236 - DEBUG - get source data for classifier from ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:38:20,236 - DEBUG - ➡️get_data...
+2024-12-07 01:38:20,237 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:20,237 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:20,238 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:20,268 - DEBUG - train_truth: 
+      tensor([[[[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+          [2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+          [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+          [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]]]], device='mps:0')
+2024-12-07 01:38:21,199 - INFO - epoch 500/3000, train loss: 0.0211, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:22,023 - INFO - epoch 1000/3000, train loss: 0.0077, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:22,847 - INFO - epoch 1500/3000, train loss: 0.0043, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:23,663 - INFO - epoch 2000/3000, train loss: 0.0028, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:24,486 - INFO - epoch 2500/3000, train loss: 0.0020, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:25,310 - INFO - epoch 3000/3000, train loss: 0.0015, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:25,311 - DEBUG - ➡️ plot_learning_progression for classifier: classifier_sincere...
+2024-12-07 01:38:25,518 - INFO - ⏱️Time used for classifier training: 0 min 5.3 sec.
+2024-12-07 01:38:25,518 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:38:25,523 - DEBUG - ➡️ eval..
+2024-12-07 01:38:25,523 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:38:25,523 - DEBUG - ➡️get_data...
+2024-12-07 01:38:25,524 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:25,524 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:25,524 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:25,526 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:38:25,527 - INFO - 50 pred labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 4, 3, 3, 3, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:38:25,527 - INFO - test accuracy: 74.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:25,527 - INFO - test accuracy: 74.00%
+2024-12-07 01:38:25,527 - INFO - ⏱️total time used: 0 min 53.2 sec.
+2024-12-07 01:38:25,527 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:38:25,527 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:38:25,527 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:38:25,527 - DEBUG - ➡️get_data...
+2024-12-07 01:38:25,527 - DEBUG - No data.
+2024-12-07 01:38:25,527 - DEBUG - trial data shape for ['plastic-spoon'] and 0 objects: (0, 16)
+2024-12-07 01:38:25,527 - DEBUG - trial labels shape for ['plastic-spoon'] and 0 objects: (0, 1)
+2024-12-07 01:38:25,527 - DEBUG - ➡️get_data...
+2024-12-07 01:38:25,528 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:25,528 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:25,528 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:25,539 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:38:25,539 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:38:25,539 - DEBUG - ➡️get_data...
+2024-12-07 01:38:25,539 - DEBUG - No data.
+2024-12-07 01:38:25,539 - DEBUG - trial data shape for [] and 0 objects: (0, 16)
+2024-12-07 01:38:25,539 - DEBUG - trial labels shape for [] and 0 objects: (0, 1)
+2024-12-07 01:38:25,539 - DEBUG - ➡️get_data...
+2024-12-07 01:38:25,539 - DEBUG - No data.
+2024-12-07 01:38:25,539 - DEBUG - trial data shape for [] and 5 objects: (0, 16)
+2024-12-07 01:38:25,539 - DEBUG - trial labels shape for [] and 5 objects: (0, 1)
+2024-12-07 01:38:25,539 - DEBUG - ➡️get_data...
+2024-12-07 01:38:25,539 - DEBUG - No data.
+2024-12-07 01:38:25,539 - DEBUG - trial data shape for ['metal-scissor'] and 0 objects: (0, 16)
+2024-12-07 01:38:25,539 - DEBUG - trial labels shape for ['metal-scissor'] and 0 objects: (0, 1)
+2024-12-07 01:38:25,539 - DEBUG - ➡️get_data...
+2024-12-07 01:38:25,540 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:25,540 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:25,540 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:25,554 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:38:25,554 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:38:25,554 - DEBUG - embeds shape: (100, 16), all_emb max: 0.088, min: -0.085
+2024-12-07 01:38:25,554 - DEBUG - source_y shape: (50, 1), assist_y shape: (0, 1), target_y shape: (50, 1)
+2024-12-07 01:38:26,255 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:38:26,383 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:38:26,383 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: []
+2024-12-07 01:38:26,383 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:38:32,551 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:38:32,551 - INFO - loss_func: sincere
+2024-12-07 01:38:32,552 - DEBUG - ========================= New Run =========================
+2024-12-07 01:38:32,553 - INFO - Encoder loss function: sincere
+2024-12-07 01:38:32,553 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:38:32,553 - DEBUG - objects: , 15, {'styrofoam-bead', 'salt', 'plastic-bead', 'kidney-bean', 'glass-bead', 'detergent', 'metal-nut-bolt', 'empty', 'chia-seed', 'chickpea', 'split-green-pea', 'wooden-button', 'wheat', 'water', 'cane-sugar'}
+2024-12-07 01:38:32,553 - DEBUG - tools: , 6, {'metal-whisk', 'plastic-knife', 'wooden-fork', 'metal-scissor', 'plastic-spoon', 'wooden-chopstick'}
+2024-12-07 01:38:32,553 - DEBUG - trials: , 10, {'trial-3', 'trial-0', 'trial-9', 'trial-8', 'trial-5', 'trial-6', 'trial-2', 'trial-4', 'trial-7', 'trial-1'}
+2024-12-07 01:38:32,553 - DEBUG - experiment: encoder: default, clf: default, predict objects: new
+2024-12-07 01:38:32,553 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': [], 'enc_source_tools': ['plastic-spoon'], 'enc_target_tools': ['metal-scissor'], 'enc_assist_tools': [], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': [], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:38:32,553 - INFO - 👉 ------------ Training representation encoder using sincere loss ------------ 
+2024-12-07 01:38:32,553 - DEBUG - ➡️ train_encoder..
+2024-12-07 01:38:32,553 - DEBUG - ➡️ get_encoder_data_and_labels...
+2024-12-07 01:38:32,553 - DEBUG - get source data for encoder: ['plastic-spoon']: ['cane-sugar', 'chia-seed', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'wooden-button', 'chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:38:32,553 - DEBUG - ➡️get_data...
+2024-12-07 01:38:32,556 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'cane-sugar': 10, 'chia-seed': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'wooden-button': 10, 'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:32,556 - DEBUG - structured data shape: torch.Size([1, 1, 13, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:32,556 - DEBUG - structured label shape: torch.Size([1, 1, 13, 10, 1])
+2024-12-07 01:38:32,557 - DEBUG - get target data for encoder: ['metal-scissor']: ['cane-sugar', 'chia-seed', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'wooden-button']
+2024-12-07 01:38:32,557 - DEBUG - ➡️get_data...
+2024-12-07 01:38:32,557 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'cane-sugar': 10, 'chia-seed': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'wooden-button': 10}}}
+2024-12-07 01:38:32,558 - DEBUG - structured data shape: torch.Size([1, 1, 8, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:32,558 - DEBUG - structured label shape: torch.Size([1, 1, 8, 10, 1])
+2024-12-07 01:38:32,562 - DEBUG - train test split shapes: source_data_train: (1, 1, 13, 8, 744),truth_source_train: (1, 1, 13, 8), source_data_val: (1, 1, 13, 2, 744),truth_source_val: (1, 1, 13, 2)
+2024-12-07 01:38:32,562 - DEBUG - target_data_train: (1, 1, 8, 8, 744), truth_target_train: (1, 1, 8, 8), target_data_val: (1, 1, 8, 2, 744), truth_target_val: (1, 1, 8, 2)
+2024-12-07 01:38:45,954 - DEBUG - Early stopping triggered at epoch 400. Best validation loss: 2.049485683441162
+2024-12-07 01:38:45,954 - DEBUG - ➡️ plot_learning_progression for encoder: encoder_sincere...
+2024-12-07 01:38:46,471 - INFO - ⏱️Time used for encoder training: 0 min 13.9 sec.
+2024-12-07 01:38:46,475 - INFO - 👀visualize embeddings in shared latent space...
+2024-12-07 01:38:46,475 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:38:46,476 - DEBUG - ➡️get_data...
+2024-12-07 01:38:46,476 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'cane-sugar': 10, 'chia-seed': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'wooden-button': 10}}}
+2024-12-07 01:38:46,476 - DEBUG - structured data shape: torch.Size([1, 1, 8, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:46,476 - DEBUG - structured label shape: torch.Size([1, 1, 8, 10, 1])
+2024-12-07 01:38:46,509 - DEBUG - trial data shape for ['plastic-spoon'] and 8 objects: (80, 16)
+2024-12-07 01:38:46,509 - DEBUG - trial labels shape for ['plastic-spoon'] and 8 objects: (80, 1)
+2024-12-07 01:38:46,509 - DEBUG - ➡️get_data...
+2024-12-07 01:38:46,510 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:46,510 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:46,510 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:46,537 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:38:46,537 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:38:46,537 - DEBUG - ➡️get_data...
+2024-12-07 01:38:46,537 - DEBUG - No data.
+2024-12-07 01:38:46,537 - DEBUG - trial data shape for [] and 8 objects: (0, 16)
+2024-12-07 01:38:46,537 - DEBUG - trial labels shape for [] and 8 objects: (0, 1)
+2024-12-07 01:38:46,537 - DEBUG - ➡️get_data...
+2024-12-07 01:38:46,537 - DEBUG - No data.
+2024-12-07 01:38:46,537 - DEBUG - trial data shape for [] and 5 objects: (0, 16)
+2024-12-07 01:38:46,537 - DEBUG - trial labels shape for [] and 5 objects: (0, 1)
+2024-12-07 01:38:46,537 - DEBUG - ➡️get_data...
+2024-12-07 01:38:46,538 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'cane-sugar': 10, 'chia-seed': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'wooden-button': 10}}}
+2024-12-07 01:38:46,538 - DEBUG - structured data shape: torch.Size([1, 1, 8, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:46,538 - DEBUG - structured label shape: torch.Size([1, 1, 8, 10, 1])
+2024-12-07 01:38:46,556 - DEBUG - trial data shape for ['metal-scissor'] and 8 objects: (80, 16)
+2024-12-07 01:38:46,556 - DEBUG - trial labels shape for ['metal-scissor'] and 8 objects: (80, 1)
+2024-12-07 01:38:46,556 - DEBUG - ➡️get_data...
+2024-12-07 01:38:46,557 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:46,557 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:46,557 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:46,569 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:38:46,569 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:38:46,569 - DEBUG - Viz data for all objects...
+2024-12-07 01:38:46,569 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:38:46,569 - DEBUG - embeds shape: (260, 16), all_emb max: 0.122, min: -0.110
+2024-12-07 01:38:46,569 - DEBUG - labels: 
+      [ 0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2
+  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4
+  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7
+  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9
+  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12  0  0  0  0  0  0  0  0  0  0  1  1  1  1
+  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3
+  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6
+  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8
+  8  8  8  8  9  9  9  9  9  9  9  9  9  9 10 10 10 10 10 10 10 10 10 10
+ 11 11 11 11 11 11 11 11 11 11 12 12 12 12 12 12 12 12 12 12]
+2024-12-07 01:38:46,570 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 4 4
+ 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ 4]
+2024-12-07 01:38:47,419 - DEBUG - dimension reduced embeds_2d max: 14.426, min: -19.384
+2024-12-07 01:38:47,420 - DEBUG - subset_obj_idx: [4, 3, 13, 12, 5, 10, 6, 11, 9, 2, 14, 7, 8], unique labels: [ 0  1  2  3  4  5  6  7  8  9 10 11 12]
+2024-12-07 01:38:47,802 - DEBUG - Viz data for train objects...
+2024-12-07 01:38:47,802 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:38:47,802 - DEBUG - embeds shape: (210, 16), all_emb max: 0.122, min: -0.110
+2024-12-07 01:38:47,803 - DEBUG - labels: 
+      [ 0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2
+  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4
+  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7
+  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9
+  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12  0  0  0  0  0  0  0  0  0  0  1  1  1  1
+  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3
+  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6
+  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  7  7]
+2024-12-07 01:38:47,803 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3]
+2024-12-07 01:38:48,562 - DEBUG - dimension reduced embeds_2d max: 13.403, min: -10.854
+2024-12-07 01:38:48,562 - DEBUG - subset_obj_idx: [4, 3, 13, 12, 5, 10, 6, 11, 9, 2, 14, 7, 8], unique labels: [ 0  1  2  3  4  5  6  7  8  9 10 11 12]
+2024-12-07 01:38:48,924 - DEBUG - Viz data for test objects...
+2024-12-07 01:38:48,924 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:38:48,924 - DEBUG - embeds shape: (100, 16), all_emb max: 0.119, min: -0.110
+2024-12-07 01:38:48,924 - DEBUG - labels: 
+      [0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3
+ 3 3 3 4 4 4 4 4 4 4 4 4 4 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2
+ 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4]
+2024-12-07 01:38:48,924 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4]
+2024-12-07 01:38:49,438 - DEBUG - dimension reduced embeds_2d max: 6.205, min: -7.459
+2024-12-07 01:38:49,438 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:38:49,750 - INFO - 👉 ------------ Training classification head ------------ 
+2024-12-07 01:38:49,756 - DEBUG - ➡️ train_classifier..
+2024-12-07 01:38:49,756 - DEBUG - ➡️ prepare_data_classifier..
+2024-12-07 01:38:49,756 - DEBUG - get source data for classifier from ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:38:49,756 - DEBUG - ➡️get_data...
+2024-12-07 01:38:49,757 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:49,757 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:49,757 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:49,778 - DEBUG - train test split shapes: source_data_train: (1, 1, 5, 8, 16),truth_source_train: (1, 1, 5, 8), source_data_val: (1, 1, 5, 2, 16),truth_source_val: (1, 1, 5, 2)
+2024-12-07 01:38:49,791 - DEBUG - train_truth: 
+      tensor([[[[0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 1, 1],
+          [2, 2, 2, 2, 2, 2, 2, 2],
+          [3, 3, 3, 3, 3, 3, 3, 3],
+          [4, 4, 4, 4, 4, 4, 4, 4]]]], device='mps:0')
+2024-12-07 01:38:49,794 - DEBUG - val_truth: 
+      tensor([0, 0, 1, 1, 2, 2, 3, 3, 4, 4], device='mps:0')
+2024-12-07 01:38:51,128 - INFO - epoch 500/3000, train loss: 0.0566, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:51,138 - INFO - epoch 500/3000, val loss: 0.0955, val accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:52,336 - INFO - epoch 1000/3000, train loss: 0.0230, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:52,337 - INFO - epoch 1000/3000, val loss: 0.0489, val accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:53,483 - INFO - epoch 1500/3000, train loss: 0.0132, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:53,484 - INFO - epoch 1500/3000, val loss: 0.0326, val accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:54,573 - INFO - epoch 2000/3000, train loss: 0.0088, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:54,574 - INFO - epoch 2000/3000, val loss: 0.0242, val accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:55,705 - INFO - epoch 2500/3000, train loss: 0.0063, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:55,706 - INFO - epoch 2500/3000, val loss: 0.0190, val accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:56,816 - INFO - epoch 3000/3000, train loss: 0.0047, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:56,817 - INFO - epoch 3000/3000, val loss: 0.0154, val accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:56,817 - DEBUG - ➡️ plot_learning_progression for classifier: classifier_sincere...
+2024-12-07 01:38:57,031 - INFO - ⏱️Time used for classifier training: 0 min 7.3 sec.
+2024-12-07 01:38:57,031 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:38:57,036 - DEBUG - ➡️ eval..
+2024-12-07 01:38:57,036 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:38:57,036 - DEBUG - ➡️get_data...
+2024-12-07 01:38:57,037 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:57,037 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:57,037 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:57,053 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:38:57,053 - INFO - 50 pred labels: [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 0, 2, 2, 2, 0, 1, 1, 1, 4, 3, 4, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:38:57,053 - INFO - test accuracy: 78.00%, random guess accuracy: 20.00%
+2024-12-07 01:38:57,053 - INFO - test accuracy: 78.00%
+2024-12-07 01:38:57,053 - INFO - ⏱️total time used: 0 min 24.5 sec.
+2024-12-07 01:38:57,054 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:38:57,054 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:38:57,054 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:38:57,054 - DEBUG - ➡️get_data...
+2024-12-07 01:38:57,054 - DEBUG - No data.
+2024-12-07 01:38:57,054 - DEBUG - trial data shape for ['plastic-spoon'] and 0 objects: (0, 16)
+2024-12-07 01:38:57,054 - DEBUG - trial labels shape for ['plastic-spoon'] and 0 objects: (0, 1)
+2024-12-07 01:38:57,054 - DEBUG - ➡️get_data...
+2024-12-07 01:38:57,054 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:57,054 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:38:57,055 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:57,069 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:38:57,069 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:38:57,069 - DEBUG - ➡️get_data...
+2024-12-07 01:38:57,069 - DEBUG - No data.
+2024-12-07 01:38:57,069 - DEBUG - trial data shape for [] and 0 objects: (0, 16)
+2024-12-07 01:38:57,069 - DEBUG - trial labels shape for [] and 0 objects: (0, 1)
+2024-12-07 01:38:57,069 - DEBUG - ➡️get_data...
+2024-12-07 01:38:57,069 - DEBUG - No data.
+2024-12-07 01:38:57,069 - DEBUG - trial data shape for [] and 5 objects: (0, 16)
+2024-12-07 01:38:57,069 - DEBUG - trial labels shape for [] and 5 objects: (0, 1)
+2024-12-07 01:38:57,069 - DEBUG - ➡️get_data...
+2024-12-07 01:38:57,069 - DEBUG - No data.
+2024-12-07 01:38:57,069 - DEBUG - trial data shape for ['metal-scissor'] and 0 objects: (0, 16)
+2024-12-07 01:38:57,069 - DEBUG - trial labels shape for ['metal-scissor'] and 0 objects: (0, 1)
+2024-12-07 01:38:57,069 - DEBUG - ➡️get_data...
+2024-12-07 01:38:57,070 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:38:57,070 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:38:57,070 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:38:57,080 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:38:57,080 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:38:57,081 - DEBUG - embeds shape: (100, 16), all_emb max: 0.119, min: -0.110
+2024-12-07 01:38:57,081 - DEBUG - source_y shape: (50, 1), assist_y shape: (0, 1), target_y shape: (50, 1)
+2024-12-07 01:38:57,613 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:38:57,751 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:38:57,751 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: []
+2024-12-07 01:38:57,752 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:44:39,842 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:44:39,843 - INFO - loss_func: sincere
+2024-12-07 01:44:39,844 - DEBUG - ========================= New Run =========================
+2024-12-07 01:44:39,845 - INFO - Encoder loss function: sincere
+2024-12-07 01:44:39,845 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:44:39,845 - DEBUG - objects: , 15, {'water', 'styrofoam-bead', 'empty', 'salt', 'chickpea', 'wheat', 'glass-bead', 'plastic-bead', 'split-green-pea', 'kidney-bean', 'metal-nut-bolt', 'detergent', 'chia-seed', 'cane-sugar', 'wooden-button'}
+2024-12-07 01:44:39,845 - DEBUG - tools: , 6, {'plastic-spoon', 'metal-scissor', 'plastic-knife', 'wooden-chopstick', 'wooden-fork', 'metal-whisk'}
+2024-12-07 01:44:39,845 - DEBUG - trials: , 10, {'trial-4', 'trial-8', 'trial-0', 'trial-6', 'trial-7', 'trial-3', 'trial-5', 'trial-2', 'trial-1', 'trial-9'}
+2024-12-07 01:44:39,845 - DEBUG - experiment: encoder: assist, clf: assist, predict objects: new
+2024-12-07 01:44:39,845 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_source_tools': ['plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon'], 'enc_target_tools': ['metal-scissor', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:44:39,845 - INFO - 👉 ------------ Training representation encoder using sincere loss ------------ 
+2024-12-07 01:44:39,845 - DEBUG - ➡️ train_encoder..
+2024-12-07 01:44:39,845 - DEBUG - ➡️ get_encoder_data_and_labels...
+2024-12-07 01:44:39,845 - DEBUG - get source data for encoder: ['plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon']: ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button', 'chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:44:39,845 - DEBUG - ➡️get_data...
+2024-12-07 01:44:39,852 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10, 'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:44:39,852 - DEBUG - structured data shape: torch.Size([1, 5, 15, 10, 744]) from tool(s): ['plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon']
+2024-12-07 01:44:39,852 - DEBUG - structured label shape: torch.Size([1, 5, 15, 10, 1])
+2024-12-07 01:44:39,852 - DEBUG - get target data for encoder: ['metal-scissor', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']: ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button']
+2024-12-07 01:44:39,852 - DEBUG - ➡️get_data...
+2024-12-07 01:44:39,854 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}, 'wooden-fork': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}, 'metal-whisk': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}, 'wooden-chopstick': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}, 'plastic-knife': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}}}
+2024-12-07 01:44:39,854 - DEBUG - structured data shape: torch.Size([1, 5, 10, 10, 744]) from tool(s): ['metal-scissor', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:44:39,854 - DEBUG - structured label shape: torch.Size([1, 5, 10, 10, 1])
+2024-12-07 01:44:39,861 - DEBUG - train test split shapes: source_data_train: (1, 5, 15, 8, 744),truth_source_train: (1, 5, 15, 8), source_data_val: (1, 5, 15, 2, 744),truth_source_val: (1, 5, 15, 2)
+2024-12-07 01:44:39,861 - DEBUG - target_data_train: (1, 5, 10, 8, 744), truth_target_train: (1, 5, 10, 8), target_data_val: (1, 5, 10, 2, 744), truth_target_val: (1, 5, 10, 2)
+2024-12-07 01:45:06,316 - INFO - epoch 500/2000, loss: 4.7739
+2024-12-07 01:45:08,719 - DEBUG - Early stopping triggered at epoch 550. Best validation loss: 3.676570177078247
+2024-12-07 01:45:08,719 - DEBUG - ➡️ plot_learning_progression for encoder: encoder_sincere...
+2024-12-07 01:45:09,353 - INFO - ⏱️Time used for encoder training: 0 min 29.5 sec.
+2024-12-07 01:45:09,357 - INFO - 👀visualize embeddings in shared latent space...
+2024-12-07 01:45:09,358 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:45:09,358 - DEBUG - ➡️get_data...
+2024-12-07 01:45:09,359 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}}}
+2024-12-07 01:45:09,359 - DEBUG - structured data shape: torch.Size([1, 1, 10, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:45:09,359 - DEBUG - structured label shape: torch.Size([1, 1, 10, 10, 1])
+2024-12-07 01:45:09,399 - DEBUG - trial data shape for ['plastic-spoon'] and 10 objects: (100, 16)
+2024-12-07 01:45:09,399 - DEBUG - trial labels shape for ['plastic-spoon'] and 10 objects: (100, 1)
+2024-12-07 01:45:09,399 - DEBUG - ➡️get_data...
+2024-12-07 01:45:09,401 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:45:09,401 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:45:09,401 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:45:09,427 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:45:09,427 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:45:09,427 - DEBUG - ➡️get_data...
+2024-12-07 01:45:09,429 - DEBUG - data mata: {'3-stirring-fast': {'wooden-fork': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}, 'metal-whisk': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}, 'wooden-chopstick': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}, 'plastic-knife': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}}}
+2024-12-07 01:45:09,429 - DEBUG - structured data shape: torch.Size([1, 4, 10, 10, 744]) from tool(s): ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:45:09,429 - DEBUG - structured label shape: torch.Size([1, 4, 10, 10, 1])
+2024-12-07 01:45:09,514 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 10 objects: (400, 16)
+2024-12-07 01:45:09,514 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 10 objects: (400, 1)
+2024-12-07 01:45:09,514 - DEBUG - ➡️get_data...
+2024-12-07 01:45:09,515 - DEBUG - data mata: {'3-stirring-fast': {'wooden-fork': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'metal-whisk': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-chopstick': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'plastic-knife': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:45:09,515 - DEBUG - structured data shape: torch.Size([1, 4, 5, 10, 744]) from tool(s): ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:45:09,515 - DEBUG - structured label shape: torch.Size([1, 4, 5, 10, 1])
+2024-12-07 01:45:09,568 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 16)
+2024-12-07 01:45:09,568 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 1)
+2024-12-07 01:45:09,568 - DEBUG - ➡️get_data...
+2024-12-07 01:45:09,569 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'cane-sugar': 10, 'chia-seed': 10, 'empty': 10, 'glass-bead': 10, 'plastic-bead': 10, 'salt': 10, 'kidney-bean': 10, 'styrofoam-bead': 10, 'water': 10, 'wooden-button': 10}}}
+2024-12-07 01:45:09,569 - DEBUG - structured data shape: torch.Size([1, 1, 10, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:45:09,569 - DEBUG - structured label shape: torch.Size([1, 1, 10, 10, 1])
+2024-12-07 01:45:09,588 - DEBUG - trial data shape for ['metal-scissor'] and 10 objects: (100, 16)
+2024-12-07 01:45:09,589 - DEBUG - trial labels shape for ['metal-scissor'] and 10 objects: (100, 1)
+2024-12-07 01:45:09,589 - DEBUG - ➡️get_data...
+2024-12-07 01:45:09,589 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:45:09,590 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:45:09,590 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:45:09,600 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:45:09,600 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:45:09,600 - DEBUG - Viz data for all objects...
+2024-12-07 01:45:09,600 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:45:09,600 - DEBUG - embeds shape: (900, 16), all_emb max: 0.100, min: -0.136
+2024-12-07 01:45:09,601 - DEBUG - labels: 
+      [ 0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2
+  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4
+  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7
+  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9
+  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14
+ 14 14 14 14 14 14  0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1
+  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4
+  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6
+  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8
+  9  9  9  9  9  9  9  9  9  9  0  0  0  0  0  0  0  0  0  0  1  1  1  1
+  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3
+  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6
+  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8
+  8  8  8  8  9  9  9  9  9  9  9  9  9  9  0  0  0  0  0  0  0  0  0  0
+  1  1  1  1  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3
+  3  3  3  3  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5
+  5  5  6  6  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8
+  8  8  8  8  8  8  8  8  9  9  9  9  9  9  9  9  9  9  0  0  0  0  0  0
+  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2
+  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5
+  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7
+  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9  9  9  9  9 10 10
+ 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11 12 12 12 12 12 12
+ 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14 14 14 14 14 14 14
+ 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11 12 12 12 12
+ 12 12 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14 14 14 14 14
+ 14 14 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11 12 12
+ 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14 14 14
+ 14 14 14 14 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14
+ 14 14 14 14 14 14  0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1
+  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4
+  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6
+  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8
+  9  9  9  9  9  9  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11
+ 11 11 11 11 11 11 12 12 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13
+ 13 13 14 14 14 14 14 14 14 14 14 14]
+2024-12-07 01:45:09,602 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 4
+ 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ 4 4 4 4 4 4 4 4 4 4 4 4]
+2024-12-07 01:45:11,409 - DEBUG - dimension reduced embeds_2d max: 47.628, min: -43.611
+2024-12-07 01:45:11,411 - DEBUG - subset_obj_idx: [4, 3, 0, 13, 12, 5, 10, 6, 1, 11, 9, 2, 14, 7, 8], unique labels: [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14]
+2024-12-07 01:45:11,847 - DEBUG - Viz data for train objects...
+2024-12-07 01:45:11,847 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:45:11,847 - DEBUG - embeds shape: (650, 16), all_emb max: 0.100, min: -0.136
+2024-12-07 01:45:11,848 - DEBUG - labels: 
+      [ 0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2
+  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4
+  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7
+  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9
+  9  9  9  9 10 10 10 10 10 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11
+ 12 12 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14
+ 14 14 14 14 14 14  0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1
+  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4
+  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6
+  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8
+  9  9  9  9  9  9  9  9  9  9  0  0  0  0  0  0  0  0  0  0  1  1  1  1
+  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3  3  3
+  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5  5  5  6  6
+  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8  8  8  8  8
+  8  8  8  8  9  9  9  9  9  9  9  9  9  9  0  0  0  0  0  0  0  0  0  0
+  1  1  1  1  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  3  3  3  3
+  3  3  3  3  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5  5  5  5  5
+  5  5  6  6  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  7  7  8  8
+  8  8  8  8  8  8  8  8  9  9  9  9  9  9  9  9  9  9  0  0  0  0  0  0
+  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2
+  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4  4  4  5  5  5  5
+  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7
+  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9  9  9  9  9  0  0
+  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  2  2  2  2  2  2
+  2  2  2  2  3  3  3  3  3  3  3  3  3  3  4  4  4  4  4  4  4  4  4  4
+  5  5  5  5  5  5  5  5  5  5  6  6  6  6  6  6  6  6  6  6  7  7  7  7
+  7  7  7  7  7  7  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9  9  9
+  9  9]
+2024-12-07 01:45:11,848 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3]
+2024-12-07 01:45:13,223 - DEBUG - dimension reduced embeds_2d max: 42.969, min: -43.569
+2024-12-07 01:45:13,223 - DEBUG - subset_obj_idx: [4, 3, 0, 13, 12, 5, 10, 6, 1, 11, 9, 2, 14, 7, 8], unique labels: [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14]
+2024-12-07 01:45:13,645 - DEBUG - Viz data for test objects...
+2024-12-07 01:45:13,645 - DEBUG - ➡️ viz_shared_latent_space.. viz_l2_norm: False
+2024-12-07 01:45:13,645 - DEBUG - embeds shape: (300, 16), all_emb max: 0.089, min: -0.089
+2024-12-07 01:45:13,645 - DEBUG - labels: 
+      [0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3
+ 3 3 3 4 4 4 4 4 4 4 4 4 4 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2
+ 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 0 0 0 0 0 0 0 0 0 0 1
+ 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4
+ 4 4 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3
+ 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2
+ 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 0 0 0 0 0 0 0 0 0
+ 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4
+ 4 4 4 4]
+2024-12-07 01:45:13,646 - DEBUG - tool_labels: 
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 4 4 4 4 4 4 4 4 4
+ 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ 4 4 4 4]
+2024-12-07 01:45:14,583 - DEBUG - dimension reduced embeds_2d max: 35.062, min: -18.170
+2024-12-07 01:45:14,583 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:45:14,923 - INFO - 👉 ------------ Training classification head ------------ 
+2024-12-07 01:45:14,931 - DEBUG - ➡️ train_classifier..
+2024-12-07 01:45:14,931 - DEBUG - ➡️ prepare_data_classifier..
+2024-12-07 01:45:14,931 - DEBUG - get source data for classifier from ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:45:14,931 - DEBUG - ➡️get_data...
+2024-12-07 01:45:14,933 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-fork': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'metal-whisk': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-chopstick': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'plastic-knife': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:45:14,933 - DEBUG - structured data shape: torch.Size([1, 5, 5, 10, 744]) from tool(s): ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:45:14,933 - DEBUG - structured label shape: torch.Size([1, 5, 5, 10, 1])
+2024-12-07 01:45:14,973 - DEBUG - train test split shapes: source_data_train: (1, 5, 5, 8, 16),truth_source_train: (1, 5, 5, 8), source_data_val: (1, 5, 5, 2, 16),truth_source_val: (1, 5, 5, 2)
+2024-12-07 01:45:15,022 - DEBUG - train_truth: 
+      tensor([[[[0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 1, 1],
+          [2, 2, 2, 2, 2, 2, 2, 2],
+          [3, 3, 3, 3, 3, 3, 3, 3],
+          [4, 4, 4, 4, 4, 4, 4, 4]],
+
+         [[0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 1, 1],
+          [2, 2, 2, 2, 2, 2, 2, 2],
+          [3, 3, 3, 3, 3, 3, 3, 3],
+          [4, 4, 4, 4, 4, 4, 4, 4]],
+
+         [[0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 1, 1],
+          [2, 2, 2, 2, 2, 2, 2, 2],
+          [3, 3, 3, 3, 3, 3, 3, 3],
+          [4, 4, 4, 4, 4, 4, 4, 4]],
+
+         [[0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 1, 1],
+          [2, 2, 2, 2, 2, 2, 2, 2],
+          [3, 3, 3, 3, 3, 3, 3, 3],
+          [4, 4, 4, 4, 4, 4, 4, 4]],
+
+         [[0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1, 1, 1, 1],
+          [2, 2, 2, 2, 2, 2, 2, 2],
+          [3, 3, 3, 3, 3, 3, 3, 3],
+          [4, 4, 4, 4, 4, 4, 4, 4]]]], device='mps:0')
+2024-12-07 01:45:15,032 - DEBUG - val_truth: 
+      tensor([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 0, 1, 1,
+        2, 2, 3, 3, 4, 4, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 0, 1, 1, 2, 2, 3, 3,
+        4, 4], device='mps:0')
+2024-12-07 01:45:16,253 - INFO - epoch 500/3000, train loss: 0.0914, train accuracy: 99.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:16,264 - INFO - epoch 500/3000, val loss: 0.1957, val accuracy: 96.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:17,336 - INFO - epoch 1000/3000, train loss: 0.0518, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:17,337 - INFO - epoch 1000/3000, val loss: 0.1967, val accuracy: 96.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:18,455 - INFO - epoch 1500/3000, train loss: 0.0364, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:18,455 - INFO - epoch 1500/3000, val loss: 0.2169, val accuracy: 96.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:19,525 - INFO - epoch 2000/3000, train loss: 0.0276, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:19,526 - INFO - epoch 2000/3000, val loss: 0.2395, val accuracy: 96.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:20,677 - INFO - epoch 2500/3000, train loss: 0.0216, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:20,678 - INFO - epoch 2500/3000, val loss: 0.2617, val accuracy: 96.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:21,868 - INFO - epoch 3000/3000, train loss: 0.0173, train accuracy: 100.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:21,869 - INFO - epoch 3000/3000, val loss: 0.2829, val accuracy: 96.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:21,869 - DEBUG - ➡️ plot_learning_progression for classifier: classifier_sincere...
+2024-12-07 01:45:22,093 - INFO - ⏱️Time used for classifier training: 0 min 7.2 sec.
+2024-12-07 01:45:22,093 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:45:22,099 - DEBUG - ➡️ eval..
+2024-12-07 01:45:22,099 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:45:22,099 - DEBUG - ➡️get_data...
+2024-12-07 01:45:22,101 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:45:22,101 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:45:22,101 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:45:22,123 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:45:22,123 - INFO - 50 pred labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:45:22,123 - INFO - test accuracy: 98.00%, random guess accuracy: 20.00%
+2024-12-07 01:45:22,123 - INFO - test accuracy: 98.00%
+2024-12-07 01:45:22,124 - INFO - ⏱️total time used: 0 min 42.3 sec.
+2024-12-07 01:45:22,124 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:45:22,124 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:45:22,124 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:45:22,124 - DEBUG - ➡️get_data...
+2024-12-07 01:45:22,124 - DEBUG - No data.
+2024-12-07 01:45:22,124 - DEBUG - trial data shape for ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 16)
+2024-12-07 01:45:22,124 - DEBUG - trial labels shape for ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 1)
+2024-12-07 01:45:22,124 - DEBUG - ➡️get_data...
+2024-12-07 01:45:22,125 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-fork': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'metal-whisk': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-chopstick': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'plastic-knife': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:45:22,125 - DEBUG - structured data shape: torch.Size([1, 5, 5, 10, 744]) from tool(s): ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:45:22,125 - DEBUG - structured label shape: torch.Size([1, 5, 5, 10, 1])
+2024-12-07 01:45:22,175 - DEBUG - trial data shape for ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (250, 16)
+2024-12-07 01:45:22,175 - DEBUG - trial labels shape for ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (250, 1)
+2024-12-07 01:45:22,175 - DEBUG - ➡️get_data...
+2024-12-07 01:45:22,175 - DEBUG - No data.
+2024-12-07 01:45:22,175 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 16)
+2024-12-07 01:45:22,175 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 1)
+2024-12-07 01:45:22,175 - DEBUG - ➡️get_data...
+2024-12-07 01:45:22,176 - DEBUG - data mata: {'3-stirring-fast': {'wooden-fork': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'metal-whisk': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-chopstick': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'plastic-knife': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:45:22,176 - DEBUG - structured data shape: torch.Size([1, 4, 5, 10, 744]) from tool(s): ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:45:22,176 - DEBUG - structured label shape: torch.Size([1, 4, 5, 10, 1])
+2024-12-07 01:45:22,213 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 16)
+2024-12-07 01:45:22,213 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 1)
+2024-12-07 01:45:22,213 - DEBUG - ➡️get_data...
+2024-12-07 01:45:22,213 - DEBUG - No data.
+2024-12-07 01:45:22,213 - DEBUG - trial data shape for ['metal-scissor'] and 0 objects: (0, 16)
+2024-12-07 01:45:22,213 - DEBUG - trial labels shape for ['metal-scissor'] and 0 objects: (0, 1)
+2024-12-07 01:45:22,213 - DEBUG - ➡️get_data...
+2024-12-07 01:45:22,214 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:45:22,214 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:45:22,214 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:45:22,226 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:45:22,226 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:45:22,226 - DEBUG - embeds shape: (500, 16), all_emb max: 0.089, min: -0.089
+2024-12-07 01:45:22,226 - DEBUG - source_y shape: (250, 1), assist_y shape: (200, 1), target_y shape: (50, 1)
+2024-12-07 01:45:23,455 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:45:23,592 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:45:23,592 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:45:23,592 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:52:11,133 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:52:11,133 - INFO - loss_func: sincere
+2024-12-07 01:52:11,134 - DEBUG - ========================= New Run =========================
+2024-12-07 01:52:11,137 - INFO - Encoder loss function: sincere
+2024-12-07 01:52:11,137 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:52:11,137 - DEBUG - objects: , 15, {'water', 'salt', 'kidney-bean', 'chia-seed', 'styrofoam-bead', 'metal-nut-bolt', 'glass-bead', 'empty', 'split-green-pea', 'chickpea', 'cane-sugar', 'plastic-bead', 'wheat', 'wooden-button', 'detergent'}
+2024-12-07 01:52:11,137 - DEBUG - tools: , 6, {'wooden-fork', 'metal-whisk', 'metal-scissor', 'wooden-chopstick', 'plastic-spoon', 'plastic-knife'}
+2024-12-07 01:52:11,137 - DEBUG - trials: , 10, {'trial-1', 'trial-3', 'trial-0', 'trial-8', 'trial-7', 'trial-5', 'trial-4', 'trial-2', 'trial-9', 'trial-6'}
+2024-12-07 01:52:11,137 - DEBUG - experiment: encoder: assist, clf: assist, predict objects: new
+2024-12-07 01:52:11,137 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_source_tools': ['plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon'], 'enc_target_tools': ['metal-scissor', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:52:11,137 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:52:11,146 - DEBUG - ➡️ eval..
+2024-12-07 01:52:11,146 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:52:11,147 - DEBUG - ➡️get_data...
+2024-12-07 01:52:11,147 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:52:11,147 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:52:11,147 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:52:11,265 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:52:11,265 - INFO - 50 pred labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:52:11,265 - INFO - test accuracy: 98.00%, random guess accuracy: 20.00%
+2024-12-07 01:52:11,265 - INFO - test accuracy: 98.00%
+2024-12-07 01:52:11,265 - INFO - ⏱️total time used: 0 min 0.1 sec.
+2024-12-07 01:52:11,265 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:52:11,265 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:52:11,265 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:52:11,265 - DEBUG - ➡️get_data...
+2024-12-07 01:52:11,265 - DEBUG - No data.
+2024-12-07 01:52:11,265 - DEBUG - trial data shape for ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 16)
+2024-12-07 01:52:11,265 - DEBUG - trial labels shape for ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 1)
+2024-12-07 01:52:11,265 - DEBUG - ➡️get_data...
+2024-12-07 01:52:11,267 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-fork': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'metal-whisk': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-chopstick': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'plastic-knife': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:52:11,267 - DEBUG - structured data shape: torch.Size([1, 5, 5, 10, 744]) from tool(s): ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:52:11,267 - DEBUG - structured label shape: torch.Size([1, 5, 5, 10, 1])
+2024-12-07 01:52:11,325 - DEBUG - trial data shape for ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (250, 16)
+2024-12-07 01:52:11,325 - DEBUG - trial labels shape for ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (250, 1)
+2024-12-07 01:52:11,325 - DEBUG - ➡️get_data...
+2024-12-07 01:52:11,325 - DEBUG - No data.
+2024-12-07 01:52:11,325 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 16)
+2024-12-07 01:52:11,325 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 1)
+2024-12-07 01:52:11,325 - DEBUG - ➡️get_data...
+2024-12-07 01:52:11,326 - DEBUG - data mata: {'3-stirring-fast': {'wooden-fork': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'metal-whisk': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-chopstick': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'plastic-knife': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:52:11,326 - DEBUG - structured data shape: torch.Size([1, 4, 5, 10, 744]) from tool(s): ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:52:11,326 - DEBUG - structured label shape: torch.Size([1, 4, 5, 10, 1])
+2024-12-07 01:52:11,376 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 16)
+2024-12-07 01:52:11,376 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 1)
+2024-12-07 01:52:11,376 - DEBUG - ➡️get_data...
+2024-12-07 01:52:11,376 - DEBUG - No data.
+2024-12-07 01:52:11,376 - DEBUG - trial data shape for ['metal-scissor'] and 0 objects: (0, 16)
+2024-12-07 01:52:11,376 - DEBUG - trial labels shape for ['metal-scissor'] and 0 objects: (0, 1)
+2024-12-07 01:52:11,376 - DEBUG - ➡️get_data...
+2024-12-07 01:52:11,377 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:52:11,377 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:52:11,377 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:52:11,388 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:52:11,388 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:52:11,388 - DEBUG - embeds shape: (500, 16), all_emb max: 0.089, min: -0.089
+2024-12-07 01:52:11,388 - DEBUG - source_y shape: (250, 1), assist_y shape: (200, 1), target_y shape: (50, 1)
+2024-12-07 01:52:12,890 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:52:13,025 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:52:13,025 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:52:13,026 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:54:34,524 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:54:34,524 - INFO - loss_func: sincere
+2024-12-07 01:54:34,524 - DEBUG - ========================= New Run =========================
+2024-12-07 01:54:34,526 - INFO - Encoder loss function: sincere
+2024-12-07 01:54:34,526 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:54:34,526 - DEBUG - objects: , 15, {'metal-nut-bolt', 'kidney-bean', 'wooden-button', 'plastic-bead', 'cane-sugar', 'split-green-pea', 'water', 'chickpea', 'chia-seed', 'salt', 'glass-bead', 'detergent', 'wheat', 'styrofoam-bead', 'empty'}
+2024-12-07 01:54:34,526 - DEBUG - tools: , 6, {'wooden-fork', 'wooden-chopstick', 'metal-scissor', 'plastic-spoon', 'plastic-knife', 'metal-whisk'}
+2024-12-07 01:54:34,526 - DEBUG - trials: , 10, {'trial-0', 'trial-6', 'trial-3', 'trial-5', 'trial-8', 'trial-2', 'trial-7', 'trial-4', 'trial-1', 'trial-9'}
+2024-12-07 01:54:34,526 - DEBUG - experiment: encoder: assist, clf: assist, predict objects: new
+2024-12-07 01:54:34,526 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_source_tools': ['plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon'], 'enc_target_tools': ['metal-scissor', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:54:34,526 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:54:34,534 - DEBUG - ➡️ eval..
+2024-12-07 01:54:34,534 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:54:34,534 - DEBUG - ➡️get_data...
+2024-12-07 01:54:34,535 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:54:34,535 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:54:34,535 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:54:34,650 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:54:34,650 - INFO - 50 pred labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:54:34,650 - INFO - test accuracy: 98.00%, random guess accuracy: 20.00%
+2024-12-07 01:54:34,650 - INFO - test accuracy: 98.00%
+2024-12-07 01:54:34,650 - INFO - ⏱️total time used: 0 min 0.1 sec.
+2024-12-07 01:54:34,650 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:54:34,650 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:54:34,650 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:54:34,650 - DEBUG - ➡️get_data...
+2024-12-07 01:54:34,650 - DEBUG - No data.
+2024-12-07 01:54:34,650 - DEBUG - trial data shape for ['plastic-spoon'] and 0 objects: (0, 16)
+2024-12-07 01:54:34,650 - DEBUG - trial labels shape for ['plastic-spoon'] and 0 objects: (0, 1)
+2024-12-07 01:54:34,650 - DEBUG - ➡️get_data...
+2024-12-07 01:54:34,651 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:54:34,651 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:54:34,651 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:54:34,663 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:54:34,663 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:54:34,663 - DEBUG - ➡️get_data...
+2024-12-07 01:54:34,663 - DEBUG - No data.
+2024-12-07 01:54:34,663 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 16)
+2024-12-07 01:54:34,664 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 1)
+2024-12-07 01:54:34,664 - DEBUG - ➡️get_data...
+2024-12-07 01:54:34,665 - DEBUG - data mata: {'3-stirring-fast': {'wooden-fork': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'metal-whisk': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-chopstick': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'plastic-knife': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:54:34,665 - DEBUG - structured data shape: torch.Size([1, 4, 5, 10, 744]) from tool(s): ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:54:34,665 - DEBUG - structured label shape: torch.Size([1, 4, 5, 10, 1])
+2024-12-07 01:54:34,720 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 16)
+2024-12-07 01:54:34,720 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 1)
+2024-12-07 01:54:34,720 - DEBUG - ➡️get_data...
+2024-12-07 01:54:34,720 - DEBUG - No data.
+2024-12-07 01:54:34,720 - DEBUG - trial data shape for ['metal-scissor'] and 0 objects: (0, 16)
+2024-12-07 01:54:34,720 - DEBUG - trial labels shape for ['metal-scissor'] and 0 objects: (0, 1)
+2024-12-07 01:54:34,720 - DEBUG - ➡️get_data...
+2024-12-07 01:54:34,721 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:54:34,721 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:54:34,721 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:54:34,730 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:54:34,730 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:54:34,730 - DEBUG - embeds shape: (300, 16), all_emb max: 0.089, min: -0.089
+2024-12-07 01:54:34,730 - DEBUG - source_y shape: (50, 1), assist_y shape: (200, 1), target_y shape: (50, 1)
+2024-12-07 01:54:36,004 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:54:36,141 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:54:36,142 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:54:36,142 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:56:53,689 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:56:53,689 - INFO - loss_func: sincere
+2024-12-07 01:56:53,690 - DEBUG - ========================= New Run =========================
+2024-12-07 01:56:53,691 - INFO - Encoder loss function: sincere
+2024-12-07 01:56:53,691 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:56:53,691 - DEBUG - objects: , 15, {'kidney-bean', 'chia-seed', 'cane-sugar', 'wooden-button', 'chickpea', 'glass-bead', 'detergent', 'split-green-pea', 'water', 'plastic-bead', 'wheat', 'empty', 'styrofoam-bead', 'metal-nut-bolt', 'salt'}
+2024-12-07 01:56:53,691 - DEBUG - tools: , 6, {'wooden-fork', 'plastic-knife', 'metal-scissor', 'wooden-chopstick', 'plastic-spoon', 'metal-whisk'}
+2024-12-07 01:56:53,691 - DEBUG - trials: , 10, {'trial-0', 'trial-7', 'trial-3', 'trial-9', 'trial-1', 'trial-4', 'trial-2', 'trial-5', 'trial-6', 'trial-8'}
+2024-12-07 01:56:53,691 - DEBUG - experiment: encoder: assist, clf: assist, predict objects: new
+2024-12-07 01:56:53,691 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_source_tools': ['plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon'], 'enc_target_tools': ['metal-scissor', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:56:53,691 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:56:53,703 - DEBUG - ➡️ eval..
+2024-12-07 01:56:53,703 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:56:53,703 - DEBUG - ➡️get_data...
+2024-12-07 01:56:53,704 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:56:53,704 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:56:53,704 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:56:53,824 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:56:53,824 - INFO - 50 pred labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:56:53,824 - INFO - test accuracy: 98.00%, random guess accuracy: 20.00%
+2024-12-07 01:56:53,824 - INFO - test accuracy: 98.00%
+2024-12-07 01:56:53,824 - INFO - ⏱️total time used: 0 min 0.1 sec.
+2024-12-07 01:56:53,824 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:56:53,824 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:56:53,824 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:56:53,824 - DEBUG - ➡️get_data...
+2024-12-07 01:57:18,516 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:57:18,516 - INFO - loss_func: sincere
+2024-12-07 01:57:18,516 - DEBUG - ========================= New Run =========================
+2024-12-07 01:57:18,518 - INFO - Encoder loss function: sincere
+2024-12-07 01:57:18,518 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:57:18,518 - DEBUG - objects: , 15, {'empty', 'metal-nut-bolt', 'detergent', 'split-green-pea', 'wheat', 'glass-bead', 'wooden-button', 'water', 'chia-seed', 'salt', 'plastic-bead', 'chickpea', 'cane-sugar', 'kidney-bean', 'styrofoam-bead'}
+2024-12-07 01:57:18,518 - DEBUG - tools: , 6, {'wooden-fork', 'plastic-spoon', 'metal-whisk', 'metal-scissor', 'wooden-chopstick', 'plastic-knife'}
+2024-12-07 01:57:18,518 - DEBUG - trials: , 10, {'trial-1', 'trial-5', 'trial-0', 'trial-6', 'trial-7', 'trial-4', 'trial-8', 'trial-2', 'trial-3', 'trial-9'}
+2024-12-07 01:57:18,518 - DEBUG - experiment: encoder: assist, clf: assist, predict objects: new
+2024-12-07 01:57:18,518 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_source_tools': ['plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon'], 'enc_target_tools': ['metal-scissor', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:57:18,518 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:57:18,525 - DEBUG - ➡️ eval..
+2024-12-07 01:57:18,525 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:57:18,526 - DEBUG - ➡️get_data...
+2024-12-07 01:57:18,526 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:57:18,526 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:57:18,526 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:57:18,638 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:57:18,639 - INFO - 50 pred labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:57:18,639 - INFO - test accuracy: 98.00%, random guess accuracy: 20.00%
+2024-12-07 01:57:18,639 - INFO - test accuracy: 98.00%
+2024-12-07 01:57:18,639 - INFO - ⏱️total time used: 0 min 0.1 sec.
+2024-12-07 01:57:18,639 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:57:18,639 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:57:18,639 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:57:18,639 - DEBUG - ➡️get_data...
+2024-12-07 01:57:37,831 - INFO - input data name: audio_16kHz_token_down16_beh3.bin
+2024-12-07 01:57:37,831 - INFO - loss_func: sincere
+2024-12-07 01:57:37,831 - DEBUG - ========================= New Run =========================
+2024-12-07 01:57:37,833 - INFO - Encoder loss function: sincere
+2024-12-07 01:57:37,833 - DEBUG - behaviors:, 6, ['1-look', '2-stirring-slow', '3-stirring-fast', '4-stirring-twist', '5-whisk', '6-poke']
+2024-12-07 01:57:37,833 - DEBUG - objects: , 15, {'wooden-button', 'styrofoam-bead', 'kidney-bean', 'salt', 'chia-seed', 'water', 'cane-sugar', 'metal-nut-bolt', 'glass-bead', 'split-green-pea', 'chickpea', 'empty', 'detergent', 'plastic-bead', 'wheat'}
+2024-12-07 01:57:37,833 - DEBUG - tools: , 6, {'metal-scissor', 'plastic-knife', 'wooden-chopstick', 'plastic-spoon', 'wooden-fork', 'metal-whisk'}
+2024-12-07 01:57:37,833 - DEBUG - trials: , 10, {'trial-9', 'trial-1', 'trial-0', 'trial-6', 'trial-3', 'trial-2', 'trial-7', 'trial-8', 'trial-4', 'trial-5'}
+2024-12-07 01:57:37,833 - DEBUG - experiment: encoder: assist, clf: assist, predict objects: new
+2024-12-07 01:57:37,833 - DEBUG - context_dict: {'exp_pred_obj': 'new', 'actual_source_tools': ['plastic-spoon'], 'actual_target_tools': ['metal-scissor'], 'actual_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_source_tools': ['plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon', 'plastic-spoon'], 'enc_target_tools': ['metal-scissor', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'enc_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'enc_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat'], 'enc_train_trail_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'clf_source_tools': ['plastic-spoon', 'wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_target_tools': ['metal-scissor'], 'clf_assist_tools': ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'], 'clf_old_objs': ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead', 'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button'], 'clf_new_objs': ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']}
+2024-12-07 01:57:37,833 - INFO - 👉 ------------ Evaluating the classifier ------------ 
+2024-12-07 01:57:37,842 - DEBUG - ➡️ eval..
+2024-12-07 01:57:37,842 - DEBUG - ['metal-scissor']: ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
+2024-12-07 01:57:37,842 - DEBUG - ➡️get_data...
+2024-12-07 01:57:37,843 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:57:37,843 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:57:37,843 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:57:37,959 - INFO - 50 true labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:57:37,959 - INFO - 50 pred labels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+2024-12-07 01:57:37,959 - INFO - test accuracy: 98.00%, random guess accuracy: 20.00%
+2024-12-07 01:57:37,959 - INFO - test accuracy: 98.00%
+2024-12-07 01:57:37,960 - INFO - ⏱️total time used: 0 min 0.1 sec.
+2024-12-07 01:57:37,960 - INFO - 👀visualize decision boundary in shared latent space...
+2024-12-07 01:57:37,960 - DEBUG - _viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: False 
+2024-12-07 01:57:37,960 - DEBUG - ➡️ get_all_embeddings...
+2024-12-07 01:57:37,960 - DEBUG - ➡️get_data...
+2024-12-07 01:57:37,960 - DEBUG - No data.
+2024-12-07 01:57:37,960 - DEBUG - trial data shape for ['plastic-spoon'] and 0 objects: (0, 16)
+2024-12-07 01:57:37,960 - DEBUG - trial labels shape for ['plastic-spoon'] and 0 objects: (0, 1)
+2024-12-07 01:57:37,960 - DEBUG - ➡️get_data...
+2024-12-07 01:57:37,960 - DEBUG - data mata: {'3-stirring-fast': {'plastic-spoon': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:57:37,960 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['plastic-spoon']
+2024-12-07 01:57:37,960 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:57:37,972 - DEBUG - trial data shape for ['plastic-spoon'] and 5 objects: (50, 16)
+2024-12-07 01:57:37,972 - DEBUG - trial labels shape for ['plastic-spoon'] and 5 objects: (50, 1)
+2024-12-07 01:57:37,972 - DEBUG - ➡️get_data...
+2024-12-07 01:57:37,972 - DEBUG - No data.
+2024-12-07 01:57:37,972 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 16)
+2024-12-07 01:57:37,972 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 0 objects: (0, 1)
+2024-12-07 01:57:37,972 - DEBUG - ➡️get_data...
+2024-12-07 01:57:37,973 - DEBUG - data mata: {'3-stirring-fast': {'wooden-fork': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'metal-whisk': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'wooden-chopstick': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}, 'plastic-knife': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:57:37,973 - DEBUG - structured data shape: torch.Size([1, 4, 5, 10, 744]) from tool(s): ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife']
+2024-12-07 01:57:37,973 - DEBUG - structured label shape: torch.Size([1, 4, 5, 10, 1])
+2024-12-07 01:57:38,025 - DEBUG - trial data shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 16)
+2024-12-07 01:57:38,025 - DEBUG - trial labels shape for ['wooden-fork', 'metal-whisk', 'wooden-chopstick', 'plastic-knife'] and 5 objects: (200, 1)
+2024-12-07 01:57:38,025 - DEBUG - ➡️get_data...
+2024-12-07 01:57:38,025 - DEBUG - No data.
+2024-12-07 01:57:38,025 - DEBUG - trial data shape for ['metal-scissor'] and 0 objects: (0, 16)
+2024-12-07 01:57:38,025 - DEBUG - trial labels shape for ['metal-scissor'] and 0 objects: (0, 1)
+2024-12-07 01:57:38,025 - DEBUG - ➡️get_data...
+2024-12-07 01:57:38,026 - DEBUG - data mata: {'3-stirring-fast': {'metal-scissor': {'chickpea': 10, 'detergent': 10, 'metal-nut-bolt': 10, 'split-green-pea': 10, 'wheat': 10}}}
+2024-12-07 01:57:38,026 - DEBUG - structured data shape: torch.Size([1, 1, 5, 10, 744]) from tool(s): ['metal-scissor']
+2024-12-07 01:57:38,026 - DEBUG - structured label shape: torch.Size([1, 1, 5, 10, 1])
+2024-12-07 01:57:38,035 - DEBUG - trial data shape for ['metal-scissor'] and 5 objects: (50, 16)
+2024-12-07 01:57:38,035 - DEBUG - trial labels shape for ['metal-scissor'] and 5 objects: (50, 1)
+2024-12-07 01:57:38,035 - DEBUG - embeds shape: (300, 16), all_emb max: 0.089, min: -0.089
+2024-12-07 01:57:38,035 - DEBUG - source_y shape: (50, 1), assist_y shape: (200, 1), target_y shape: (50, 1)
+2024-12-07 01:57:39,283 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:57:39,416 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:57:39,416 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
+2024-12-07 01:57:39,416 - DEBUG - subset_obj_idx: [9, 2, 14, 7, 8], unique labels: [0 1 2 3 4]
