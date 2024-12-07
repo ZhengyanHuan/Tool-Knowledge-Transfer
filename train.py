@@ -7,7 +7,7 @@ import torch
 
 import configs
 import model
-from helpers.viz_helpers import viz_test_objects_embedding
+from my_helpers.viz_helpers import viz_test_objects_embedding
 from transfer_class import Tool_Knowledge_transfer_class
 
 encoder_pt_name = f"tmp_myencoder.pt"
@@ -18,7 +18,7 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                     number_of_folds: int, alpha_list: List[Union[float, int]], lr_en_list: List[Union[float, int]],
                     source_tool_list: List[str], target_tool_list: List[str],
                     behavior_list=configs.behavior_list, modality_list=configs.modality_list,
-                    trail_list=configs.trail_list, plot_learning=False):
+                    trail_list=configs.trail_list, plot_learning=False, enc_trial_split=0.2):
     '''
     cross validation split on objects: some objects for train, the rest objects for val
     Assume that the last 3 objects are unknown to the tool, we use the 12 known ones to split train and val.
@@ -57,7 +57,8 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                 Encoder = myclass.train_encoder(
                     lr_en=lr_en, TL_margin=alpha, behavior_list=behavior_list, source_tool_list=source_tool_list,
                     target_tool_list=target_tool_list, old_object_list=train_list, new_object_list=val_list,
-                    modality_list=modality_list, trail_list=trail_list, plot_learning=plot_learning)
+                    modality_list=modality_list, trail_list=trail_list, plot_learning=plot_learning,
+                    early_stop_patience=50, trial_split=enc_trial_split)
                 # old list is all the list except val_list+test_list, i.e., train_list TODO: DISCUSS
                 torch.save(Encoder.state_dict(), './saved_model/encoder/' + encoder_pt_name)
                 logging.info(f"Time used for encoder training: {round((time.time() - encoder_time) // 60)} min "

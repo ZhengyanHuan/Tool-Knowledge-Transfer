@@ -9,8 +9,8 @@ import torch
 
 import configs
 import model
-from helpers.data_helpers import select_context_for_experiment
-from helpers.viz_helpers import viz_test_objects_embedding, viz_data
+from my_helpers.data_helpers import select_context_for_experiment
+from my_helpers.viz_helpers import viz_test_objects_embedding, viz_data
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %%  0. setup
@@ -87,7 +87,7 @@ if configs.retrain_clr:
     Encoder = model.encoder(input_size=input_dim).to(configs.device)
     Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name,
                                        map_location=torch.device(configs.device)))
-    myclassifier = myclass.train_classifier(Encoder=Encoder, val_portion=context_dict['clf_val_portion'],
+    myclassifier = myclass.train_classifier(Encoder=Encoder, trial_val_portion=configs.trial_val_portion,
                                             source_tool_list=context_dict['clf_source_tools'],
                                             new_object_list=context_dict['clf_new_objs'],
                                             trail_list=context_dict['enc_train_trail_list'])
@@ -122,7 +122,7 @@ viz_test_objects_embedding(
     transfer_class=myclass, Encoder=Encoder, Classifier=Classifier, test_accuracy=accuracy,
     pred_label_target=pred_label_target, encoder_output_dim=configs.encoder_output_dim,
     assist_tool_list=context_dict['clf_assist_tools'], new_object_list=context_dict['clf_new_objs'],
-    source_tool_list=context_dict['actual_source_tools'], target_tool_list=context_dict['actual_target_tools'],
+    source_tool_list=context_dict['clf_source_tools'], target_tool_list=context_dict['clf_target_tools'],
     viz_l2_norm=configs.viz_share_space_l2_norm,
     task_descpt=f"source:{source_tools_descpt}, target:{context_dict['actual_target_tools'][0]} "
                 f"encoder exp: {configs.encoder_exp_name}, clf exp: {configs.clf_exp_name}")

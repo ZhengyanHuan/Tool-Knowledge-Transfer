@@ -10,7 +10,6 @@ assist_tool_list = ['wooden-fork', 'metal-whisk', "wooden-chopstick",  "plastic-
 target_tool_list = ['metal-scissor']  # only one target tool
 all_tool_list = source_tool_list+assist_tool_list+target_tool_list
 trail_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-split_by_trial = 0.8
 
 old_object_list = ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-bead',
                    'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button']

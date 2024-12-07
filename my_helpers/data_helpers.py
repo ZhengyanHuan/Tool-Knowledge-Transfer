@@ -1,5 +1,6 @@
 import copy
 import logging
+import random
 from typing import Tuple, List, Union, Dict
 
 import numpy as np
@@ -34,6 +35,104 @@ def sanity_check_data_labels(data_dict: dict):
                                   f"{label} instead of {SORTED_DATA_OBJ_LIST.index(obj)}")
     if mismatch:
         raise AssertionError
+
+
+def train_test_split_by_trials(source_data, truth_source, target_data=None, truth_target=None,
+                               trial_list=configs.trail_list, trial_val_portion=0.2,
+                               random_trials=configs.randomize_trials):
+    """target data should only have old objects, object dimension is order by old_obj_list to new_obj_list"""
+    if trial_val_portion == 0:
+        return {
+            "source_data_train": source_data,
+            "source_data_val": None,
+            "truth_source_train": truth_source,
+            "truth_source_val": None,
+            "target_data_train": target_data,
+            "target_data_val": None,
+            "truth_target_train": truth_target,
+            "truth_target_val": None,
+
+        }
+    device = source_data.device
+    num_trials = source_data.shape[3]
+    assert num_trials == len(trial_list), "Mismatch between number of trials and trial_list length."
+    num_val_trials = int(num_trials * trial_val_portion)
+    num_tr_trials = num_trials - num_val_trials
+
+    source_data, truth_source = source_data.detach().cpu().numpy(), truth_source.detach().cpu().numpy()
+    if target_data is not None:
+        target_data, truth_target = target_data.detach().cpu().numpy(), truth_target.detach().cpu().numpy()
+
+    if not random_trials:
+        source_data_train = source_data[:, :, :, :num_tr_trials]
+        source_data_val = source_data[:, :, :, -num_val_trials:]
+        truth_source_train = truth_source[:, :, :, :num_tr_trials]
+        truth_source_val = truth_source[:, :, :, -num_val_trials:]
+        if target_data is not None:
+            target_data_train = target_data[:, :, :, :num_tr_trials]
+            target_data_val = target_data[:, :, :, -num_val_trials:]
+            truth_target_train = truth_target[:, :, :, :num_tr_trials]
+            truth_target_val = truth_target[:, :, :, -num_val_trials:]
+
+
+    else:
+        configs.set_torch_seed()
+        # Initialize data structures for train and validation sets
+        source_data_train = np.empty_like(source_data[:, :, :, :num_tr_trials])
+        source_data_val = np.empty_like(source_data[:, :, :, -num_val_trials:])
+        truth_source_train = np.empty_like(truth_source[:, :, :, :num_tr_trials])
+        truth_source_val = np.empty_like(truth_source[:, :, :, -num_val_trials:])
+        if target_data is not None:
+            num_old_obj = target_data.shape[2]
+            target_data_train = np.empty_like(target_data[:, :, :, :num_tr_trials])
+            target_data_val = np.empty_like(target_data[:, :, :, -num_val_trials:])
+            truth_target_train = np.empty_like(truth_target[:, :, :, :num_tr_trials])
+            truth_target_val = np.empty_like(truth_target[:, :, :, -num_val_trials:])
+        else:
+            num_old_obj = 0
+            target_data_train, target_data_val, truth_target_val, truth_target_train = None, None, None, None
+
+        num_all_obj = source_data.shape[2]
+        for obj_idx in range(num_all_obj):
+            # Randomly select trials for this object
+            val_trials = np.random.choice(trial_list, size=num_val_trials, replace=False)
+            train_trials = np.setdiff1d(trial_list, val_trials)
+            # Select the sampled trials for each object
+            source_data_train[:, :, obj_idx] = source_data[:, :, obj_idx, train_trials]
+            source_data_val[:, :, obj_idx] = source_data[:, :, obj_idx, val_trials]
+            truth_source_train[:, :, obj_idx] = truth_source[:, :, obj_idx, train_trials]
+            truth_source_val[:, :, obj_idx] = truth_source[:, :, obj_idx, val_trials]
+            if target_data is not None:  # old obj only
+                if obj_idx < num_old_obj:
+                    target_data_train[:, :, obj_idx] = target_data[:, :, obj_idx, train_trials]
+                    target_data_val[:, :, obj_idx] = target_data[:, :, obj_idx, val_trials]
+                    truth_target_train[:, :, obj_idx] = truth_target[:, :, obj_idx, train_trials]
+                    truth_target_val[:, :, obj_idx] = truth_target[:, :, obj_idx, val_trials]
+
+    logging.debug(f"train test split shapes: source_data_train: {source_data_train.shape},"
+                  f"truth_source_train: {truth_source_train.shape}, source_data_val: {source_data_val.shape},"
+                  f"truth_source_val: {truth_source_val.shape}")
+    if target_data is not None:
+        logging.debug(f"target_data_train: {target_data_train.shape}, truth_target_train: {truth_target_train.shape}, "
+                      f"target_data_val: {target_data_val.shape}, truth_target_val: {truth_target_val.shape}")
+    data_dict = {
+        "source_data_train": torch.tensor(source_data_train).to(device),
+        "source_data_val": torch.tensor(source_data_val).to(device),
+        "truth_source_train": torch.tensor(truth_source_train).to(device),
+        "truth_source_val": torch.tensor(truth_source_val).to(device)}
+    if target_data is not None:
+        data_dict.update({
+            "target_data_train": torch.tensor(target_data_train).to(device),
+            "target_data_val": torch.tensor(target_data_val).to(device),
+            "truth_target_train": torch.tensor(truth_target_train).to(device),
+            "truth_target_val": torch.tensor(truth_target_val).to(device)})
+    else:
+        data_dict.update({
+            "target_data_train": None,
+            "target_data_val": None,
+            "truth_target_train": None,
+            "truth_target_val": None})
+    return data_dict
 
 
 def make_new_labels_to_curr_obj(original_labels: Union[torch.Tensor, np.array], object_list: list):
@@ -114,7 +213,8 @@ def select_context_for_experiment(
         assist_tool_list=configs.assist_tool_list, old_object_list=configs.old_object_list,
         new_object_list=configs.new_object_list, trial_list=configs.trail_list,
         enc_trail_list=configs.enc_trail_list) -> Dict[str, List[str]]:
-    assert encoder_exp_name in ["default", "all", "assist", "assist_no-target", "baseline1", "baseline2", "baseline2-all"]
+    assert encoder_exp_name in ["default", "all", "assist", "assist_no-target", "baseline1", "baseline2",
+                                "baseline2-all"]
     assert clf_exp_name in ["default", "assist"]
     assert exp_pred_obj in ['all', 'new']
     logging.debug(f"experiment: encoder: {encoder_exp_name}, clf: {clf_exp_name}, predict objects: {exp_pred_obj}")
@@ -137,7 +237,6 @@ def select_context_for_experiment(
         'clf_assist_tools': [],  # the assist tool used to train the clf
         'clf_old_objs': old_object_list,  # objects used to train and test the classifier
         'clf_new_objs': new_object_list,  # objects used to train and test the clf
-        'clf_val_portion': 0,
     }
     if exp_pred_obj == "all":  # predict all objects
         exp_context_dict['clf_new_objs'] = all_object_list
@@ -147,7 +246,8 @@ def select_context_for_experiment(
     if encoder_exp_name == "all":  # use all other tools to train encoder
         exp_context_dict['enc_source_tools'] = source_tool_list + assist_tool_list
         exp_context_dict['actual_assist_tools'] = assist_tool_list
-    elif encoder_exp_name in ["assist", "assist_no-target"]:  # besides source, use old object from assist tools to train encoder
+    elif encoder_exp_name in ["assist",
+                              "assist_no-target"]:  # besides source, use old object from assist tools to train encoder
         exp_context_dict['actual_assist_tools'] = assist_tool_list
         exp_context_dict['enc_assist_tools'] = assist_tool_list
         # balance the source tool and target tool number, in case assist and target outnumber source
@@ -200,6 +300,8 @@ def select_context_for_experiment(
         exp_context_dict['clf_source_tools'] = target_tool_list
     elif encoder_exp_name == "baseline2":  # regardless of what clf_exp_name is
         exp_context_dict['clf_source_tools'] = source_tool_list
+    elif encoder_exp_name == "all":
+        exp_context_dict['clf_source_tools'] = source_tool_list + assist_tool_list
 
     # ---- classifier target
     # so far, always test on the target tool

@@ -4,8 +4,8 @@ import os
 
 import configs
 import train
-from helpers.data_helpers import select_context_for_experiment
-from helpers.viz_helpers import viz_test_objects_embedding
+from my_helpers.data_helpers import select_context_for_experiment
+from my_helpers.viz_helpers import viz_test_objects_embedding
 from transfer_class import Tool_Knowledge_transfer_class
 
 # %% 0. script setup
@@ -55,9 +55,11 @@ for modality in configs.modality_list:
 
 
 # %%
-train_val_list = ['detergent', 'kidney-bean', 'plastic-bead', 'chia-seed', 'salt', 'empty', 'metal-nut-bolt',
-                  'wooden-button', 'styrofoam-bead', 'water', 'glass-bead', 'wheat']
-test_list = ['cane-sugar', 'split-green-pea', 'chickpea']
+# train_val_list = ['detergent', 'kidney-bean', 'plastic-bead', 'chia-seed', 'salt', 'empty', 'metal-nut-bolt',
+#                   'wooden-button', 'styrofoam-bead', 'water', 'glass-bead', 'wheat']
+# test_list = ['cane-sugar', 'split-green-pea', 'chickpea']
+# todo: randomize list
+
 source_tool_list = ['plastic-spoon']
 target_tool_list = ['metal-scissor']
 loss_func = "TL"  # "TL" for triplet loss or "sincere"

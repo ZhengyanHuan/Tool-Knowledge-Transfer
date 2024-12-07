@@ -1,4 +1,5 @@
 # %%
+import copy
 import logging
 import os
 import pickle
@@ -10,8 +11,8 @@ import torch.optim as optim
 
 import configs
 import model
-from helpers.data_helpers import sanity_check_data_labels
-from helpers.viz_helpers import plot_learning_progression
+from my_helpers.data_helpers import sanity_check_data_labels, train_test_split_by_trials
+from my_helpers.viz_helpers import plot_learning_progression
 from sincere_loss_class import SINCERELoss
 
 
@@ -85,7 +86,7 @@ class Tool_Knowledge_transfer_class:
         return torch.tensor(truth, dtype=torch.int64, device=configs.device)
 
     def _prepare_data_classifier(self, Encoder, behavior_list, source_tool_list, new_object_list,
-                                 modality_list, trail_list, val_portion) \
+                                 modality_list, trail_list, trial_val_portion) \
             -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         :return:
@@ -94,36 +95,35 @@ class Tool_Knowledge_transfer_class:
 
         """
         logging.debug(f"➡️ prepare_data_classifier..")
-        train_test_index = int(len(trail_list) * (1 - val_portion))
+
         logging.debug(f"get source data for classifier from {new_object_list}")
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, new_object_list, trail_list)
         with torch.no_grad():
             Encoder.l2_norm = self.enc_l2_norm
             encoded_source = Encoder(source_data)
-
-        train_encoded_source = encoded_source[:, :, :, :train_test_index, :]
-        val_encoded_source = encoded_source[:, :, :, train_test_index:, :]
-
         truth = self._assign_labels_to_data(encoded_source, new_object_list)
-        train_truth = truth[:, :train_test_index]
-        val_truth = truth[:, train_test_index:]
-        logging.debug(f"train_truth: \n      {train_truth}")
-        logging.debug(f"val_truth: \n      {val_truth}")
+        split_dict = train_test_split_by_trials(source_data=encoded_source, truth_source=truth,
+                                                trial_list=trail_list, trial_val_portion=trial_val_portion)
+        logging.debug(f"train_truth: \n      {split_dict['truth_source_train']}")
+        if trial_val_portion > 0:
+            split_dict['truth_source_val'] = split_dict['truth_source_val'].reshape(-1)
+            logging.debug(f"val_truth: \n      {split_dict['truth_source_val']}")
 
-        return train_encoded_source, val_encoded_source, train_truth.reshape(-1), val_truth.reshape(-1)
+        return (split_dict['source_data_train'], split_dict['source_data_val'],
+                split_dict['truth_source_train'].reshape(-1), split_dict['truth_source_val'])
 
     def train_classifier(self, Encoder, behavior_list=configs.behavior_list, trail_list=configs.trail_list,
                          new_object_list=configs.new_object_list, modality_list=configs.modality_list,
                          source_tool_list=configs.source_tool_list, lr_clf=configs.lr_classifier,
                          epoch_classifier=configs.epoch_classifier, encoder_output_dim=configs.encoder_output_dim,
-                         val_portion=configs.val_portion, plot_learning=True):
+                         trial_val_portion=configs.trial_val_portion, plot_learning=True):
         configs.set_torch_seed()
         loss_record = np.zeros([2, epoch_classifier])
         logging.debug(f"➡️ train_classifier..")
 
         train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self._prepare_data_classifier(
             behavior_list=behavior_list, source_tool_list=source_tool_list, new_object_list=new_object_list,
-            modality_list=modality_list, trail_list=trail_list, Encoder=Encoder, val_portion=val_portion)
+            modality_list=modality_list, trail_list=trail_list, Encoder=Encoder, trial_val_portion=trial_val_portion)
         Classifier = model.classifier(encoder_output_dim, len(new_object_list)).to(configs.device)
 
         optimizer = optim.AdamW(Classifier.parameters(), lr=lr_clf)
@@ -134,7 +134,7 @@ class Tool_Knowledge_transfer_class:
             loss_tr = self.CEloss(pred_flat_tr, train_truth_flat)
             loss_record[0, i] = loss_tr.detach().cpu().numpy()
 
-            if len(val_truth_flat > 0):
+            if trial_val_portion > 0:
                 with torch.no_grad():
                     pred_val = Classifier(val_encoded_source)
                     pred_flat_val = pred_val.view(-1, len(new_object_list))
@@ -153,7 +153,7 @@ class Tool_Knowledge_transfer_class:
                 logging.info(f"epoch {i + 1}/{epoch_classifier}, train loss: {loss_tr.item():.4f}, "
                              f"train accuracy: {accuracy_train.item() * 100 :.2f}%, "
                              f"random guess accuracy: {100 / len(new_object_list):.2f}%")
-                if len(val_truth_flat > 0):
+                if trial_val_portion > 0:
                     pred_label = torch.argmax(pred_flat_val, dim=-1)
                     correct_num = torch.sum(pred_label == val_truth_flat)
                     accuracy_val = correct_num / len(val_truth_flat)
@@ -168,6 +168,7 @@ class Tool_Knowledge_transfer_class:
                                       loss_func=self.encoder_loss_fuc, TL_margin=None, sincere_temp=None,
                                       lr_encoder=None, save_name=f'classifier_{self.encoder_loss_fuc}')
         self.trained_clf = Classifier
+
         return Classifier
 
     def eval(self, Encoder, Classifier, tool_list=configs.target_tool_list, behavior_list=configs.behavior_list,
@@ -205,6 +206,7 @@ class Tool_Knowledge_transfer_class:
             return accuracy_test
 
     def train_encoder(self, behavior_list=configs.behavior_list,
+                      early_stop_patience=configs.early_stop_patience, trial_val_portion=configs.trial_val_portion,
                       source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
                       old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
                       modality_list=configs.modality_list, trail_list=configs.enc_trail_list, lr_en=configs.lr_encoder,
@@ -223,12 +225,15 @@ class Tool_Knowledge_transfer_class:
         :return: trained encoder
         """
         logging.debug(f"➡️ train_encoder..")
-        loss_record = np.zeros(epoch_encoder)
+        loss_record = np.zeros([2, epoch_encoder])
 
         source_data, target_data, truth_source, truth_target = self.get_encoder_data_and_labels(
             behavior_list=behavior_list, trail_list=trail_list, modality_list=modality_list,
             source_tool_list=source_tool_list, target_tool_list=target_tool_list,
             shared_object_list=old_object_list, novel_object_list=new_object_list)
+        splits = train_test_split_by_trials(source_data=source_data, target_data=target_data,
+                                            truth_source=truth_source, truth_target=truth_target,
+                                            trial_list=trail_list, trial_val_portion=trial_val_portion)
         '''
         If we have more than one modality, we may need preprocessing and the input dim may not the 
         sum of data dim across all considered modalities. But I just put it here because we have 
@@ -244,23 +249,72 @@ class Tool_Knowledge_transfer_class:
         configs.set_torch_seed()
         Encoder = model.encoder(self.input_dim, l2_norm=self.enc_l2_norm).to(configs.device)
         optimizer = optim.AdamW(Encoder.parameters(), lr=lr_en)
-
-        for i in range(epoch_encoder):
+        # TODO: why is sincere's val loss lower than train?
+        #   why is TL so unstable?
+        best_loss_val = np.inf
+        prev_loss_val = np.inf
+        best_enc = copy.deepcopy(Encoder)
+        patience_counter = 0
+        wind_idx = 1
+        for epoch in range(epoch_encoder):
             if self.encoder_loss_fuc == "TL":
-                loss = self.TL_loss_fn(source_data, target_data, Encoder, alpha=TL_margin,
-                                       encoder_output_dim=encoder_output_dim,
+                loss = self.TL_loss_fn(splits['source_data_train'], splits['target_data_train'],
+                                       Encoder, alpha=TL_margin, encoder_output_dim=encoder_output_dim,
                                        pairs_per_batch_per_object=pairs_per_batch_per_object)
+                if trial_val_portion > 0:
+                    with torch.no_grad():
+                        loss_val = self.TL_loss_fn(splits['source_data_val'], splits['target_data_val'],
+                                                   Encoder, alpha=TL_margin, encoder_output_dim=encoder_output_dim,
+                                                   pairs_per_batch_per_object=pairs_per_batch_per_object)
             elif self.encoder_loss_fuc == "sincere":
-                loss = self.sincere_loss_fn(source_data, truth_source, target_data, truth_target, Encoder,
-                                            temperature=sincere_tem, encoder_output_dim=encoder_output_dim)
+                loss = self.sincere_loss_fn(splits['source_data_train'], splits['truth_source_train'],
+                                            splits['target_data_train'], splits['truth_target_train'],
+                                            Encoder, temperature=sincere_tem, encoder_output_dim=encoder_output_dim)
+                if trial_val_portion > 0:
+                    with torch.no_grad():
+                        loss_val = self.sincere_loss_fn(splits['source_data_val'], splits['truth_source_val'],
+                                                        splits['target_data_val'], splits['truth_target_val'],
+                                                        Encoder, temperature=sincere_tem,
+                                                        encoder_output_dim=encoder_output_dim)
             else:
                 raise Exception(f"{self.encoder_loss_fuc} not available.")
-            loss_record[i] = loss.detach().cpu().numpy()
+            loss_record[0, epoch] = loss.detach().cpu().numpy()
+            if trial_val_portion > 0:
+                loss_record[1, epoch] = loss_val.detach().cpu().numpy()
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if (i + 1) % 500 == 0:
-                logging.info(f"epoch {i + 1}/{epoch_encoder}, loss: {loss.item():.4f}")
+            if (epoch + 1) % 500 == 0:
+                logging.info(f"epoch {epoch + 1}/{epoch_encoder}, loss: {loss.item():.4f}")
+            # TODO: why is TL so noisy? (sampling problem?)
+            #  why is SINCERE's val better than train?
+
+            if trial_val_portion > 0:
+                if loss_val < best_loss_val:
+                    best_loss_val = loss_val
+                    best_enc = copy.deepcopy(Encoder)  # deep copy the model at this time
+                if epoch + 1 == epoch_encoder:  # last epoch
+                    Encoder = best_enc
+                # early stopping by smoothed windows, not epochs
+                if early_stop_patience is not None:
+                    window_size = configs.smooth_wind_size
+                    if epoch + 1 >= window_size * 2 and (epoch + 1) % window_size == 0:
+                        wind_idx += 1
+                        wind_prev = np.mean(loss_record[1, window_size * (wind_idx-2):window_size*(wind_idx-1)])
+                        wind_curr = np.mean(loss_record[1, window_size*(wind_idx-1):window_size*wind_idx])
+                        if wind_prev <= wind_curr + configs.tolerance:
+                            patience_counter += 1
+                        else:
+                            patience_counter = 0
+                        print(f"epoch: {epoch + 1}, patience_counter: {patience_counter}")
+                    if patience_counter >= early_stop_patience:
+                        logging.debug(f"Early stopping triggered at epoch {epoch + 1}. "
+                                      f"Best validation loss: {best_loss_val}")
+                        Encoder = best_enc  # restore the best encoder
+                        loss_record = loss_record[:, :epoch + 1]
+                        break  # stop training
+
         if plot_learning:
             plot_learning_progression(record=loss_record, type='encoder',
                                       lr_classifier=None, encoder_output_dim=encoder_output_dim,

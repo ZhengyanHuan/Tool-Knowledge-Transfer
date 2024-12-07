@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 
 import configs
 import model
-from helpers.data_helpers import get_all_embeddings_or_data, restart_label_index_from_zero, create_tool_idx_list
+from my_helpers.data_helpers import get_all_embeddings_or_data, restart_label_index_from_zero, create_tool_idx_list
 
 # manually order objects by similarity
 SIM_OBJECTS_LIST = ['empty', 'water', 'detergent', 'chia-seed', 'cane-sugar', 'salt',
@@ -79,7 +79,7 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None,
     target_data_test, target_label_test = data_groups[5], label_groups[5]
 
     if source_tool_list == target_tool_list:  # if there's no knowledge transfer
-        assert new_object_list == []   # no new object
+        assert new_object_list == []  # no new object
         assert np.equal(source_data_train, target_data_train).all()
         assert np.equal(source_data_test, target_data_test).all()
         assert len(assist_data_train) == 0 and len(assist_data_test) == 0  # no assist tool
@@ -171,7 +171,7 @@ def _viz_embeddings(embeds: np.ndarray, labels: np.ndarray, tool_labels: list, l
         logging.debug(f"dimension reduced embeds_2d max: {np.max(embeds_2d):.3f}, min: {np.min(embeds_2d):.3f}")
     else:
         embeds_2d = embeds
-    half = int(len(embeds_2d)/2)
+    half = int(len(embeds_2d) / 2)
 
     plt.figure(figsize=(10, 8))
     plt.rcParams['font.size'] = 12
@@ -287,7 +287,7 @@ def viz_test_objects_embedding(transfer_class, Encoder, Classifier, test_accurac
     _viz_classifier_boundary_on_2d_embeddings(transfer_class, Encoder, Classifier, accuracy=test_accuracy,
                                               encoder_output_dim=encoder_output_dim, viz_l2_norm=viz_l2_norm,
                                               new_object_list=new_object_list, assist_tool_list=assist_tool_list,
-                                              target_tool_list=target_tool_list,source_tool_list=source_tool_list,
+                                              target_tool_list=target_tool_list, source_tool_list=source_tool_list,
                                               loss_func=transfer_class.encoder_loss_fuc, task_descpt=task_descpt)
 
 
@@ -295,7 +295,6 @@ def _viz_classifier_boundary_on_2d_embeddings(
         transfer_class, Encoder, Classifier, accuracy, target_tool_list, source_tool_list, assist_tool_list,
         new_object_list, encoder_output_dim, loss_func, viz_l2_norm, clf_exp_name=configs.encoder_exp_name,
         task_descpt=""):
-
     logging.debug(f"_viz_classifier_boundary_on_2d_embeddings: viz_l2_norm: {viz_l2_norm} ")
     object_list = new_object_list
     # Step 1: Generate embedded data
@@ -309,7 +308,8 @@ def _viz_classifier_boundary_on_2d_embeddings(
     target_emb, target_y = all_emb[5], all_labels[5]
     all_emb = np.vstack([source_emb, assist_emb, target_emb])
     logging.debug(f"embeds shape: {all_emb.shape}, all_emb max: {np.max(all_emb):.3f}, min: {np.min(all_emb):.3f}")
-    logging.debug(f"source_y shape: {source_y.shape}, assist_y shape: {assist_y.shape}, target_y shape: {target_y.shape}")
+    logging.debug(
+        f"source_y shape: {source_y.shape}, assist_y shape: {assist_y.shape}, target_y shape: {target_y.shape}")
 
     # Step 2: make sure the dimension is 2
     if source_emb.shape[1] > 2:  # Apply T-SNE for dimensionality reduction
@@ -403,7 +403,7 @@ def _viz_classifier_boundary_on_2d_embeddings(
     else:
         subtitle = ("Exact decision boundary from the trained Classifier.\n"
                     f"Actual predictions match the background color. Accuracy: {accuracy * 100:.1f}%")
-    subtitle += f" Random Guess: {100/len(object_list):.1f}%"
+    subtitle += f" Random Guess: {100 / len(object_list):.1f}%"
     plt.title(f"Visualization with Classifier Decision Boundary on Test Set - {loss_func} "
               f"- Vector Size={all_emb.shape[-1]}\n{subtitle}\n{task_descpt}", fontsize=10)
     viz_discpt = "T-SNE Reduced " if all_emb.shape[1] > 2 else ""
@@ -420,30 +420,63 @@ def _viz_classifier_boundary_on_2d_embeddings(
     plt.show()
 
 
+def smooth_1d_array(array, window_size=configs.smooth_wind_size):
+    # Define the smoothing kernel
+    kernel = np.ones(window_size) / window_size
+
+    # Apply padding to the array (reflect padding here)
+    padded_array = np.pad(array, pad_width=(window_size // 2,), mode='reflect')
+
+    # Perform the convolution
+    smoothed_array = np.convolve(array, kernel, mode='valid')
+    return np.hstack([array[:window_size - 1], smoothed_array])
+
+
+def window_line(array, window_size=configs.smooth_wind_size):
+    wind_array = []
+    wind_idx = 0
+    for i in range(len(array)):
+        if i + 1 >= window_size and (i + 1) % window_size == 0:
+            wind_idx += 1
+            if wind_idx*window_size <= len(array):
+                window_val = np.mean(array[window_size*(wind_idx-1):window_size * wind_idx])
+                wind_array.append([window_val] * window_size)
+    wind_array = np.hstack(wind_array)
+    gap = len(array) - len(wind_array)
+    if gap > 0:
+        final_mean = [np.mean(array[window_size * wind_idx:])] * gap
+        wind_array = np.hstack([wind_array, final_mean])
+    return wind_array
+
+
 def plot_learning_progression(record, type, TL_margin, loss_func, sincere_temp, lr_classifier, lr_encoder,
                               encoder_output_dim, save_name='test', plot_every=10, ):  # type-> 'encoder', 'classifier'
     logging.debug(f"➡️ plot_learning_progression for {type}: {save_name}...")
     plt.figure(figsize=(8, 6))
     plt.rcParams['font.size'] = 18
-
-    color_group = ['red', 'blue']
+    color_group = ['C0', 'C1', 'C3']
     if type == 'encoder':
         encoder_param = TL_margin if loss_func == "TL" else sincere_temp
         encoder_param_name = "margin" if loss_func == "TL" else "temperature"
-        xaxis = np.arange(1, len(record) + 1)
-        plt.plot(xaxis[::plot_every], record[::plot_every], color_group[0])
+        xaxis = np.arange(1, record.shape[1] + 1)
+        plt.plot(xaxis[::plot_every], record[0, ::plot_every], color_group[0], label='train loss')
+        if record[1, -1] != 0:
+            plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label='val loss')
+            plt.plot(xaxis[::plot_every], window_line(record[1])[::plot_every], color_group[2],
+                     label='val loss (avg window)')
         plt.xlabel('epochs')
         plt.ylabel('loss')
         plt.title(f'Encoder Training Loss Progression - Loss: {loss_func} \n '
                   f'Epochs: lr: {lr_encoder}, {encoder_param_name}: {encoder_param}'
                   f', emb_size: {encoder_output_dim}')
         plt.grid()
+        plt.legend()
         plt.savefig(r'./figs/' + save_name + '.jpeg', bbox_inches='tight')
         plt.show()
         plt.close()
     elif type == 'classifier':
-        xaxis = np.arange(1, record.shape[1] + 1)
-        plt.plot(xaxis[::plot_every], record[0, ::plot_every], color_group[0], label='tr loss')
+        xaxis = np.arange(1, record.shape[1] +1)
+        plt.plot(xaxis[::plot_every], record[0, ::plot_every], color_group[0], label='train loss')
         if record[1, -1] != 0:
             plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label='val loss')
         plt.xlabel('epochs')
