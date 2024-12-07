@@ -104,6 +104,7 @@ class Tool_Knowledge_transfer_class:
         truth = self._assign_labels_to_data(encoded_source, new_object_list)
         split_dict = train_test_split_by_trials(source_data=encoded_source, truth_source=truth,
                                                 trial_list=trail_list, trial_val_portion=trial_val_portion)
+
         logging.debug(f"train_truth: \n      {split_dict['truth_source_train']}")
         if trial_val_portion > 0:
             split_dict['truth_source_val'] = split_dict['truth_source_val'].reshape(-1)
@@ -115,53 +116,75 @@ class Tool_Knowledge_transfer_class:
     def train_classifier(self, Encoder, behavior_list=configs.behavior_list, trail_list=configs.trail_list,
                          new_object_list=configs.new_object_list, modality_list=configs.modality_list,
                          source_tool_list=configs.source_tool_list, lr_clf=configs.lr_classifier,
+                         early_stop_patience=configs.early_stop_patience_clf,
                          epoch_classifier=configs.epoch_classifier, encoder_output_dim=configs.encoder_output_dim,
                          trial_val_portion=configs.trial_val_portion, plot_learning=True):
         configs.set_torch_seed()
-        loss_record = np.zeros([2, epoch_classifier])
         logging.debug(f"➡️ train_classifier..")
-
-        train_encoded_source, val_encoded_source, train_truth_flat, val_truth_flat = self._prepare_data_classifier(
+        print(f"trial_val_portion: {trial_val_portion}")
+        (train_encoded_source, val_encoded_source,
+         train_truth_flat, val_truth_flat) = self._prepare_data_classifier(
             behavior_list=behavior_list, source_tool_list=source_tool_list, new_object_list=new_object_list,
             modality_list=modality_list, trail_list=trail_list, Encoder=Encoder, trial_val_portion=trial_val_portion)
+
         Classifier = model.classifier(encoder_output_dim, len(new_object_list)).to(configs.device)
-
         optimizer = optim.AdamW(Classifier.parameters(), lr=lr_clf)
-
-        for i in range(epoch_classifier):
+        loss_record = np.zeros([2, epoch_classifier])
+        best_loss_val = np.inf
+        prev_loss_val = np.inf
+        best_clf = copy.deepcopy(Classifier)
+        patience_counter = 0
+        for epoch in range(epoch_classifier):
             pred_tr = Classifier(train_encoded_source)
             pred_flat_tr = pred_tr.view(-1, len(new_object_list))  # (num_data, num_class)
             loss_tr = self.CEloss(pred_flat_tr, train_truth_flat)
-            loss_record[0, i] = loss_tr.detach().cpu().numpy()
+            loss_record[0, epoch] = loss_tr.detach().cpu().numpy()
 
             if trial_val_portion > 0:
                 with torch.no_grad():
                     pred_val = Classifier(val_encoded_source)
                     pred_flat_val = pred_val.view(-1, len(new_object_list))
                     loss_val = self.CEloss(pred_flat_val, val_truth_flat)
-                    loss_record[1, i] = loss_val.detach().cpu().numpy()
+                    loss_record[1, epoch] = loss_val.detach().cpu().numpy()
 
             optimizer.zero_grad()
             loss_tr.backward()
             optimizer.step()
 
-            if (i + 1) % 500 == 0:
+            if (epoch + 1) % 500 == 0:
                 pred_label = torch.argmax(pred_flat_tr, dim=-1)
                 correct_num = torch.sum(pred_label == train_truth_flat)
                 accuracy_train = correct_num / len(train_truth_flat)
 
-                logging.info(f"epoch {i + 1}/{epoch_classifier}, train loss: {loss_tr.item():.4f}, "
+                logging.info(f"epoch {epoch + 1}/{epoch_classifier}, train loss: {loss_tr.item():.4f}, "
                              f"train accuracy: {accuracy_train.item() * 100 :.2f}%, "
                              f"random guess accuracy: {100 / len(new_object_list):.2f}%")
                 if trial_val_portion > 0:
                     pred_label = torch.argmax(pred_flat_val, dim=-1)
                     correct_num = torch.sum(pred_label == val_truth_flat)
                     accuracy_val = correct_num / len(val_truth_flat)
-
                     logging.info(
-                        f"epoch {i + 1}/{epoch_classifier}, val loss: {loss_val.item():.4f}, "
+                        f"epoch {epoch + 1}/{epoch_classifier}, val loss: {loss_val.item():.4f}, "
                         f"val accuracy: {accuracy_val.item() * 100 :.2f}%, "
                         f"random guess accuracy: {100 / len(new_object_list):.2f}%")
+
+            if trial_val_portion > 0:  # cross validation
+                if loss_val < best_loss_val:  # save best model with best val loss
+                    best_loss_val = loss_val
+                    best_clf = copy.deepcopy(Classifier)  # deep copy the model at this time
+                else:
+                    if epoch + 1 == epoch_classifier:  # last epoch, take the best model
+                        Classifier = best_clf
+                if early_stop_patience is not None:  # compare previous loss with current loss
+                    patience_counter = 0 if loss_val < prev_loss_val else patience_counter + 1
+                    prev_loss_val = loss_val  # for the next epoch
+                    if patience_counter >= early_stop_patience:
+                        logging.debug(f"Early stopping triggered at epoch {epoch + 1}. "
+                                      f"Best validation loss: {best_loss_val}")
+                        Classifier = best_clf  # restore the best encoder
+                        loss_record = loss_record[:, :epoch + 1]
+                        break  # stop training
+
         if plot_learning:
             plot_learning_progression(record=loss_record, type='classifier',
                                       lr_classifier=lr_clf, encoder_output_dim=encoder_output_dim,
@@ -206,10 +229,10 @@ class Tool_Knowledge_transfer_class:
             return accuracy_test
 
     def train_encoder(self, behavior_list=configs.behavior_list,
-                      early_stop_patience=configs.early_stop_patience, trial_val_portion=configs.trial_val_portion,
                       source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
                       old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
                       modality_list=configs.modality_list, trail_list=configs.enc_trail_list, lr_en=configs.lr_encoder,
+                      early_stop_patience=configs.early_stop_patience_enc, trial_val_portion=configs.trial_val_portion,
                       TL_margin=configs.TL_margin, encoder_output_dim=configs.encoder_output_dim,
                       sincere_tem=configs.sincere_temp, epoch_encoder=configs.epoch_encoder,
                       pairs_per_batch_per_object=configs.pairs_per_batch_per_object, plot_learning=True):
@@ -252,7 +275,6 @@ class Tool_Knowledge_transfer_class:
         # TODO: why is sincere's val loss lower than train?
         #   why is TL so unstable?
         best_loss_val = np.inf
-        prev_loss_val = np.inf
         best_enc = copy.deepcopy(Encoder)
         patience_counter = 0
         wind_idx = 1
@@ -287,22 +309,21 @@ class Tool_Knowledge_transfer_class:
             optimizer.step()
             if (epoch + 1) % 500 == 0:
                 logging.info(f"epoch {epoch + 1}/{epoch_encoder}, loss: {loss.item():.4f}")
-            # TODO: why is TL so noisy? (sampling problem?)
-            #  why is SINCERE's val better than train?
 
             if trial_val_portion > 0:  # cross validation
                 if loss_val < best_loss_val:  # save best model with best val loss
                     best_loss_val = loss_val
                     best_enc = copy.deepcopy(Encoder)  # deep copy the model at this time
-                if epoch + 1 == epoch_encoder:  # last epoch, take the best model
-                    Encoder = best_enc
+                else:
+                    if epoch + 1 == epoch_encoder:  # last epoch, take the best model
+                        Encoder = best_enc
                 # early stopping by smoothed windows, not epochs
                 if early_stop_patience is not None:
                     window_size = configs.smooth_wind_size
                     if epoch + 1 >= window_size * 2 and (epoch + 1) % window_size == 0:
                         wind_idx += 1
-                        wind_prev = np.mean(loss_record[1, window_size * (wind_idx-2):window_size*(wind_idx-1)])
-                        wind_curr = np.mean(loss_record[1, window_size*(wind_idx-1):window_size*wind_idx])
+                        wind_prev = np.mean(loss_record[1, window_size * (wind_idx - 2):window_size * (wind_idx - 1)])
+                        wind_curr = np.mean(loss_record[1, window_size * (wind_idx - 1):window_size * wind_idx])
                         if wind_prev <= wind_curr + configs.tolerance:
                             patience_counter += 1
                         else:
@@ -322,6 +343,7 @@ class Tool_Knowledge_transfer_class:
                                       lr_encoder=lr_en, save_name=f'encoder_{self.encoder_loss_fuc}')
         self.trained_encoder = Encoder
         return Encoder
+
 
     def sincere_loss_fn(self, source_data, truth_source, target_data, truth_target,
                         Encoder, temperature, encoder_output_dim) -> torch.Tensor:

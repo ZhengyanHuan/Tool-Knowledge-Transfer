@@ -420,33 +420,36 @@ def _viz_classifier_boundary_on_2d_embeddings(
     plt.show()
 
 
-def smooth_1d_array(array, window_size=configs.smooth_wind_size):
+def smooth_line(line, window_size=configs.smooth_wind_size):
+    """ for unstable learning progression, smooth the line"""
     # Define the smoothing kernel
     kernel = np.ones(window_size) / window_size
 
-    # Apply padding to the array (reflect padding here)
-    padded_array = np.pad(array, pad_width=(window_size // 2,), mode='reflect')
+    # # Apply padding to the line (reflect padding here)
+    # padded_line = np.pad(line, pad_width=(window_size // 2,), mode='reflect')
 
     # Perform the convolution
-    smoothed_array = np.convolve(array, kernel, mode='valid')
-    return np.hstack([array[:window_size - 1], smoothed_array])
+    smoothed_line = np.convolve(line, kernel, mode='valid')
+    smoothed_line = np.hstack([line[:window_size - 1], smoothed_line])  # fill the beginning part with orig value
+    return smoothed_line
 
 
-def window_line(array, window_size=configs.smooth_wind_size):
-    wind_array = []
+def window_line(line, window_size=configs.smooth_wind_size):
+    """ for unstable learning progression,  draw the line as non-overlapping sliding average windows"""
+    wind_line = []
     wind_idx = 0
-    for i in range(len(array)):
+    for i in range(len(line)):
         if i + 1 >= window_size and (i + 1) % window_size == 0:
             wind_idx += 1
-            if wind_idx*window_size <= len(array):
-                window_val = np.mean(array[window_size*(wind_idx-1):window_size * wind_idx])
-                wind_array.append([window_val] * window_size)
-    wind_array = np.hstack(wind_array)
-    gap = len(array) - len(wind_array)
+            if wind_idx*window_size <= len(line):
+                window_val = np.mean(line[window_size*(wind_idx-1):window_size * wind_idx])
+                wind_line.append([window_val] * window_size)
+    wind_line = np.hstack(wind_line)
+    gap = len(line) - len(wind_line)
     if gap > 0:
-        final_mean = [np.mean(array[window_size * wind_idx:])] * gap
-        wind_array = np.hstack([wind_array, final_mean])
-    return wind_array
+        final_mean = [np.mean(line[window_size * wind_idx:])] * gap
+        wind_line = np.hstack([wind_line, final_mean])
+    return wind_line
 
 
 def plot_learning_progression(record, type, TL_margin, loss_func, sincere_temp, lr_classifier, lr_encoder,

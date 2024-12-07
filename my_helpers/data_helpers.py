@@ -77,6 +77,7 @@ def train_test_split_by_trials(source_data, truth_source, target_data=None, trut
 
     else:
         configs.set_torch_seed()
+        # TODO: make tirla indes, and sample from that
         # Initialize data structures for train and validation sets
         source_data_train = np.empty_like(source_data[:, :, :, :num_tr_trials])
         source_data_val = np.empty_like(source_data[:, :, :, -num_val_trials:])
@@ -290,16 +291,17 @@ def select_context_for_experiment(
             exp_context_dict['clf_old_objs'] = []
 
     # ---- classifier source
-    if clf_exp_name == "assist":  # besides source, use new objects from assist tools to train clf
-        if "assist" in encoder_exp_name:
-            exp_context_dict['clf_source_tools'] = source_tool_list + assist_tool_list
-            exp_context_dict['clf_assist_tools'] = assist_tool_list
-
+    if clf_exp_name == "assist" and "assist" in encoder_exp_name:
+        # besides source, use new objects from assist tools to train clf
+        exp_context_dict['clf_source_tools'] = source_tool_list + assist_tool_list
+        exp_context_dict['clf_assist_tools'] = assist_tool_list
     # regardless of what clf_exp_name is
     if encoder_exp_name == "baseline1":
         exp_context_dict['clf_source_tools'] = target_tool_list
-    elif encoder_exp_name == "baseline2":  # regardless of what clf_exp_name is
+    elif encoder_exp_name == "baseline2":
         exp_context_dict['clf_source_tools'] = source_tool_list
+    elif encoder_exp_name == "baseline2-all":
+        exp_context_dict['clf_source_tools'] = source_tool_list + assist_tool_list
     elif encoder_exp_name == "all":
         exp_context_dict['clf_source_tools'] = source_tool_list + assist_tool_list
 

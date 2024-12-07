@@ -44,7 +44,7 @@ exp_pred_obj = "new"  # default, classifier only predicts new object
 viz_dataset = False
 retrain_encoder = False
 viz_share_space = False
-retrain_clr = False
+retrain_clr = True
 viz_share_space_l2_norm = False
 
 ########## for cross validation ##########
@@ -54,8 +54,10 @@ TL_margin = 1  # TL alpha
 
 ########## default hyper params ##########
 # total patience is early_stop_patience*smooth_wind_size epochs
-early_stop_patience = 3
+early_stop_patience_enc = 3
 smooth_wind_size = 50  # check progression in every 50 epochs
+
+early_stop_patience_clf = 100
 tolerance = 1e-3
 
 # encoder parameters

@@ -59,7 +59,6 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                     target_tool_list=target_tool_list, old_object_list=train_list, new_object_list=val_list,
                     modality_list=modality_list, trail_list=trail_list, plot_learning=plot_learning,
                     early_stop_patience=50, trial_split=enc_trial_split)
-                # old list is all the list except val_list+test_list, i.e., train_list TODO: DISCUSS
                 torch.save(Encoder.state_dict(), './saved_model/encoder/' + encoder_pt_name)
                 logging.info(f"Time used for encoder training: {round((time.time() - encoder_time) // 60)} min "
                              f"{(time.time() - encoder_time) % 60:.1f} sec.")
@@ -95,7 +94,7 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                                        modality_list=modality_list, trail_list=trail_list)
                 acc_sum += val_acc
                 logging.info(f"👉 fold {fold_idx + 1}/{number_of_folds} val_obj: {val_list} \n"
-                             f"TL margin: {alpha}, lr: {lr_en}, test accuracy: {val_acc * 100:.2f}%")
+                             f"TL margin: {alpha}, lr: {lr_en}, val accuracy: {val_acc * 100:.2f}%")
 
             logging.info(f"☑️ total time used for this cv: {round((time.time() - cv_start_time) // 60)} min "
                          f"{(time.time() - cv_start_time) % 60:.1f} sec.")
