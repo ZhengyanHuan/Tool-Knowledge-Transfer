@@ -89,9 +89,9 @@ def train_TL_k_fold(myclass: Tool_Knowledge_transfer_class, train_val_list: List
                 #                                       map_location=torch.device(configs.device)))
 
                 logging.info(f"👉 Evaluating the classifier...")
-                val_acc = myclass.eval(Encoder=Encoder, Classifier=Classifier, behavior_list=behavior_list,
-                                       tool_list=target_tool_list, new_object_list=val_list,
-                                       modality_list=modality_list, trail_list=trail_list)
+                val_acc = myclass.eval_classifier(Encoder=Encoder, Classifier=Classifier, behavior_list=behavior_list,
+                                                  tool_list=target_tool_list, new_object_list=val_list,
+                                                  modality_list=modality_list, trail_list=trail_list)
                 acc_sum += val_acc
                 logging.info(f"👉 fold {fold_idx + 1}/{number_of_folds} val_obj: {val_list} \n"
                              f"TL margin: {alpha}, lr: {lr_en}, val accuracy: {val_acc * 100:.2f}%")
@@ -139,8 +139,8 @@ def train_TL_fixed_param(myclass: Tool_Knowledge_transfer_class, train_val_obj_l
     #                                       map_location=torch.device(configs.device)))
 
     logging.info(f"Evaluating the classifier...")
-    test_acc, _, pred_label_target = myclass.eval(Encoder=Encoder, Classifier=Classifier, return_pred=True,
-                                                  new_object_list=test_obj_list, tool_list=target_tool_list)
+    test_acc, _, pred_label_target = myclass.eval_classifier(Encoder=Encoder, Classifier=Classifier, return_pred=True,
+                                                             new_object_list=test_obj_list, tool_list=target_tool_list)
 
     logging.info(f"✅✅✅ test accuracy is: {test_acc * 100:.1f}%, "
                  f"random guess accuracy: {100/len(test_obj_list):.2f}%")

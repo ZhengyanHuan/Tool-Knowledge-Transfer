@@ -18,7 +18,7 @@ old_object_list = ['cane-sugar', 'chia-seed', 'empty', 'glass-bead', 'plastic-be
                    'salt', 'kidney-bean', 'styrofoam-bead', 'water', 'wooden-button']
 new_object_list = ['chickpea', 'detergent', 'metal-nut-bolt', 'split-green-pea', 'wheat']
 all_object_list = old_object_list + new_object_list
-loss_func = "sincere"  # "TL" for triplet loss or "sincere"
+loss_func = "TL"  # "TL" for triplet loss or "sincere"
 data_name = 'audio_16kHz_token_down16_beh3.bin'  # downsized and flattened token vectors from behavior 3, len=744
 # data_name =  "dataset_discretized.bin"
 
@@ -42,7 +42,7 @@ exp_pred_obj = "new"  # default, classifier only predicts new object
 
 ####### options by main.py running order
 viz_dataset = False
-retrain_encoder = False
+retrain_encoder = True
 viz_share_space = False
 retrain_clr = True
 viz_share_space_l2_norm = False
@@ -53,11 +53,11 @@ lr_encoder = 1e-3  # encoder lr
 TL_margin = 1  # TL alpha
 
 ########## default hyper params ##########
-# total patience is early_stop_patience*smooth_wind_size epochs
-early_stop_patience_enc = 3
+# total epoch patience for encoder is early_stop_patience_enc * smooth_wind_size epochs
+early_stop_patience_enc = 3  # None or int
 smooth_wind_size = 50  # check progression in every 50 epochs
 
-early_stop_patience_clf = 100
+early_stop_patience_clf = 100  # None or int
 tolerance = 1e-3
 
 # encoder parameters

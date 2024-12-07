@@ -1,6 +1,4 @@
-import copy
 import logging
-import random
 from typing import Tuple, List, Union, Dict
 
 import numpy as np
@@ -309,3 +307,23 @@ def select_context_for_experiment(
     # so far, always test on the target tool
 
     return exp_context_dict
+
+
+def fill_missing_params(hyparams: dict, param_model="classifier"):
+    """ fill up the missing parameters using values from configs """
+    if hyparams is None:
+        hyparams = {}
+
+    if param_model == "classifier":
+        param_names = ["early_stop_patience_clf", "trial_val_portion", "encoder_output_dim",
+                       "epoch_classifier", 'lr_classifier']
+    elif param_model == "encoder":
+        param_names = ["early_stop_patience_enc", "trial_val_portion", "TL_margin", "encoder_output_dim",
+                       "sincere_temp", "epoch_encoder", "pairs_per_batch_per_object", 'lr_encoder']
+    else:
+        raise Exception(f"param_model {param_model} not available")
+
+    for name in param_names:
+        if name not in hyparams.keys():
+            hyparams[name] = getattr(configs, name)
+    return hyparams

@@ -1,10 +1,7 @@
 import logging
 import os
-import random
-import sys
 import time
 
-import numpy as np
 import torch
 
 import configs
@@ -88,7 +85,8 @@ if configs.retrain_clr:
     Encoder.load_state_dict(torch.load('./saved_model/encoder/' + configs.encoder_pt_name,
                                        map_location=torch.device(configs.device)))
     val_portion = 0 if context_dict['clf_assist_tools'] else configs.trial_val_portion  # allow overfit on assist data
-    myclassifier = myclass.train_classifier(Encoder=Encoder, trial_val_portion=val_portion,
+    hyparams = {'trial_val_portion': val_portion}
+    myclassifier = myclass.train_classifier(Encoder=Encoder, hyparams=hyparams,
                                             source_tool_list=context_dict['clf_source_tools'],
                                             new_object_list=context_dict['clf_new_objs'],
                                             trail_list=context_dict['enc_train_trail_list'])
@@ -107,9 +105,9 @@ Classifier = model.classifier(output_size=len(context_dict['clf_new_objs'])).to(
 Classifier.load_state_dict(
     torch.load('./saved_model/classifier/' + configs.clf_pt_name, map_location=torch.device(configs.device)))
 
-accuracy, _, pred_label_target = myclass.eval(Encoder=Encoder, Classifier=Classifier,  # evaluate target tool
-                                              tool_list=context_dict['clf_target_tools'], return_pred=True,
-                                              new_object_list=context_dict['clf_new_objs'])
+accuracy, _, pred_label_target = myclass.eval_classifier(Encoder=Encoder, Classifier=Classifier,  # evaluate target tool
+                                                         tool_list=context_dict['clf_target_tools'], return_pred=True,
+                                                         new_object_list=context_dict['clf_new_objs'])
 main_logger.info(f"test accuracy: {accuracy * 100:.2f}%")
 main_logger.info(f"⏱️total time used: {round((time.time() - start_time) // 60)} "
                  f"min {(time.time() - start_time) % 60:.1f} sec.")
