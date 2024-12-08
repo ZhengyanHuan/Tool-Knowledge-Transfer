@@ -300,12 +300,20 @@ class Tool_Knowledge_transfer_class:
                                              splits['target_data_train'], splits['truth_target_train'],
                                              Encoder, temperature=hyparams['sincere_temp'],
                                              encoder_output_dim=hyparams['encoder_output_dim'])
+                # print(f"loss: {loss}")
+                # print(
+                #     f"splits['source_data_train']: {splits['source_data_train'].shape}, {splits['truth_source_train'].shape} ")
+                # print(f"{splits['target_data_train'], splits['truth_target_train']}")
                 if hyparams['trial_val_portion'] > 0:
                     with torch.no_grad():
                         loss_val = self._sincere_loss_fn(splits['source_data_val'], splits['truth_source_val'],
                                                          splits['target_data_val'], splits['truth_target_val'],
                                                          Encoder, temperature=hyparams['sincere_temp'],
                                                          encoder_output_dim=hyparams['encoder_output_dim'])
+                        # print(f"loss_val: {loss_val}")
+                        # print(f"splits['source_data_val']: {splits['source_data_val'].shape}, { splits['truth_source_val'].shape} ")
+                        # print(f"{splits['target_data_val'], splits['truth_target_val']}")
+                        # sys.exit()
             else:
                 raise Exception(f"{self.encoder_loss_fuc} not available.")
             loss_record[0, epoch] = loss.detach().cpu().numpy()
@@ -356,6 +364,8 @@ class Tool_Knowledge_transfer_class:
         all_embeds_norm, all_labels = self._make_encoder_projections(
             Encoder=Encoder, source_data=source_data, target_data=target_data, truth_source=truth_source,
             truth_target=truth_target, encoder_output_dim=encoder_output_dim)
+        # print(f"all_embeds_norm: {all_embeds_norm.shape}, {all_labels}")
+
         sincere_loss = SINCERELoss(temperature)
         if len(all_labels.shape) > 1:
             all_labels = torch.squeeze(all_labels)  # labels (torch.tensor): (B,)
