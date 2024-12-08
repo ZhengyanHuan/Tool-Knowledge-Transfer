@@ -10,7 +10,7 @@ assist_tool_list = ['wooden-fork', 'metal-whisk', "wooden-chopstick", "plastic-k
 target_tool_list = ['metal-scissor']  # only one target tool
 all_tool_list = source_tool_list + assist_tool_list + target_tool_list
 trail_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-enc_trail_list = [0, 1, 2, 3, 4, 5, 6, 7]  # used for baseline
+enc_trial_list = [0, 1, 2, 3, 4, 5, 6, 7]  # for baseline1, use the remaining trials for validation
 trial_val_portion = 0.2
 randomize_trials = True
 
@@ -22,7 +22,9 @@ loss_func = "TL"  # "TL" for triplet loss or "sincere"
 data_name = 'audio_16kHz_token_down16_beh3.bin'  # downsized and flattened token vectors from behavior 3, len=744
 # data_name =  "dataset_discretized.bin"
 
+enc_pt_folder = './saved_model/encoder/'
 encoder_pt_name = f"myencoder_{loss_func}.pt"
+clf_pt_folder = './saved_model/classifier/'
 clf_pt_name = f"myclassifier_{loss_func}.pt"
 
 ##### context selection for experiments
@@ -41,38 +43,45 @@ exp_pred_obj = "new"  # default, classifier only predicts new object
 # exp_pred_obj = "all"
 
 ####### options by main.py running order
-viz_dataset = False
 retrain_encoder = True
-viz_share_space = False
-retrain_clr = True
-viz_share_space_l2_norm = False
+retrain_clf = True
+save_temp_model = True
+
+# viz:
+viz_dataset = True
+viz_share_space = True
+viz_decision_boundary = True
+plot_learning = True
+save_fig = True
+viz_l2_norm = False  # viz l2 normed data in 2d space
 
 ########## for cross validation ##########
 cross_validate = False
-lr_encoder = 1e-3  # encoder lr
-TL_margin = 1  # TL alpha
+lr_encoder = 1e-2  # encoder lr
+TL_margin = 0.5  # TL alpha
 
 ########## default hyper params ##########
 # total epoch patience for encoder is early_stop_patience_enc * smooth_wind_size epochs
-early_stop_patience_enc = 3  # None or int
-smooth_wind_size = 50  # check progression in every 50 epochs
+early_stop_patience_enc = 2  # None or int
+smooth_wind_size = 10  # check progression in every <this much> epochs
 
 early_stop_patience_clf = 100  # None or int
-tolerance = 1e-3
+tolerance = 5e-3
+clf_tolerance = 1e-4
 
 # encoder parameters
-encoder_hidden_dim = 32
-encoder_output_dim = 16  # 2 makes it easy to visualize decision boundary
+encoder_hidden_dim = 256
+encoder_output_dim = 128  # 2 makes it easy to visualize decision boundary
 epoch_encoder = 2000
 
 # TL loss parameters
-pairs_per_batch_per_object = 10
+pairs_per_batch_per_object = 300   # smaller value fluctuates the loss
 
 # SINCERE loss parameters
-sincere_temp = 0.5
+sincere_temp = 0.1
 
 # classifier parameters
-epoch_classifier = 3000
+epoch_classifier = 5000    # we have early stopping now
 lr_classifier = 1e-2
 
 #################################################

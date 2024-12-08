@@ -3,6 +3,7 @@ import copy
 import logging
 import os
 import pickle
+import sys
 from typing import Union, Tuple
 
 import numpy as np
@@ -36,8 +37,9 @@ class Tool_Knowledge_transfer_class:
         self.data_dict = robot
         sanity_check_data_labels(self.data_dict)
         self.encoder_loss_fuc = encoder_loss_fuc
-        logging.info(f"Encoder loss function: {encoder_loss_fuc}")
         self.enc_l2_norm = self._decide_l2_norm()
+        logging.info(f"Encoder loss function: {encoder_loss_fuc}")
+        logging.info(f"Encoder l2 norm: {self.enc_l2_norm}")
 
         #### load names
         data_file_path = os.sep.join([r'data', 'dataset_metadata.bin'])
@@ -83,11 +85,10 @@ class Tool_Knowledge_transfer_class:
         :return:
         data shape: [n_behavior, n_tools, num_objects, n_trials, emb_dim],
         label shape: [n_behavior*n_tools*num_objects&n_trials, ]
-
         """
         logging.debug(f"➡️ prepare_data_classifier..")
 
-        logging.debug(f"get source data for classifier from {new_object_list}")
+        logging.debug(f"get source data for classifier from {source_tool_list}: {new_object_list}")
         source_data = self.get_data(behavior_list, source_tool_list, modality_list, new_object_list, trail_list)
         with torch.no_grad():
             Encoder.l2_norm = self.enc_l2_norm
@@ -106,7 +107,7 @@ class Tool_Knowledge_transfer_class:
 
     def train_classifier(self, Encoder, behavior_list=configs.behavior_list, trail_list=configs.trail_list,
                          new_object_list=configs.new_object_list, modality_list=configs.modality_list,
-                         source_tool_list=configs.source_tool_list, hyparams=None, plot_learning=True):
+                         source_tool_list=configs.source_tool_list, hyparams=None, plot_learning=True, save_fig=True):
         configs.set_torch_seed()
         logging.debug(f"➡️ train_classifier..")
         hyparams = fill_missing_params(hyparams=hyparams, param_model="classifier")
@@ -121,7 +122,9 @@ class Tool_Knowledge_transfer_class:
         loss_record = np.zeros([2, hyparams['epoch_classifier']])
         best_loss_val = np.inf
         prev_loss_val = np.inf
+        prev_loss_tr = np.inf
         best_clf = copy.deepcopy(Classifier)
+        best_epoch = 0
         patience_counter = 0
         for epoch in range(hyparams['epoch_classifier']):
             pred_tr = Classifier(train_encoded_source)
@@ -145,39 +148,51 @@ class Tool_Knowledge_transfer_class:
                 correct_num = torch.sum(pred_label == train_truth_flat)
                 accuracy_train = correct_num / len(train_truth_flat)
 
-                logging.info(f"epoch {epoch + 1}/{hyparams['epoch_classifier']}, train loss: {loss_tr.item():.4f}, "
-                             f"train accuracy: {accuracy_train.item() * 100 :.2f}%, "
-                             f"random guess accuracy: {100 / len(new_object_list):.2f}%")
                 if hyparams['trial_val_portion'] > 0:
                     pred_label = torch.argmax(pred_flat_val, dim=-1)
                     correct_num = torch.sum(pred_label == val_truth_flat)
                     accuracy_val = correct_num / len(val_truth_flat)
                     logging.info(
-                        f"epoch {epoch + 1}/{hyparams['epoch_classifier']}, val loss: {loss_val.item():.4f}, "
-                        f"val accuracy: {accuracy_val.item() * 100 :.2f}%, "
+                        f"epoch {epoch + 1}/{hyparams['epoch_classifier']}, train loss: {loss_tr.item():.4f}, "
+                        f"train accuracy: {accuracy_train.item() * 100 :.2f}%, "
+                        f"val loss: {loss_val.item():.4f}, val accuracy: {accuracy_val.item() * 100 :.2f}%, "
                         f"random guess accuracy: {100 / len(new_object_list):.2f}%")
+                else:
+                    logging.info(f"epoch {epoch + 1}/{hyparams['epoch_classifier']}, train loss: {loss_tr.item():.4f}, "
+                                 f"train accuracy: {accuracy_train.item() * 100 :.2f}%, val accuracy: None,"
+                                 f"random guess accuracy: {100 / len(new_object_list):.2f}%")
 
             if hyparams['trial_val_portion'] > 0:  # cross validation
                 if loss_val < best_loss_val:  # save best model with best val loss
                     best_loss_val = loss_val
                     best_clf = copy.deepcopy(Classifier)  # deep copy the model at this time
+                    best_epoch = epoch
                 else:
                     if epoch + 1 == hyparams['epoch_classifier']:  # last epoch, take the best model
                         Classifier = best_clf
                 if hyparams['early_stop_patience_clf'] is not None:  # compare previous loss with current loss
-                    patience_counter = 0 if loss_val + configs.tolerance <= prev_loss_val else patience_counter + 1
+                    patience_counter = 0 if loss_val + hyparams['clf_tolerance'] <= prev_loss_val else patience_counter + 1
                     prev_loss_val = loss_val  # for the next epoch
                     if patience_counter >= hyparams['early_stop_patience_clf']:
                         logging.debug(f"Early stopping triggered at epoch {epoch + 1}. "
-                                      f"Best validation loss: {best_loss_val}")
+                                      f"Best validation loss: {best_loss_val}, best epoch: {best_epoch + 1}")
                         Classifier = best_clf  # restore the best encoder
+                        loss_record = loss_record[:, :epoch + 1]
+                        break  # stop training
+            else:  # stop by training loss
+                if hyparams['early_stop_patience_clf'] is not None:  # compare previous loss with current loss
+                    patience_counter = 0 if loss_tr + hyparams['clf_tolerance'] <= prev_loss_tr else patience_counter + 1
+                    prev_loss_tr = loss_tr  # for the next epoch
+                    if patience_counter >= hyparams['early_stop_patience_clf']:
+                        logging.debug(f"Early stopping triggered at epoch {epoch + 1}.")
                         loss_record = loss_record[:, :epoch + 1]
                         break  # stop training
 
         if plot_learning:
             plot_learning_progression(record=loss_record, type='classifier', lr_classifier=hyparams['lr_classifier'],
                                       encoder_output_dim=hyparams['encoder_output_dim'],
-                                      loss_func=self.encoder_loss_fuc, TL_margin=None, sincere_temp=None,
+                                      save_fig=save_fig, loss_func=self.encoder_loss_fuc,
+                                      encoder_hidden_dim=None, TL_margin=None, sincere_temp=None,
                                       lr_encoder=None, save_name=f'classifier_{self.encoder_loss_fuc}')
         self.trained_clf = Classifier
 
@@ -220,7 +235,7 @@ class Tool_Knowledge_transfer_class:
 
     def train_encoder(self, source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
                       old_object_list=configs.old_object_list, new_object_list=configs.new_object_list,
-                      modality_list=configs.modality_list, trail_list=configs.enc_trail_list,
+                      modality_list=configs.modality_list, trail_list=configs.enc_trial_list,
                       behavior_list=configs.behavior_list, hyparams=None, plot_learning=True):
         """
         :param new_object_list: list of objects that only source tool has
@@ -265,6 +280,7 @@ class Tool_Knowledge_transfer_class:
         #   why is TL so unstable?
         best_loss_val = np.inf
         best_enc = copy.deepcopy(Encoder)
+        best_epoch = 0
         patience_counter = 0
         wind_idx = 1
         for epoch in range(hyparams['epoch_encoder']):
@@ -306,21 +322,22 @@ class Tool_Knowledge_transfer_class:
                 if loss_val < best_loss_val:  # save best model with best val loss
                     best_loss_val = loss_val
                     best_enc = copy.deepcopy(Encoder)  # deep copy the model at this time
+                    best_epoch = epoch
                 else:
                     if epoch + 1 == hyparams['epoch_encoder']:  # last epoch, take the best model
                         Encoder = best_enc
                 # early stopping by smoothed windows, not epochs
                 if hyparams['early_stop_patience_enc'] is not None:
-                    window_size = configs.smooth_wind_size
+                    window_size = hyparams['smooth_wind_size']
                     if epoch + 1 >= window_size * 2 and (epoch + 1) % window_size == 0:
                         wind_idx += 1  # compare the last two windows
                         wind_prev = np.mean(loss_record[1, window_size * (wind_idx - 2):window_size * (wind_idx - 1)])
                         wind_curr = np.mean(loss_record[1, window_size * (wind_idx - 1):window_size * wind_idx])
-                        patience_counter = 0 if wind_curr + configs.tolerance <= wind_prev else patience_counter+1
-                        print(f"epoch: {epoch + 1}, patience_counter: {patience_counter}")
+                        patience_counter = 0 if wind_curr + hyparams['tolerance'] <= wind_prev else patience_counter + 1
+                        logging.debug(f"epoch: {epoch + 1}, patience_counter: {patience_counter}")
                     if patience_counter >= hyparams['early_stop_patience_enc']:
                         logging.debug(f"Early stopping triggered at epoch {epoch + 1}. "
-                                      f"Best validation loss: {best_loss_val}")
+                                      f"Best validation loss: {best_loss_val}, best epoch: {best_epoch + 1}")
                         Encoder = best_enc  # restore the best encoder
                         loss_record = loss_record[:, :epoch + 1]
                         break  # stop training
@@ -328,6 +345,7 @@ class Tool_Knowledge_transfer_class:
         if plot_learning:
             plot_learning_progression(record=loss_record, type='encoder', loss_func=self.encoder_loss_fuc,
                                       lr_classifier=None, encoder_output_dim=hyparams['encoder_output_dim'],
+                                      encoder_hidden_dim=hyparams['encoder_hidden_dim'],
                                       TL_margin=hyparams['TL_margin'], sincere_temp=hyparams['sincere_temp'],
                                       lr_encoder=hyparams['lr_encoder'], save_name=f'encoder_{self.encoder_loss_fuc}')
         self.trained_encoder = Encoder
@@ -407,9 +425,7 @@ class Tool_Knowledge_transfer_class:
         loss = torch.mean(d)
         return loss
 
-    def get_data(self, behavior_list=configs.behavior_list, tool_list=configs.all_tool_list,
-                 modality_list=configs.modality_list, object_list=configs.all_object_list,
-                 trail_list=configs.trail_list, get_labels=False) \
+    def get_data(self, behavior_list, tool_list, modality_list, object_list, trail_list, get_labels=False) \
             -> Union[None, torch.Tensor, Tuple[None, None], Tuple[torch.Tensor, torch.Tensor]]:
         """
         :return:

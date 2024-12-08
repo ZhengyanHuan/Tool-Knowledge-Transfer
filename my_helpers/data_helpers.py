@@ -1,3 +1,5 @@
+import copy
+import inspect
 import logging
 from typing import Tuple, List, Union, Dict
 
@@ -39,6 +41,8 @@ def train_test_split_by_trials(source_data, truth_source, target_data=None, trut
                                trial_list=configs.trail_list, trial_val_portion=0.2,
                                random_trials=configs.randomize_trials):
     """target data should only have old objects, object dimension is order by old_obj_list to new_obj_list"""
+    logging.debug(f"➡️train_test_split_by_trials... trial_list: {trial_list},"
+                  f"trial_val_portion: {trial_val_portion}, random_trials: {random_trials}")
     if trial_val_portion == 0:
         return {
             "source_data_train": source_data,
@@ -211,7 +215,7 @@ def select_context_for_experiment(
         source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
         assist_tool_list=configs.assist_tool_list, old_object_list=configs.old_object_list,
         new_object_list=configs.new_object_list, trial_list=configs.trail_list,
-        enc_trail_list=configs.enc_trail_list) -> Dict[str, List[str]]:
+        enc_trial_list=configs.enc_trial_list) -> Dict[str, List[str]]:
     assert encoder_exp_name in ["default", "all", "assist", "assist_no-target", "baseline1", "baseline2",
                                 "baseline2-all"]
     assert clf_exp_name in ["default", "assist"]
@@ -230,6 +234,7 @@ def select_context_for_experiment(
         'enc_old_objs': old_object_list,  # share objects for source and target
         'enc_new_objs': new_object_list,  # objects only for source
         'enc_train_trail_list': trial_list,
+        'clf_val_trial_list': trial_list,
 
         'clf_source_tools': source_tool_list,  # the tool(s) used to train the clf
         'clf_target_tools': target_tool_list,  # the tool used to test the clf
@@ -245,8 +250,8 @@ def select_context_for_experiment(
     if encoder_exp_name == "all":  # use all other tools to train encoder
         exp_context_dict['enc_source_tools'] = source_tool_list + assist_tool_list
         exp_context_dict['actual_assist_tools'] = assist_tool_list
-    elif encoder_exp_name in ["assist",
-                              "assist_no-target"]:  # besides source, use old object from assist tools to train encoder
+    elif encoder_exp_name in ["assist", "assist_no-target"]:
+        # besides source, use old object from assist tools to train encoder
         exp_context_dict['actual_assist_tools'] = assist_tool_list
         exp_context_dict['enc_assist_tools'] = assist_tool_list
         # balance the source tool and target tool number, in case assist and target outnumber source
@@ -257,7 +262,8 @@ def select_context_for_experiment(
     elif encoder_exp_name == "baseline1":  # train on target tool only
         exp_context_dict['actual_source_tools'] = target_tool_list
         exp_context_dict['enc_source_tools'] = target_tool_list
-        exp_context_dict['enc_train_trail_list'] = enc_trail_list
+        exp_context_dict['enc_train_trail_list'] = enc_trial_list
+        exp_context_dict['clf_val_trial_list'] = list(set(configs.trail_list) - set(enc_trial_list))
     elif encoder_exp_name == "baseline2-all":  # train on all tools that are not target tool
         print(source_tool_list + assist_tool_list)
         exp_context_dict['actual_source_tools'] = source_tool_list + assist_tool_list
@@ -272,9 +278,6 @@ def select_context_for_experiment(
         # all objects for training encoder
         exp_context_dict['enc_new_objs'] = all_object_list
         exp_context_dict['enc_old_objs'] = []
-        # all objects for training and testing clf
-        exp_context_dict['clf_new_objs'] = all_object_list
-        exp_context_dict['clf_old_objs'] = []
     elif "baseline" in encoder_exp_name:  # no transfer, so there's no new object for encoder,
         exp_context_dict['enc_target_tools'] = []
         if exp_pred_obj == "new":
@@ -313,13 +316,18 @@ def fill_missing_params(hyparams: dict, param_model="classifier"):
     """ fill up the missing parameters using values from configs """
     if hyparams is None:
         hyparams = {}
+    overlap_list = ["trial_val_portion", "encoder_output_dim", 'encoder_hidden_dim', 'trial_val_portion',
+                    'randomize_trials', 'tolerance', 'smooth_wind_size']
+    clf_list = ["epoch_classifier", 'lr_classifier', "early_stop_patience_clf", 'clf_tolerance']
+    enc_list = ['encoder_hidden_dim', "epoch_encoder", 'lr_encoder', "early_stop_patience_enc",
+                "TL_margin", "sincere_temp", "pairs_per_batch_per_object"]
 
     if param_model == "classifier":
-        param_names = ["early_stop_patience_clf", "trial_val_portion", "encoder_output_dim",
-                       "epoch_classifier", 'lr_classifier']
+        param_names = overlap_list + clf_list
     elif param_model == "encoder":
-        param_names = ["early_stop_patience_enc", "trial_val_portion", "TL_margin", "encoder_output_dim",
-                       "sincere_temp", "epoch_encoder", "pairs_per_batch_per_object", 'lr_encoder']
+        param_names = overlap_list + enc_list
+    elif param_model == "both":
+        param_names = overlap_list + clf_list + enc_list
     else:
         raise Exception(f"param_model {param_model} not available")
 
@@ -327,3 +335,35 @@ def fill_missing_params(hyparams: dict, param_model="classifier"):
         if name not in hyparams.keys():
             hyparams[name] = getattr(configs, name)
     return hyparams
+
+
+def fill_missing_context(context_dict):
+    if context_dict is None:
+        context_dict = {}
+    context_names = ['behavior_list', 'modality_list', 'trail_list',
+                     'old_object_list', 'new_object_list', 'all_object_list',
+                     'source_tool_list', 'assist_tool_list', 'target_tool_list']
+    for name in context_names:
+        if name not in context_dict.keys():
+            context_dict[name] = getattr(configs, name)
+    return context_dict
+
+
+def fill_missing_pipeline_settings(pipeline_settings):
+    if pipeline_settings is None:
+        pipeline_settings = {}
+    setting_names = [
+        'encoder_exp_name', 'clf_exp_name', 'exp_pred_obj',  # experiment info
+        'save_temp_model', 'enc_pt_folder', 'clf_pt_folder', 'encoder_pt_name', 'clf_pt_name',  # save models
+        'retrain_encoder', 'retrain_clf',  # train models from scratch
+        'viz_dataset', 'viz_share_space', 'viz_l2_norm', 'viz_decision_boundary', 'plot_learning', 'save_fig'  # viz
+    ]
+    for name in setting_names:
+        if name not in pipeline_settings.keys():
+            pipeline_settings[name] = getattr(configs, name)
+    return pipeline_settings
+
+
+def filter_keys_by_func(param_dict, function):
+    explicit_args = inspect.signature(function).parameters.keys()
+    return copy.deepcopy({k: v for k, v in param_dict.items() if k in explicit_args})
