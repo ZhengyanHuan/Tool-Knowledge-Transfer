@@ -58,7 +58,7 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None,
              loss_func=configs.loss_func, source_tool_list=configs.source_tool_list,
              target_tool_list=configs.target_tool_list, assist_tool_list=configs.assist_tool_list,
              new_object_list=configs.new_object_list, old_object_list=configs.old_object_list,
-             behavior_list=configs.behavior_list, modality_list=configs.modality_list,
+             behavior_list=configs.behavior_list, modality_list=configs.modality_list, show_fig=True,
              trail_list=configs.trail_list, viz_l2_norm=configs.viz_l2_norm, save_fig=configs.save_fig):
     assert (encoder or data_dim) is not None
     if encoder is not None:
@@ -95,7 +95,7 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None,
         logging.debug(f"Viz data for all objects...")
         _viz_embeddings(embeds=np.vstack(data_groups), labels=np.vstack(label_groups), loss_func=loss_func,
                         viz_l2_norm=viz_l2_norm, tool_labels=tool_labels, obj_list=all_object_list,
-                        save_fig=save_fig, title=f"{data_descpt}",
+                        save_fig=save_fig, title=f"{data_descpt}", show_fig=show_fig,
                         subtitle=f"source tool: {source_tool_list}, \n target tool: "
                                  f"{target_tool_list} \n assisted tool: {assist_tool_list}")
     # Viz train data in 2D space
@@ -108,7 +108,7 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None,
                                            target_label_train_len=len(target_label_train))
         data_descpt = "Encoder Input Data (Train Objects)" if encoder is None else \
             f"Encoder Output Data (Train Objects) - {loss_func} Loss"
-        _viz_embeddings(embeds=data, labels=labels, tool_labels=tool_labels, loss_func=loss_func,
+        _viz_embeddings(embeds=data, labels=labels, tool_labels=tool_labels, loss_func=loss_func, show_fig=show_fig,
                         viz_l2_norm=viz_l2_norm, obj_list=all_object_list, save_fig=save_fig, title=f"{data_descpt}",
                         subtitle=f"source tool: {source_tool_list}, \n target tool: {target_tool_list} \n"
                                  f"assisted tool: {assist_tool_list}")
@@ -124,14 +124,15 @@ def viz_data(trans_cls, encoder: model.encoder or None, data_dim=None,
                                            target_label_test_len=len(target_label_test))
         data_descpt = "Encoder Input Data (Test Objects)" if encoder is None else \
             f"Encoder Output Data (Test Objects) - {loss_func} Loss"
-        _viz_embeddings(viz_l2_norm=viz_l2_norm, embeds=data, labels=labels, loss_func=loss_func,
+        _viz_embeddings(viz_l2_norm=viz_l2_norm, embeds=data, labels=labels, loss_func=loss_func, show_fig=show_fig,
                         tool_labels=tool_labels, obj_list=new_object_list, save_fig=save_fig, title=f"{data_descpt}",
                         subtitle=f"source tool: {source_tool_list}, \n target tool: {target_tool_list} \n"
                                  f"assisted tool: {assist_tool_list}")
 
 
 def _viz_embeddings(embeds: np.ndarray, labels: np.ndarray, tool_labels: list, obj_list: list, loss_func: str,
-                    viz_l2_norm, save_fig: bool, title='', subtitle='', show_curr_label=False):
+                    viz_l2_norm, save_fig: bool, title='', subtitle='', show_curr_label=False,
+                    show_fig=True, save_path=r'./figs/'):
     """
     visualize embeddings in 2D space and use object as color and tool as marker.
     :param embeds: embedding by trial/sample:  [n_sample, emb_len]. The section of rows has to follow this order:
@@ -245,8 +246,9 @@ def _viz_embeddings(embeds: np.ndarray, labels: np.ndarray, tool_labels: list, o
     # plt.tight_layout()
 
     if save_fig:
-        plt.savefig(r'./figs/' + save_name + '.jpeg', bbox_inches='tight')
-    plt.show()
+        plt.savefig(save_path + save_name + '.jpeg', bbox_inches='tight')
+    if show_fig:
+        plt.show()
     plt.close()
 
 
@@ -254,13 +256,15 @@ def viz_test_objects_embedding(
         transfer_class, Encoder, Classifier, test_accuracy, viz_l2_norm=configs.viz_l2_norm, save_fig=configs.save_fig,
         new_object_list=configs.new_object_list, source_tool_list=configs.source_tool_list,
         target_tool_list=configs.target_tool_list, assist_tool_list=configs.assist_tool_list,
-        encoder_output_dim=configs.encoder_output_dim, task_descpt='', clf_exp_name=configs.clf_exp_name):
+        encoder_output_dim=configs.encoder_output_dim, task_descpt='', save_path=r'./figs/', show_fig=True,
+        clf_exp_name=configs.clf_exp_name):
 
     logging.debug(f"viz_test_objects_embedding: viz_l2_norm: {viz_l2_norm} ")
     object_list = new_object_list
     # Step 1: Generate embedded data
     clf_input_l2_norm = transfer_class.enc_l2_norm
     Encoder.l2_norm = True if viz_l2_norm else False
+
     all_emb, all_labels, _ = get_all_embeddings_or_data(
         trans_cls=transfer_class, encoder=Encoder, target_tool_list=target_tool_list, source_tool_list=source_tool_list,
         new_object_list=new_object_list, old_object_list=[], assist_tool_list=assist_tool_list)
@@ -380,8 +384,10 @@ def viz_test_objects_embedding(
         plt.ylim(-1 - 0.1, 1 + 0.1)
     if save_fig:
         save_name = f"classifier_decision_boundary_{transfer_class.encoder_loss_fuc}"
-        plt.savefig(r'./figs/' + save_name + '.jpeg', bbox_inches='tight')
-    plt.show()
+        plt.savefig(save_path + save_name + '.jpeg', bbox_inches='tight')
+    if show_fig:
+        plt.show()
+    plt.close()
 
 
 def smooth_line(line, window_size=configs.smooth_wind_size):
@@ -417,7 +423,8 @@ def window_line(line, window_size=configs.smooth_wind_size):
 
 
 def plot_learning_progression(record, type, TL_margin, loss_func, sincere_temp, lr_classifier, lr_encoder,
-                              encoder_output_dim, encoder_hidden_dim, save_name='test', plot_every=1, save_fig=True):  # type-> 'encoder', 'classifier'
+                              encoder_output_dim, encoder_hidden_dim, save_name='test', show_fig=True,
+                              save_path=r'./figs/', plot_every=1, save_fig=True):  # type-> 'encoder', 'classifier'
     logging.debug(f"➡️ plot_learning_progression for {type}: {save_name}...")
     plt.figure(figsize=(8, 6))
     plt.rcParams['font.size'] = 12
@@ -439,8 +446,9 @@ def plot_learning_progression(record, type, TL_margin, loss_func, sincere_temp, 
         plt.grid()
         plt.legend()
         if save_fig:
-            plt.savefig(r'./figs/' + save_name + '.jpeg', bbox_inches='tight')
-        plt.show()
+            plt.savefig(save_path + save_name + '.jpeg', bbox_inches='tight')
+        if show_fig:
+            plt.show()
         plt.close()
     elif type == 'classifier':
         xaxis = np.arange(1, record.shape[1] +1)
@@ -454,8 +462,9 @@ def plot_learning_progression(record, type, TL_margin, loss_func, sincere_temp, 
         plt.grid()
         plt.legend()
         if save_fig:
-            plt.savefig(r'./figs/' + save_name + '.jpeg', bbox_inches='tight')
-        plt.show()
+            plt.savefig(save_path + save_name + '.jpeg', bbox_inches='tight')
+        if show_fig:
+            plt.show()
         plt.close()
     else:
         logging.warning(f'invalid model type: {type}, plot not available.')

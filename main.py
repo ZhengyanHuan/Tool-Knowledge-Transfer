@@ -1,15 +1,9 @@
 import logging
 import os
-import time
-
-import torch
 
 import configs
-import model
-from my_helpers.data_helpers import select_context_for_experiment
+import my_helpers.data_helpers
 from my_helpers.pipeline import run_pipeline
-from my_helpers.viz_helpers import viz_test_objects_embedding, viz_data
-from transfer_class import Tool_Knowledge_transfer_class
 
 # %%  0. setup
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -40,7 +34,7 @@ main_logger.info(f"input data name: {configs.data_name}")
 main_logger.info(f"loss_func: {configs.loss_func}")
 
 # for reproducibility
-configs.set_torch_seed()
+my_helpers.data_helpers.set_torch_seed()
 
 # %% 1. task setup
 main_logger.debug(f"========================= New Run =========================")  # new log starts here

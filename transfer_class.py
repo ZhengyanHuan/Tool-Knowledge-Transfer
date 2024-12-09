@@ -12,6 +12,7 @@ import torch.optim as optim
 
 import configs
 import model
+import my_helpers.data_helpers
 from my_helpers.data_helpers import sanity_check_data_labels, train_test_split_by_trials, fill_missing_params
 from my_helpers.viz_helpers import plot_learning_progression
 from sincere_loss_class import SINCERELoss
@@ -108,7 +109,7 @@ class Tool_Knowledge_transfer_class:
     def train_classifier(self, Encoder, behavior_list=configs.behavior_list, trail_list=configs.trail_list,
                          new_object_list=configs.new_object_list, modality_list=configs.modality_list,
                          source_tool_list=configs.source_tool_list, hyparams=None, plot_learning=True, save_fig=True):
-        configs.set_torch_seed()
+        my_helpers.data_helpers.set_torch_seed()
         logging.debug(f"➡️ train_classifier..")
         hyparams = fill_missing_params(hyparams=hyparams, param_model="classifier")
 
@@ -117,7 +118,8 @@ class Tool_Knowledge_transfer_class:
             new_object_list=new_object_list, modality_list=modality_list, trail_list=trail_list,
             trial_val_portion=hyparams['trial_val_portion'], )
 
-        Classifier = model.classifier(hyparams['encoder_output_dim'], len(new_object_list)).to(configs.device)
+        Classifier = model.classifier(input_size=hyparams['encoder_output_dim'],
+                                      output_size=len(new_object_list)).to(configs.device)
         optimizer = optim.AdamW(Classifier.parameters(), lr=hyparams['lr_classifier'])
         loss_record = np.zeros([2, hyparams['epoch_classifier']])
         best_loss_val = np.inf
@@ -273,8 +275,9 @@ class Tool_Knowledge_transfer_class:
             self.input_dim += len(
                 self.data_dict[behavior_list[0]][source_tool_list[0]][modality][all_obj[0]]['X'][0])
 
-        configs.set_torch_seed()
-        Encoder = model.encoder(self.input_dim, l2_norm=self.enc_l2_norm).to(configs.device)
+        my_helpers.data_helpers.set_torch_seed()
+        Encoder = model.encoder(input_size=self.input_dim, hidden_size=hyparams['encoder_hidden_dim'],
+                                output_size=hyparams['encoder_output_dim'], l2_norm=self.enc_l2_norm).to(configs.device)
         optimizer = optim.AdamW(Encoder.parameters(), lr=hyparams['lr_encoder'])
         # TODO: why is sincere's val loss lower than train?
         #   why is TL so unstable?
@@ -395,7 +398,7 @@ class Tool_Knowledge_transfer_class:
                     pairs_per_batch_per_object) -> torch.Tensor:
         Encoder.l2_norm = self.enc_l2_norm
         encoded_source = Encoder(source_data)
-        encoded_target = Encoder(target_data)
+        encoded_target = Encoder(target_data)  # TODO: fix problem for empty target
         same_object_list = self._get_same_object_list(encoded_source, encoded_target, encoder_output_dim)
 
         trail_tot_num_list = np.array([same_object_list[i].shape[0] for i in range(len(same_object_list))])

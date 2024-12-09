@@ -14,3 +14,5 @@ ignored_files/**
 logs/**
 
 local_stuff/
+
+/0_setup_my_env.sh

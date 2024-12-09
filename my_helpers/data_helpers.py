@@ -1,6 +1,8 @@
 import copy
 import inspect
 import logging
+import random
+import types
 from typing import Tuple, List, Union, Dict
 
 import numpy as np
@@ -76,10 +78,8 @@ def train_test_split_by_trials(source_data, truth_source, target_data=None, trut
             truth_target_train = truth_target[:, :, :, :num_tr_trials]
             truth_target_val = truth_target[:, :, :, -num_val_trials:]
 
-
     else:
-        configs.set_torch_seed()
-        # TODO: make tirla indes, and sample from that
+        set_torch_seed()
         # Initialize data structures for train and validation sets
         source_data_train = np.empty_like(source_data[:, :, :, :num_tr_trials])
         source_data_val = np.empty_like(source_data[:, :, :, -num_val_trials:])
@@ -166,11 +166,11 @@ def restart_label_index_from_zero(labels):
 
 
 def get_all_embeddings_or_data(
-        trans_cls, encoder: model.encoder = None, data_dim=None,
-        behavior_list=configs.behavior_list, modality_list=configs.modality_list, trail_list=configs.trail_list,
-        source_tool_list=configs.source_tool_list, assist_tool_list=configs.assist_tool_list,
-        target_tool_list=configs.target_tool_list, old_object_list=configs.old_object_list,
-        new_object_list=configs.new_object_list) -> Tuple[List[np.ndarray], List[np.ndarray], dict]:
+        trans_cls, encoder: model.encoder, data_dim,
+        behavior_list, modality_list, trail_list,
+        source_tool_list, assist_tool_list,
+        target_tool_list, old_object_list,
+        new_object_list) -> Tuple[List[np.ndarray], List[np.ndarray], dict]:
     """
     :return:
         data order: source_old, source_new, assist_old, assist_new, target_old, target_new
@@ -189,7 +189,7 @@ def get_all_embeddings_or_data(
                                               trail_list=trail_list)
             if data is not None:
                 if encoder is not None:
-                    encoded_data = encoder(data).reshape(-1, configs.encoder_output_dim).cpu().detach().numpy()
+                    encoded_data = encoder(data).reshape(-1, encoder.output_size).cpu().detach().numpy()
                 else:
                     encoded_data = data.cpu().detach().numpy().reshape(-1, data_dim)
                 labels = make_new_labels_to_curr_obj(original_labels=labels,
@@ -198,13 +198,13 @@ def get_all_embeddings_or_data(
                 labels = labels.reshape(-1, 1)
             else:
                 if encoder is not None:
-                    encoded_data = np.empty((0, configs.encoder_output_dim), dtype=np.float32)
+                    encoded_data = np.empty((0, encoder.output_size), dtype=np.float32)
                 else:
                     encoded_data = np.empty((0, data_dim), dtype=np.float32)
                 labels = np.empty((0, 1), dtype=np.int64)
             all_emb.append(encoded_data)
             all_labels.append(labels)
-            logging.debug(f"trial data shape for {tool_list} and {len(object_list)} objects: {encoded_data.shape}")
+            logging.debug(f"trial emb data shape for {tool_list} and {len(object_list)} objects: {encoded_data.shape}")
             logging.debug(f"trial labels shape for {tool_list} and {len(object_list)} objects: {labels.shape}")
 
     return all_emb, all_labels, meta_data
@@ -263,9 +263,8 @@ def select_context_for_experiment(
         exp_context_dict['actual_source_tools'] = target_tool_list
         exp_context_dict['enc_source_tools'] = target_tool_list
         exp_context_dict['enc_train_trail_list'] = enc_trial_list
-        exp_context_dict['clf_val_trial_list'] = list(set(configs.trail_list) - set(enc_trial_list))
+        exp_context_dict['clf_val_trial_list'] = list(set(trial_list) - set(enc_trial_list))
     elif encoder_exp_name == "baseline2-all":  # train on all tools that are not target tool
-        print(source_tool_list + assist_tool_list)
         exp_context_dict['actual_source_tools'] = source_tool_list + assist_tool_list
         exp_context_dict['enc_source_tools'] = source_tool_list + assist_tool_list
 
@@ -279,10 +278,16 @@ def select_context_for_experiment(
         exp_context_dict['enc_new_objs'] = all_object_list
         exp_context_dict['enc_old_objs'] = []
     elif "baseline" in encoder_exp_name:  # no transfer, so there's no new object for encoder,
-        exp_context_dict['enc_target_tools'] = []
+        # make the target tool the same as the source tool for encoders of baselines
+        if "1" in encoder_exp_name:
+            exp_context_dict['enc_target_tools'] = target_tool_list
+        elif "2" in encoder_exp_name:
+            exp_context_dict['enc_target_tools'] = source_tool_list
+            if "all" in encoder_exp_name:
+                exp_context_dict['enc_target_tools'] = source_tool_list + assist_tool_list
         if exp_pred_obj == "new":
             exp_context_dict['enc_new_objs'] = []
-            exp_context_dict['enc_old_objs'] = new_object_list
+            exp_context_dict['enc_old_objs'] = new_object_list  # TODO: double check the encoder's objects for all conditions
             exp_context_dict['clf_new_objs'] = new_object_list
             exp_context_dict['clf_old_objs'] = []
         elif exp_pred_obj == "all":
@@ -367,3 +372,21 @@ def fill_missing_pipeline_settings(pipeline_settings):
 def filter_keys_by_func(param_dict, function):
     explicit_args = inspect.signature(function).parameters.keys()
     return copy.deepcopy({k: v for k, v in param_dict.items() if k in explicit_args})
+
+
+def set_torch_seed(seed=configs.rand_seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # If using multi-GPU.
+    random.seed(seed)
+    np.random.seed(seed)
+
+
+# Extract variables from the config file
+def get_default_param_dict():
+    return {
+        name: value
+        for name, value in vars(configs).items()
+        if not name.startswith("__") and not callable(value)
+           and not isinstance(value, types.ModuleType)
+    }

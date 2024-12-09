@@ -5,10 +5,10 @@ import configs
 
 
 class encoder(nn.Module):
-    def __init__(self, input_size, output_size=configs.encoder_output_dim,
-                 hidden_size=configs.encoder_hidden_dim, l2_norm=False):
+    def __init__(self, input_size, output_size, hidden_size, l2_norm=False):
         super(encoder, self).__init__()
         self.l2_norm = l2_norm
+        self.output_size = output_size
         self.network = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
@@ -25,7 +25,7 @@ class encoder(nn.Module):
 
 
 class classifier(nn.Module):
-    def __init__(self, input_size=configs.encoder_output_dim, output_size=len(configs.new_object_list)):
+    def __init__(self, input_size, output_size):
         super(classifier, self).__init__()
         self.network = nn.Sequential(
             nn.Linear(input_size, output_size)
