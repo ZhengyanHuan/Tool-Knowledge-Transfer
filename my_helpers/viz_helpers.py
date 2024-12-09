@@ -257,8 +257,8 @@ def viz_test_objects_embedding(
         new_object_list=configs.new_object_list, source_tool_list=configs.source_tool_list,
         target_tool_list=configs.target_tool_list, assist_tool_list=configs.assist_tool_list,
         encoder_output_dim=configs.encoder_output_dim, task_descpt='', save_path=r'./figs/', show_fig=True,
-        clf_exp_name=configs.clf_exp_name):
-
+        clf_exp_name=configs.clf_exp_name, behavior_list=configs.behavior_list, trail_list=configs.trail_list,
+        modality_list=configs.modality_list):
     logging.debug(f"viz_test_objects_embedding: viz_l2_norm: {viz_l2_norm} ")
     object_list = new_object_list
     # Step 1: Generate embedded data
@@ -267,7 +267,8 @@ def viz_test_objects_embedding(
 
     all_emb, all_labels, _ = get_all_embeddings_or_data(
         trans_cls=transfer_class, encoder=Encoder, target_tool_list=target_tool_list, source_tool_list=source_tool_list,
-        new_object_list=new_object_list, old_object_list=[], assist_tool_list=assist_tool_list)
+        new_object_list=new_object_list, old_object_list=[], assist_tool_list=assist_tool_list, data_dim=None,
+        behavior_list=behavior_list, modality_list=modality_list, trail_list=trail_list)
     source_emb, source_y = all_emb[1], all_labels[1]
     assist_emb, assist_y = all_emb[3], all_labels[3]
     target_emb, target_y = all_emb[5], all_labels[5]
@@ -369,7 +370,7 @@ def viz_test_objects_embedding(
         subtitle = ("Exact decision boundary from the trained Classifier.\n"
                     f"Actual predictions match the background color. Accuracy: {test_accuracy * 100:.1f}%")
     subtitle += f" Random Guess: {100 / len(object_list):.1f}%"
-    plt.title(f"Visualization with Classifier Decision Boundary on Test Set - {test_accuracy} "
+    plt.title(f"Visualization with Classifier Decision Boundary on Test Set - {transfer_class.encoder_loss_fuc} "
               f"- Vector Size={all_emb.shape[-1]}\n{subtitle}\n{task_descpt}", fontsize=10)
     viz_discpt = "T-SNE Reduced " if all_emb.shape[1] > 2 else ""
     plt.xlabel(f"{viz_discpt}Dimension 1")
@@ -411,8 +412,8 @@ def window_line(line, window_size=configs.smooth_wind_size):
     for i in range(len(line)):
         if i + 1 >= window_size and (i + 1) % window_size == 0:
             wind_idx += 1
-            if wind_idx*window_size <= len(line):
-                window_val = np.mean(line[window_size*(wind_idx-1):window_size * wind_idx])
+            if wind_idx * window_size <= len(line):
+                window_val = np.mean(line[window_size * (wind_idx - 1):window_size * wind_idx])
                 wind_line.append([window_val] * window_size)
     wind_line = np.hstack(wind_line)
     gap = len(line) - len(wind_line)
@@ -451,7 +452,7 @@ def plot_learning_progression(record, type, TL_margin, loss_func, sincere_temp, 
             plt.show()
         plt.close()
     elif type == 'classifier':
-        xaxis = np.arange(1, record.shape[1] +1)
+        xaxis = np.arange(1, record.shape[1] + 1)
         plt.plot(xaxis[::plot_every], record[0, ::plot_every], color_group[0], label='train loss')
         if record[1, -1] != 0:
             plt.plot(xaxis[::plot_every], record[1, ::plot_every], color_group[1], label='val loss')

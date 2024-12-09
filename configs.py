@@ -1,5 +1,7 @@
 import torch
 
+ALL_TOOL_LIST = ['metal-scissor', 'metal-whisk', "plastic-knife", 'plastic-spoon', "wooden-chopstick", 'wooden-fork']
+
 behavior_list = ['3-stirring-fast']
 modality_list = ['audio']
 source_tool_list = ['plastic-spoon', ]  # only one source tool

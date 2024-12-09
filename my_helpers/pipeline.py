@@ -158,8 +158,9 @@ def run_pipeline(loss_func=configs.loss_func, data_name=configs.data_name,
         viz_params = filter_keys_by_func(all_params, viz_test_objects_embedding)
         viz_params.update({
             "transfer_class": myclass, "Encoder": encoder, "Classifier": clf, "test_accuracy": test_acc,
-            "encoder_output_dim": all_params['encoder_output_dim'], "assist_tool_list": context_dict['clf_assist_tools'],
-            "target_tool_list": context_dict['clf_target_tools'], "new_object_list": context_dict['clf_new_objs'],
+            "encoder_output_dim": all_params['encoder_output_dim'],
+            "assist_tool_list": context_dict['clf_assist_tools'], "target_tool_list": context_dict['clf_target_tools'],
+            "new_object_list": context_dict['clf_new_objs'],
             "source_tool_list": list(set(context_dict['clf_source_tools']) - set(context_dict['clf_assist_tools'])),
             "task_descpt": f"source:{context_dict['actual_source_tools'][0]}, "
                            f"target:{context_dict['actual_target_tools'][0]} "
