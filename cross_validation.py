@@ -41,7 +41,9 @@ my_helpers.data_helpers.set_torch_seed()
 data_name = 'audio_16kHz_token_down16_beh3.bin'
 source_tool_list = [args.source_tool]
 target_tool_list = [args.target_tool]
-context = {"source_tool_list": source_tool_list, "target_tool_list": target_tool_list}
+context = {"source_tool_list": source_tool_list, "target_tool_list": target_tool_list,
+           "assist_tool_list": list(set(configs.ALL_TOOL_LIST) -
+                                    set(target_tool_list) - set(source_tool_list))}
 
 loss_func = args.loss_func  # 👈
 exp_name = args.exp_name  # 👈

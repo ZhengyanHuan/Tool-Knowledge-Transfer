@@ -15,6 +15,8 @@ import model
 SORTED_DATA_OBJ_LIST = sorted(['empty', 'water', 'detergent', 'chia-seed', 'cane-sugar', 'salt',
                                'styrofoam-bead', 'split-green-pea', 'wheat', 'chickpea', 'kidney-bean',
                                'wooden-button', 'plastic-bead', 'glass-bead', 'metal-nut-bolt'])
+ALL_TOOL_LIST = sorted(['plastic-spoon', 'wooden-fork', 'metal-whisk',
+                        "wooden-chopstick", "plastic-knife", 'metal-scissor'])
 TOOL_GROUPS = ['source', 'assist', 'target']
 OBJ_GROUPS = ['old', 'new']
 
@@ -210,6 +212,20 @@ def get_all_embeddings_or_data(
     return all_emb, all_labels, meta_data
 
 
+def check_overlaps(source_tool_list=None, target_tool_list=None, assist_tool_list=None,
+                   old_object_list=None, new_object_list=None):
+    if source_tool_list or target_tool_list or assist_tool_list:
+        assert source_tool_list and target_tool_list and assist_tool_list, "must provide all 3 tool lists."
+        set1, set2, set3 = set(source_tool_list), set(target_tool_list), set(assist_tool_list)
+        assert set1.isdisjoint(set2) and set1.isdisjoint(set3) and set2.isdisjoint(set3), \
+            "there's overlap among tool lists."
+
+    if old_object_list or new_object_list:
+        assert old_object_list and new_object_list,  "must provide old and new object lists."
+        set1, set2 = set(old_object_list), set(new_object_list)
+        assert set1.isdisjoint(set2), "there's overlap among new and old object lists."
+
+
 def select_context_for_experiment(
         encoder_exp_name=configs.encoder_exp_name, clf_exp_name=configs.clf_exp_name, exp_pred_obj=configs.exp_pred_obj,
         source_tool_list=configs.source_tool_list, target_tool_list=configs.target_tool_list,
@@ -221,8 +237,8 @@ def select_context_for_experiment(
     assert clf_exp_name in ["default", "assist"]
     assert exp_pred_obj in ['all', 'new']
     logging.debug(f"experiment: encoder: {encoder_exp_name}, clf: {clf_exp_name}, predict objects: {exp_pred_obj}")
-    all_object_list = old_object_list + new_object_list
-
+    check_overlaps(source_tool_list=source_tool_list, target_tool_list=target_tool_list,
+                   assist_tool_list=assist_tool_list, new_object_list=new_object_list, old_object_list=old_object_list)
     exp_context_dict = {
         'exp_pred_obj': exp_pred_obj,
         'actual_source_tools': source_tool_list,

@@ -5,8 +5,8 @@ import torch
 
 import configs
 import model
-from my_helpers.data_helpers import select_context_for_experiment, fill_missing_params, fill_missing_context, \
-    fill_missing_pipeline_settings, filter_keys_by_func, get_default_param_dict
+from my_helpers.data_helpers import select_context_for_experiment, fill_missing_params, filter_keys_by_func, \
+    get_default_param_dict, check_overlaps
 from my_helpers.viz_helpers import viz_data, viz_test_objects_embedding
 from transfer_class import Tool_Knowledge_transfer_class
 
@@ -45,6 +45,9 @@ def run_pipeline(loss_func=configs.loss_func, data_name=configs.data_name,
     all_params = get_default_param_dict()
     if orig_context is not None:
         all_params.update(orig_context)
+    check_overlaps(source_tool_list=all_params['source_tool_list'], target_tool_list=all_params['target_tool_list'],
+                   assist_tool_list=all_params['assist_tool_list'], new_object_list=all_params['new_object_list'],
+                   old_object_list=all_params['old_object_list'])
     if pipe_settings is not None:
         all_params.update(pipe_settings)
     if hyparams is not None:  # functions take hyparams as a whole dictionary,
