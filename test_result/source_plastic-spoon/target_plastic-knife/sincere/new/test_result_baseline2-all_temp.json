@@ -1,0 +1,19 @@
+{
+  "sincere": {
+    "fold0": {
+      "test_obj_list": [
+        "cane-sugar",
+        "empty",
+        "styrofoam-bead",
+        "chickpea",
+        "metal-nut-bolt"
+      ],
+      "best_val_acc": 0.9350000143051147,
+      "best_val_acc_std": 0.10559355453920247,
+      "TL_margin": null,
+      "lr_encoder": 0.01,
+      "sincere_temp": 0.1,
+      "encoder_output_dim": 128
+    }
+  }
+}

@@ -1,0 +1,289 @@
+{
+  "default": {
+    "sincere": {
+      "result": {
+        "avg_accuracy": 0.7859999895095825,
+        "std_accuracy": 0.08765842436951346,
+        "accuracy_list": [
+          0.6200000047683716,
+          0.9399999976158142,
+          0.8999999761581421,
+          0.8199999928474426,
+          0.699999988079071,
+          0.7400000095367432,
+          0.8199999928474426,
+          0.7799999713897705,
+          0.7799999713897705,
+          0.7599999904632568
+        ],
+        "source_tool": [
+          "plastic-spoon"
+        ],
+        "target_tool": [
+          "metal-scissor"
+        ],
+        "experiment": {
+          "rand_seed": 43,
+          "num_test_folds": 10,
+          "num_cv_folds_in_test": 5,
+          "encoder_exp_name": "assist",
+          "clf_exp_name": "assist",
+          "exp_pred_obj": "new"
+        },
+        "test_result_dict": {
+          "sincere": {
+            "fold0": {
+              "test_obj_list": [
+                "cane-sugar",
+                "empty",
+                "styrofoam-bead",
+                "chickpea",
+                "metal-nut-bolt"
+              ],
+              "best_val_acc": 0.825000011920929,
+              "best_val_acc_std": 0.17175564314943026,
+              "TL_margin": null,
+              "lr_encoder": 0.01,
+              "sincere_temp": 0.1,
+              "encoder_output_dim": 32,
+              "test_accuracy": 0.6200000047683716
+            },
+            "fold1": {
+              "test_obj_list": [
+                "kidney-bean",
+                "plastic-bead",
+                "wheat",
+                "styrofoam-bead",
+                "chia-seed"
+              ],
+              "best_val_acc": 0.7899999976158142,
+              "best_val_acc_std": 0.14195069927689652,
+              "TL_margin": null,
+              "lr_encoder": 0.01,
+              "sincere_temp": 0.1,
+              "encoder_output_dim": 32,
+              "test_accuracy": 0.9399999976158142
+            },
+            "fold2": {
+              "test_obj_list": [
+                "empty",
+                "kidney-bean",
+                "metal-nut-bolt",
+                "wooden-button",
+                "chia-seed"
+              ],
+              "best_val_acc": 0.9550000071525574,
+              "best_val_acc_std": 0.04301163104686672,
+              "TL_margin": null,
+              "lr_encoder": 0.001,
+              "sincere_temp": 0.5,
+              "encoder_output_dim": 128,
+              "test_accuracy": 0.8999999761581421
+            },
+            "fold3": {
+              "test_obj_list": [
+                "wooden-button",
+                "chia-seed",
+                "kidney-bean",
+                "cane-sugar",
+                "salt"
+              ],
+              "best_val_acc": 0.7900000095367432,
+              "best_val_acc_std": 0.09300538234107378,
+              "TL_margin": null,
+              "lr_encoder": 0.01,
+              "sincere_temp": 0.1,
+              "encoder_output_dim": 32,
+              "test_accuracy": 0.8199999928474426
+            },
+            "fold4": {
+              "test_obj_list": [
+                "glass-bead",
+                "chia-seed",
+                "kidney-bean",
+                "plastic-bead",
+                "metal-nut-bolt"
+              ],
+              "best_val_acc": 0.8600000023841858,
+              "best_val_acc_std": 0.14370107929565087,
+              "TL_margin": null,
+              "lr_encoder": 0.001,
+              "sincere_temp": 0.1,
+              "encoder_output_dim": 32,
+              "test_accuracy": 0.699999988079071
+            },
+            "fold5": {
+              "test_obj_list": [
+                "plastic-bead",
+                "glass-bead",
+                "chickpea",
+                "wooden-button",
+                "styrofoam-bead"
+              ],
+              "best_val_acc": 0.8700000047683716,
+              "best_val_acc_std": 0.07314369777719194,
+              "TL_margin": null,
+              "lr_encoder": 0.01,
+              "sincere_temp": 0.1,
+              "encoder_output_dim": 128,
+              "test_accuracy": 0.7400000095367432
+            },
+            "fold6": {
+              "test_obj_list": [
+                "chia-seed",
+                "glass-bead",
+                "kidney-bean",
+                "wooden-button",
+                "wheat"
+              ],
+              "best_val_acc": 0.7600000023841857,
+              "best_val_acc_std": 0.10559355453920247,
+              "TL_margin": null,
+              "lr_encoder": 0.001,
+              "sincere_temp": 0.5,
+              "encoder_output_dim": 128,
+              "test_accuracy": 0.8199999928474426
+            },
+            "fold7": {
+              "test_obj_list": [
+                "metal-nut-bolt",
+                "wheat",
+                "empty",
+                "glass-bead",
+                "split-green-pea"
+              ],
+              "best_val_acc": 0.8899999976158142,
+              "best_val_acc_std": 0.07516648712545822,
+              "TL_margin": null,
+              "lr_encoder": 0.001,
+              "sincere_temp": 0.1,
+              "encoder_output_dim": 32,
+              "test_accuracy": 0.7799999713897705
+            },
+            "fold8": {
+              "test_obj_list": [
+                "detergent",
+                "wheat",
+                "plastic-bead",
+                "water",
+                "chickpea"
+              ],
+              "best_val_acc": 0.875,
+              "best_val_acc_std": 0.10839742629120902,
+              "TL_margin": null,
+              "lr_encoder": 0.01,
+              "sincere_temp": 0.1,
+              "encoder_output_dim": 128,
+              "test_accuracy": 0.7799999713897705
+            },
+            "fold9": {
+              "test_obj_list": [
+                "empty",
+                "cane-sugar",
+                "styrofoam-bead",
+                "plastic-bead",
+                "metal-nut-bolt"
+              ],
+              "best_val_acc": 0.8350000023841858,
+              "best_val_acc_std": 0.12103718515702107,
+              "TL_margin": null,
+              "lr_encoder": 0.001,
+              "sincere_temp": 0.1,
+              "encoder_output_dim": 32,
+              "test_accuracy": 0.7599999904632568
+            }
+          }
+        }
+      },
+      "other_info": {
+        "other_params": {
+          "trial_val_portion": 0.2,
+          "encoder_output_dim": 128,
+          "encoder_hidden_dim": 256,
+          "randomize_trials": true,
+          "tolerance": 0.005,
+          "smooth_wind_size": 10,
+          "epoch_classifier": 5000,
+          "lr_classifier": 0.01,
+          "early_stop_patience_clf": 100,
+          "clf_tolerance": 0.0001,
+          "epoch_encoder": 2000,
+          "lr_encoder": 0.001,
+          "early_stop_patience_enc": 2,
+          "TL_margin": 0.5,
+          "sincere_temp": 0.5,
+          "pairs_per_batch_per_object": 300
+        },
+        "data_name": "audio_16kHz_token_down16_beh3.bin",
+        "original_context": {
+          "behavior_list": [
+            "3-stirring-fast"
+          ],
+          "modality_list": [
+            "audio"
+          ],
+          "trail_list": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "old_object_list": [
+            "cane-sugar",
+            "chia-seed",
+            "empty",
+            "glass-bead",
+            "plastic-bead",
+            "salt",
+            "kidney-bean",
+            "styrofoam-bead",
+            "water",
+            "wooden-button"
+          ],
+          "new_object_list": [
+            "chickpea",
+            "detergent",
+            "metal-nut-bolt",
+            "split-green-pea",
+            "wheat"
+          ],
+          "all_object_list": [
+            "cane-sugar",
+            "chia-seed",
+            "empty",
+            "glass-bead",
+            "plastic-bead",
+            "salt",
+            "kidney-bean",
+            "styrofoam-bead",
+            "water",
+            "wooden-button",
+            "chickpea",
+            "detergent",
+            "metal-nut-bolt",
+            "split-green-pea",
+            "wheat"
+          ],
+          "source_tool_list": [
+            "plastic-spoon"
+          ],
+          "assist_tool_list": [
+            "wooden-fork",
+            "metal-whisk",
+            "wooden-chopstick",
+            "plastic-knife"
+          ],
+          "target_tool_list": [
+            "metal-scissor"
+          ]
+        }
+      }
+    }
+  }
+}
